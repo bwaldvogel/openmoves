@@ -1,0 +1,43 @@
+{% extends "move/_move.html" %}
+
+{% block tableHeader %}
+{{ super() }}
+<th>Pool Length</th>
+{% endblock %}
+
+{% block tableEntry %}
+{{ super() }}
+<td>{{move.poolLength}}</td>
+{% endblock %}
+
+{% block chartBlocks %}
+{{chart.chartBlock('temperature')}}
+{{chart.chartBlock('speed')}}
+{% endblock %}
+
+{% block chartScripts %}
+{{chart.chartByTime('temperature', samples, 0.1, 'celcius')}}
+{{chart.speedChartByTimeEquiDistance('speed', samples, move.poolLength, 'kmh')}}
+{% endblock %}
+
+{% block additionalInformation %}
+<h2>Styles</h2>
+<table class="table table-condensed">
+<tr>
+    <th>Timestamp</th>
+    <th>Time</th>
+    <th>Style</th>
+    <th>Classification Vector</th>
+</tr>
+{%- for sample in events -%}
+{%- if sample.events['swimming'] and sample.events['swimming']['type'] == 'StyleChange' %}
+<tr>
+    <td>{{macros.localoffset(sample.time)}}</td>
+    <td>{{sample.time | duration}}</td>
+    <td>{{sample.events['swimming']['prevPoolLengthStyle']}}</td>
+    <td class="json">{{sample.events['swimming']['classificationVector']['item'] | jsonify}}</td>
+</tr>
+{%- endif -%}
+{%- endfor -%}
+</table>
+{% endblock %}

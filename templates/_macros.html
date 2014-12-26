@@ -1,0 +1,82 @@
+{% macro temperature(value) -%}
+<span>{{'%.1f' | format(value - 273.15)}}°C</span>
+{%- endmacro %}
+
+{% macro kmh(value) -%}
+{%- if value -%}
+<span>{{'%.1f' | format(value * 3.6)}} km/h</span>
+{% endif %}
+{%- endmacro %}
+
+{% macro datetimeToDateUTC(datetime) -%}
+Date.UTC({{datetime.year}}, {{datetime.month}}, {{datetime.day}}, {{datetime.hour}}, {{datetime.minute}}, {{datetime.second}}, {{"%d" | format(datetime.microsecond/1000)}})
+{%- endmacro %}
+
+{% macro localdate(date) -%}
+<span title="Date: {{date | isoDate}}">
+<script>
+var d=moment("{{date | isoDate}}", "YYYY-MM-DD[T]HH:mm:ss.SZ");
+document.write(d.format("YYYY-MM-DD HH:mm:ss"));
+</script>
+<noscript>{{date}}</noscript>
+</span>
+{%- endmacro %}
+
+{% macro localoffset(offset) -%}
+{% set date = move.dateTime + offset %}
+<span title="Date: {{date | isoDate}} / offset: {{offset | duration}}">
+<script>
+var d=moment("{{date | isoDate}}", "YYYY-MM-DD[T]HH:mm:ss.SZ");
+document.write(d.format("YYYY-MM-DD HH:mm:ss.SSS"));
+</script>
+<noscript>{{date}}</noscript>
+</span>
+{%- endmacro %}
+
+
+{% macro formatHm(hm) -%}
+{% if hm and hm > 0 %}{{hm}} m{% endif %}
+{%- endmacro %}
+
+
+{% macro formatDistance(distance) -%}
+{% if distance > 1000 %}
+    {{'%0.2f' | format(distance / 1000.0)}} km
+{% elif distance < 1000 %}
+    {{'%0.3f' | format(distance / 1000.0)}} km
+{% endif %}
+{%- endmacro %}
+
+
+{% macro formatMoveDistance(move, distance) -%}
+{% if move.activity == 'Pool swimming' or move.activity == 'Outdoor swimmin' %}
+    {{distance}} m
+{% else %}
+    {{formatDistance(distance)}}
+{% endif %}
+{%- endmacro %}
+
+
+{% macro formatDuration(duration) -%}
+    {{duration}} h
+{%- endmacro %}
+
+
+{% macro sortable(key, displayName, defaultSortOrder='desc') -%}
+{% if key == sort %}
+    {% if sortOrder=='desc' %}
+        {% set _sortOrder = 'asc' %}
+    {% else %}
+        {% set _sortOrder = 'desc' %}
+    {% endif %}
+{% else %}
+    {% set _sortOrder = defaultSortOrder %}
+{% endif %}
+<a href="{{url_for(active_page, sort=key, sortOrder=_sortOrder)}}">{{displayName}}</a>
+{% if key == sort -%}
+{% if sortOrder=='asc' %}<span class="dropup">{% endif %}
+<span class="caret"></span>
+{% if sortOrder=='asc' %}</span>{% endif %}
+{%- endif %}
+{%- endmacro %}
+

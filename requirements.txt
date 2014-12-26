@@ -1,0 +1,11 @@
+Flask==0.10.1
+Flask-SQLAlchemy==2.0
+SQLAlchemy==0.9.8
+psycopg2==2.5.4
+Flask-Bootstrap==3.3.0.1
+Flask-WTF==0.10.3
+Flask-Login==0.2.11
+Flask-Bcrypt==0.6.0
+lxml==3.4.1
+python-dateutil==2.3
+xkcdpass==1.2.3

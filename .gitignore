@@ -1,0 +1,13 @@
+.*.swp
+
+*.pyc
+*.pyo
+
+openmoves.cfg*
+!openmoves.cfg.sample
+
+__pycache__
+
+virtualenv*/
+
+*.sqlite*

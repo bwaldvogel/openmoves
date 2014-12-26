@@ -1,0 +1,29 @@
+.form-import {
+  max-width: 330px;
+  padding: 15px;
+  margin: 0 auto;
+}
+.form-import .form-import-heading,
+.form-import .checkbox {
+  margin-bottom: 10px;
+}
+.form-import .checkbox {
+  font-weight: normal;
+}
+.form-import .form-control {
+  position: relative;
+  height: auto;
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
+          box-sizing: border-box;
+  padding: 10px;
+  font-size: 16px;
+}
+.form-import .form-control:focus {
+  z-index: 2;
+}
+.form-import input[type="file"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}

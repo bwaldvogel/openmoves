@@ -1,0 +1,236 @@
+{% extends "_base.html" %}
+{% import '_chart.html' as chart with context %}
+
+{% block styles %}
+{{super()}}
+    <link rel="stylesheet" href="{{url_for('.static', filename='css/ol.css')}}">
+{% endblock %}
+
+{% block content %}
+{{super()}}
+<div class="container" role="main">
+    <h1>{{move.activity}}</h1>
+    <table class="table table-condensed">
+        <tr>
+            {% block tableHeader %}
+            <th>Time</th>
+            <th>Speed Avg</th>
+            <th>Duration</th>
+            <th>Distance</th>
+            {% if move.ascent %}<th>Ascent</th>{% endif %}
+            {% if move.descent %}<th>Descent</th>{% endif %}
+            {% if gpsSamples %}<th>First fix</th>{% endif %}
+            {% endblock %}
+        </tr>
+        <tr>
+            {% block tableEntry %}
+            <td>{{macros.localdate(move.dateTime)}}</td>
+            <td>{{macros.kmh(move.speedAvg)}}</td>
+            <td>{{move.duration | duration}}</td>
+			<td>{{macros.formatMoveDistance(move, move.distance)}}</td>
+            {% if move.ascent %}<td>{{macros.formatHm(move.ascent)}}</td>{% endif %}
+            {% if move.descent %}<td>{{macros.formatHm(move.descent)}}</td>{% endif %}
+            {% if gpsSamples %}<td>{{move.timeToFirstFix | duration}}</td>{% endif %}
+            {% endblock %}
+        </tr>
+    </table>
+
+    {% if pauses %}
+    <h2>Pauses</h2>
+    <table class="table table-condensed">
+	<tr>
+		<th>Start</th>
+		<th>End</th>
+		<th>Duration</th>
+	</tr>
+    {% for pause in pauses %}
+	<tr>
+		{% set start = pause[0].time %}
+		{% set end = pause[1].time %}
+		<td>{{macros.localoffset(start)}}</td>
+		<td>{{macros.localoffset(end)}}</td>
+		<td>{{(end - start) | duration}}</td>
+	</tr>
+    {%- endfor %}
+    </table>
+    {% endif %}
+
+    {% block Laps %}
+    {% if pauses %}
+    <h2>Laps</h2>
+    <table class="table table-condensed">
+	<tr>
+		<th>Lap</th>
+		<th>Timestamp</th>
+		<th>Duration</th>
+		<th>Distance</th>
+		<th>Type</th>
+	</tr>
+    {%- for sample in laps -%}
+	<tr>
+		<td>{{loop.index}}</td>
+		<td>{{macros.localoffset(sample.time)}}</td>
+		<td>{{sample.events.lap.duration | duration}}</td>
+		<td>{{macros.formatMoveDistance(move, sample.events.lap.distance)}}</td>
+		<td>{{sample.events.lap.type}}</td>
+	</tr>
+    {%- endfor -%}
+	</table>
+    {% endif %}
+	{% endblock %}
+
+    {% block events %}
+    <h2>Events</h2>
+    <table class="table table-condensed">
+	<tr>
+		<th>Timestamp</th>
+		<th>Event</th>
+		<th>Data</th>
+	</tr>
+    {%- for sample in events -%}
+    {%- if not sample.events.swimming %}
+	<tr>
+		{% set event = (sample.events.keys()|list)[0] %}
+		<td>{{macros.localoffset(sample.time)}}</td>
+		<td>{{event}}</td>
+		<td class="json">{{sample.events[event] | jsonify}}</td>
+	</tr>
+    {%- endif -%}
+    {%- endfor -%}
+	</table>
+	{% endblock %}
+
+    {% if gpsSamples %}
+    <h2>Map</h2>
+	<div id="map" class="map img-thumbnail"></div>
+    {% endif %}
+
+    {% block chartBlocks %}
+    {{chart.chartBlock('temperature')}}
+    {{chart.chartBlock('altitude')}}
+    {{chart.chartBlock('hr')}}
+        {% block speedChartBlocks %}
+        {{chart.chartBlock('speed')}}
+        {{chart.chartBlock('speed_equidistant')}}
+        {% endblock %}
+    {% endblock %}
+
+    {% block additionalInformation %}
+    {% endblock %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script src="http://code.highcharts.com/highcharts.js"></script>
+
+<script>
+$(document).ready(function() {
+{% block chartScripts %}
+    {{chart.chartByTime('temperature', samples, 0.1, 'celcius')}}
+    {{chart.chartByTime('altitude', samples, 1.5)}}
+    {{chart.chartByTime('hr', samples, 0.1, 'bpm')}}
+    {{chart.chartByTime('speed', samples, 0.1, 'kmh')}}
+    {{chart.speedChartByTimeEquiDistance('speed_equidistant', samples, 100, 'kmh')}}
+{% endblock %}
+
+{% if gpsSamples %}
+var styles = {
+  'LineString': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'blue',
+      width: 2
+    })
+  })],
+  'MultiLineString': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'green',
+      width: 1
+    })
+  })],
+  'MultiPolygon': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'yellow',
+      width: 1
+    }),
+    fill: new ol.style.Fill({
+      color: 'rgba(255, 255, 0, 0.1)'
+    })
+  })],
+  'Polygon': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'blue',
+      lineDash: [4],
+      width: 3
+    }),
+    fill: new ol.style.Fill({
+      color: 'rgba(0, 0, 255, 0.1)'
+    })
+  })],
+  'Circle': [new ol.style.Style({
+    stroke: new ol.style.Stroke({
+      color: 'red',
+      width: 2
+    }),
+    fill: new ol.style.Fill({
+      color: 'rgba(255,0,0,0.2)'
+    })
+  })]
+};
+
+var styleFunction = function(feature, resolution) {
+  return styles[feature.getGeometry().getType()];
+};
+
+    var geoJson = {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          {%- for sample in gpsSamples -%}
+          ol.proj.transform([
+              {{sample.longitude | degree}},
+              {{sample.latitude | degree}}
+            ], 'EPSG:4326', 'EPSG:3857'),
+          {% endfor %}
+        ]
+      }
+    }
+  ]
+}
+
+    var vectorSource = new ol.source.GeoJSON(
+        /** @type {olx.source.GeoJSONOptions} */ ({
+          object: geoJson
+        }));
+
+    var vectorLayer = new ol.layer.Vector({
+      source: vectorSource,
+      style: styleFunction
+    });
+
+    var map = new ol.Map({
+      target: 'map',
+      layers: [
+        new ol.layer.Tile({
+          source: new ol.source.OSM()
+        }),
+        vectorLayer
+      ],
+      view: new ol.View({
+          center: ol.proj.transform([{{gpsSamples[0].longitude | degree}}, {{gpsSamples[0].latitude | degree}}], 'EPSG:4326', 'EPSG:3857'),
+        zoom: 12
+      })
+    });
+{% endif %}
+
+});
+</script>
+
+<script src="{{url_for('.static', filename='js/jquery-ui.min.js')}}"></script>
+<script src="{{url_for('.static', filename='js/ol.js')}}"></script>
+{% endblock %}

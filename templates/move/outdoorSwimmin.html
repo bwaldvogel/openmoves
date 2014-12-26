@@ -1,0 +1,11 @@
+{% extends "move/_move.html" %}
+
+{% block chartBlocks %}
+{{chart.chartBlock('temperature')}}
+{{chart.chartBlock('speed')}}
+{% endblock %}
+
+{% block chartScripts %}
+{{chart.chartByTime('temperature', samples, 0.1, 'celcius')}}
+{{chart.speedChartByTimeEquiDistance('speed', samples, 50, 'kmh')}}
+{% endblock %}

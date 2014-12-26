@@ -1,0 +1,42 @@
+{% extends "_base.html" %}
+
+{% set active_page = 'moves' -%}
+
+{% block content %}
+{{super()}}
+<div class="container" role="main">
+    <table class="table table-striped">
+        <tr>
+            <th>{{macros.sortable('dateTime', 'Time', 'asc')}}</th>
+            <th>{{macros.sortable('activity', 'Activity', 'asc')}}</th>
+            <th>{{macros.sortable('duration', 'Duration', 'desc')}}</th>
+            <th>{{macros.sortable('distance', 'Distance', 'desc')}}</th>
+            <th>{{macros.sortable('speedAvg', 'Speed', 'desc')}}</th>
+            <th>{{macros.sortable('ascent', 'Ascent', 'desc')}}</th>
+            <th>{{macros.sortable('descent', 'Descent', 'desc')}}</th>
+            <th>Temperature</th>
+            <th></th>
+        </tr>
+        {% for move in moves %}
+        <tr>
+            <td><a href="{{url_for('move', id=move.id)}}">{{macros.localdate(move.dateTime)}}</a></td>
+            <td>{{move.activity}}</td>
+            <td>{{move.duration | duration}}</td>
+            <td>{{macros.formatMoveDistance(move, move.distance)}}</td>
+            <td>{{macros.kmh(move.speedAvg)}}</td>
+            <td>{{macros.formatHm(move.ascent)}}</td>
+            <td>{{macros.formatHm(move.descent)}}</td>
+            <td>
+                {{macros.temperature(move.temperatureMin)}}
+                -
+                {{macros.temperature(move.temperatureMax)}}
+            </td>
+            <td>
+                <a class="btn btn-xs btn-black" type="button" onclick="return confirm('Are you sure you want to delete this move?');" href="{{url_for('deleteMove', id=move.id)}}"><span class="glyphicon glyphicon-remove" title="delete" aria-hidden="true"></span></a>
+            </td>
+
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endblock %}

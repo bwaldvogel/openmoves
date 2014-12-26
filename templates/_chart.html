@@ -1,0 +1,110 @@
+{% import '_macros.html' as macros with context %}
+
+{% macro chartBlock(id) -%}
+<div id="{{id}}_chart" class="panel panel-default" style="margin: 15px auto;height: 300px; width: 800px"></div>
+<div id="{{id}}_chart_slider" style="margin: auto; width: 200px;"></div>
+{%- endmacro %}
+
+{% macro chartWithSlider(data, attr, pruneMinDelta=0.0) %}
+    var {{attr}}_chart_data = pruneLowDeltas({{data}}, {{pruneMinDelta}});
+
+    $('#{{attr}}_chart').highcharts({
+        chart: {type:'spline',zoomType: 'y'},
+        plotOptions: {spline:{marker:{enabled:false}}},
+        title: {"text": '{{attr}}'},
+        xAxis: {"title": {"text": 'time'}, "type": "datetime"},
+        yAxis: {"title": {"text": '{{attr}}'}},
+        series: [{
+            "name": '{{attr}}',
+            "data": {{attr}}_chart_data
+        }]
+    });
+
+    $("#{{attr}}_chart_slider").slider({
+        value: 3,
+        min: 3,
+        max: 51,
+        step: 2,
+        slide: function( event, ui ) {
+            var chart = $('#{{attr}}_chart').highcharts();
+            var newData = moveMean({{attr}}_chart_data, ui.value);
+            var newSeries = {
+                name: chart.series[0].name + " (moving average "+ui.value+")",
+                data: newData
+            };
+            if (chart.series.length == 1) {
+                chart.addSeries(newSeries);
+            } else {
+                chart.series[1].update(newSeries);
+            }
+        }
+    });
+
+    if (pruneLowDeltas(pruneNulls({{attr}}_chart_data), {{pruneMinDelta}}).length <= 2) {
+        $("#{{attr}}_chart").hide();
+        $("#{{attr}}_chart_slider").hide();
+    }
+{% endmacro %}
+
+{% macro chartWithSliderEquiDistance(data, attr, defaultDistanceInterval, unit) %}
+    var {{attr}}_chart_data = {{data}};
+    var {{attr}}_default_chart_data = calculateSpeed({{attr}}_chart_data, {{defaultDistanceInterval}}, {{unit}});
+
+
+    $('#{{attr}}_chart').highcharts({
+        chart: {type:'spline',zoomType: 'y'},
+        plotOptions: {spline:{marker:{enabled:false}}},
+        title: {"text": '{{attr}}'},
+        xAxis: {"title": {"text": 'time'}, "type": "datetime"},
+        yAxis: {"title": {"text": '{{attr}}'}},
+        series: [{
+            "name": '{{attr}}',
+            "data": {{attr}}_default_chart_data
+        }]
+    });
+
+    $("#{{attr}}_chart_slider").slider({
+        value: {{defaultDistanceInterval}},
+        min: {{defaultDistanceInterval}},
+        max: {{10 * defaultDistanceInterval}},
+        step: {{defaultDistanceInterval}},
+        slide: function( event, ui ) {
+            var chart = $('#{{attr}}_chart').highcharts();
+            var newData = calculateSpeed({{attr}}_chart_data, ui.value, {{unit}});
+            var newSeries = {
+                name: chart.series[0].name + " (equi distance: "+ui.value+")",
+                data: newData
+            };
+            if (chart.series.length == 1) {
+                chart.addSeries(newSeries);
+            } else {
+                chart.series[1].update(newSeries);
+            }
+        }
+    });
+{% endmacro %}
+
+{% macro chartByTime(attr, samples, pruneMinDelta=0.0, unit=None) -%}
+var {{attr}}OverTime = [{% for sample in samples -%}
+    {%- if sample.time and sample[attr] -%}
+        [{{macros.datetimeToDateUTC(move.dateTime + sample.time)}}, {{sample[attr]}}],
+    {%- elif sample.time and sample.events['pause'] -%}
+        [{{macros.datetimeToDateUTC(move.dateTime + sample.time)}}, null],
+    {%- endif -%}
+{%- endfor %}];
+{%- if unit %}
+    {{attr}}OverTime = mapData({{attr}}OverTime, {{unit}});
+{% endif -%}
+{{ chartWithSlider("%sOverTime" % attr, attr, pruneMinDelta) }}
+{%- endmacro %}
+
+{% macro speedChartByTimeEquiDistance(attr, samples, defaultDistanceInterval, unit=None) -%}
+var {{attr}}_distance_over_time = [{% for sample in samples -%}
+    {%- if sample.time and sample.distance -%}
+        [{{macros.datetimeToDateUTC(move.dateTime + sample.time)}}, {{sample.distance}}],
+    {%- elif sample.time and sample.events['pause'] -%}
+        [{{macros.datetimeToDateUTC(move.dateTime + sample.time)}}, null],
+    {%- endif -%}
+{%- endfor %}];
+{{ chartWithSliderEquiDistance("%s_distance_over_time" % attr, attr, defaultDistanceInterval, unit) }}
+{%- endmacro %}
