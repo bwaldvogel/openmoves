@@ -20,6 +20,10 @@ An open source alternative to Movescount.
 # ./initialize_config.py
 # ./create_schema.py
 # ./create_user.py <your_username>
+```
+
+## Running ##
+```
 # ./webapp.py
 ```
 
