@@ -1,0 +1,13 @@
+# vim: set ft=cfg :
+# see http://flask.pocoo.org/docs/0.10/config/#builtin-configuration-values
+DEBUG = False
+BOOTSTRAP_SERVE_LOCAL = False
+# SECRET_KEY = 'some generated secret key'
+SQLALCHEMY_DATABASE_URI = 'sqlite:///openmoves.sqlite'
+# SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+# SQLALCHEMY_DATABASE_URI = 'postgresql://user:password@localhost:5432/openmoves'
+SQLALCHEMY_ECHO = False
+MAX_CONTENT_LENGTH = 64 * 1024 * 1024
+SMTP_SERVER = '127.0.0.1'
+# ADMINS = ['you@example.com']
+# SYSTEM_SENDER_ADDRESS = 'you@example.com'

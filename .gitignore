@@ -4,7 +4,7 @@
 *.pyo
 
 openmoves.cfg*
-!openmoves.cfg.sample
+!openmoves.cfg.default
 
 __pycache__
 
