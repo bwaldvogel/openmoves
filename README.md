@@ -25,7 +25,10 @@ An open source alternative to Movescount.
 ## Running ##
 ```
 # ./webapp.py
+* Running on http://127.0.0.1:5000/
 ```
+
+Open `http://127.0.0.1:5000/` in your browser.
 
 [pip]: http://en.wikipedia.org/wiki/Pip_%28package_manager%29
 [virtualenv]: https://virtualenv.readthedocs.org/en/latest/
