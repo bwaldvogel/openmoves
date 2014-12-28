@@ -107,7 +107,7 @@ def moveImport():
         move = None
         filename = xmlfile.filename
         if filename.endswith('.gz'):
-            xmlfile = gzip.GzipFile(fileobj=xmlfile, filename=filename)
+            xmlfile = gzip.GzipFile(fileobj=xmlfile, mode='rb', filename=filename)
             filename = filename[:-len('.gz')]
 
         if filename.endswith('.xml'):
