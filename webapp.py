@@ -17,6 +17,7 @@ from flask_bcrypt import Bcrypt
 import old_xml_import
 import sml_import
 import dateutil.parser
+import gzip
 
 app = Flask('openmoves')
 
@@ -104,9 +105,14 @@ def moveImport():
 
     for xmlfile in xmlfiles:
         move = None
-        if xmlfile.filename.endswith('.xml'):
+        filename = xmlfile.filename
+        if filename.endswith('.gz'):
+            xmlfile = gzip.GzipFile(fileobj=xmlfile, filename=filename)
+            filename = filename[:-len('.gz')]
+
+        if filename.endswith('.xml'):
             move = old_xml_import.oldXmlImport(xmlfile)
-        elif xmlfile.filename.endswith('.sml'):
+        elif filename.endswith('.sml'):
             move = sml_import.smlImport(xmlfile)
         else:
             flash("unknown fileformat: '%s'" % xmlfile.filename, 'error')
