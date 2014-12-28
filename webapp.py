@@ -116,6 +116,7 @@ def moveImport():
 
     if importedMoves:
         if len(importedMoves) == 1:
+            move = importedMoves[0]
             flash("imported '%s': move %d" % (xmlfile.filename, move.id))
             return redirect(url_for('move', id=move.id))
         else:
