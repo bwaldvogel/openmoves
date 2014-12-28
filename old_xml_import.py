@@ -49,6 +49,9 @@ def oldXmlImport(xmlfile):
         filename = xmlfile.filename
         data = xmlfile.readlines()
 
+        if isinstance(data[0], bytes):
+            data = [str(x.decode('utf-8')) for x in data]
+
         data[0] = data[0] + "<sml>"
         data.append("</sml>")
 
@@ -59,7 +62,7 @@ def oldXmlImport(xmlfile):
 
         serialNumber = filematch.group(1)
 
-        tree = objectify.fromstring("\n".join(data))
+        tree = objectify.fromstring("\n".join(data).encode('utf-8'))
         logEntry = parseLogEntry(tree)
         logEntry.source = filename
         device = Device.query.filter_by(serialNumber=serialNumber).scalar()
