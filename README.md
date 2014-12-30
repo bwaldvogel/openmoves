@@ -28,11 +28,11 @@ An open source alternative to Movescount.
 * Running on http://127.0.0.1:5000/
 ```
 
-Open [http://127.0.0.1:5000/][localhost5000] in your browser.
+Open [`http://127.0.0.1:5000/`][localhost5000] in your browser.
 
 ## Deployment ##
 
-We ship the `openmoves.wsgi` script to deploy OpenMoves in a Apache HTTP server with [`mod_wsgi`][modwsgi].
+We ship the [`openmoves.wsgi`][openmoves.wsgi] script to deploy OpenMoves in a Apache HTTP server with [`mod_wsgi`][modwsgi].
 
 ### PostgreSQL ###
 
@@ -55,4 +55,5 @@ Create the initial schema with
 [pip]: http://en.wikipedia.org/wiki/Pip_%28package_manager%29
 [virtualenv]: https://virtualenv.readthedocs.org/en/latest/
 [localhost5000]: http://127.0.0.1:5000/
+[openmoves.wsgi]: https://github.com/bwaldvogel/openmoves/blob/master/openmoves.wsgi
 [modwsgi]: https://code.google.com/p/modwsgi/
