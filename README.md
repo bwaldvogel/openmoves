@@ -3,7 +3,7 @@ An open source alternative to Movescount.
 
 ## Key features ##
  - Free and open-source software
- - OpenStreeMap integration
+ - OpenStreetMap integration
  - Plots with curve smoothing and outlier detection
 
 ## Requirements ##
