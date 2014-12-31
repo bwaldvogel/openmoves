@@ -46,9 +46,10 @@ Then overwrite the openmoves default database url in the `openmoves.cfg` file:
 SQLALCHEMY_DATABASE_URI = 'postgresql://<user>:<password>@localhost:5432/<database>'
 ```
 
-Create the initial schema with
+Then create the database schema and an user with
 ```
 # ./create_schema.py
+# ./create_user.py <your_username>
 ```
 
 
