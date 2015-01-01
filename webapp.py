@@ -79,7 +79,8 @@ def init(configFile='openmoves.cfg'):
     app.config.from_pyfile(configFile, silent=True)
 
     if "SECRET_KEY" not in app.config or not app.config["SECRET_KEY"]:
-        print("WARNING: no secret key configured. using a random secret key; please set SECRET_KEY in '%s'" % configFile)
+        print("WARNING: no secret key configured. Using a random secret key")
+        print("Please run 'initialize_config.py' or set SECRET_KEY in '%s'" % configFile)
         app.config["SECRET_KEY"] = os.urandom(32)
 
     db.init_app(app)
