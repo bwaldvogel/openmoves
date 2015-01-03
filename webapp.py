@@ -163,7 +163,9 @@ def logout():
 
 @app.route("/")
 def index():
-    return render_template('index.html')
+    nrOfMoves = LogEntry.query.count()
+
+    return render_template('index.html', nrOfMoves=nrOfMoves)
 
 
 @app.route("/dashboard")
