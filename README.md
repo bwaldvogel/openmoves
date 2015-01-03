@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/bwaldvogel/openmoves.png?branch=master)](https://travis-ci.org/bwaldvogel/openmoves)
+
 # OpenMoves #
 An open source alternative to Movescount.
 
