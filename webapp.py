@@ -16,8 +16,11 @@ from wtforms import TextField, PasswordField
 from flask_bcrypt import Bcrypt
 import old_xml_import
 import sml_import
+import gpx_export
 import dateutil.parser
 import gzip
+from cookielib import logger
+from flask.helpers import make_response
 
 app = Flask('openmoves')
 
@@ -250,6 +253,30 @@ def deleteMove(id):
 
     return redirect(url_for('moves'))
 
+@app.route("/moves/<int:id>/export")
+@login_required
+def exportMove(id):
+    move = LogEntry.query.filter_by(user=current_user, id=id).scalar()
+    if not move:
+        flash("move %d not found" % id, 'error')
+    else:
+        if "format" in request.args:
+            format = request.args.get("format").lower()
+        else:
+            format = "gpx"  # default
+
+        formatHandlers = {"gpx" : gpx_export.gpxExport,
+                          # "tcx" : exportTcx,
+                         }
+        if formatHandlers.has_key(format):
+            exportFile = formatHandlers[format](move)
+            response = make_response(exportFile)
+            response.headers["Content-Disposition"] = "attachment; filename= %s_%s_%s.%s" % (isoDate(move.dateTime), move.activity, move.id, format)
+            return response
+        else:
+            flash("Export format %s not supported" % format, 'error')
+
+    return redirect(url_for('move', id=id))
 
 @app.route("/moves/<int:id>")
 @login_required
