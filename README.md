@@ -9,7 +9,7 @@ An open source alternative to Movescount.
  - Plots with curve smoothing and outlier detection
 
 ## Requirements ##
- - Python 2 or 3
+ - Python 2.7, 3.3 or 3.4
  - [virtualenv][virtualenv]
  - [pip (package manager)][pip]
 
