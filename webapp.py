@@ -215,11 +215,12 @@ def moves():
     sortDefault = 'dateTime'
     if not sort:
         sort = sortDefault
+        sortOrder = 'desc'
     if not sortOrder:
         sortOrder = 'asc'
 
     if not hasattr(LogEntry, sort):
-        flash("illegal sort order: %s" % sort, 'error')
+        flash("illegal sort field: %s" % sort, 'error')
         sort = sortDefault
 
     sortAttr = getattr(LogEntry, sort)
