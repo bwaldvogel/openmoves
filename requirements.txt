@@ -9,3 +9,5 @@ Flask-Bcrypt==0.6.0
 lxml==3.4.1
 python-dateutil==2.3
 xkcdpass==1.2.3
+pytest==2.6.4
+Flask-Test==0.1.5
