@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
-
+import math
 import gpxpy.gpx
 
-# from _import import addChildren, setAttr, normalizeTag, parseJson, normalizeLogEntry
-# from flask.ext.login import current_user
-from webapp import radianToDegree
+def radianToDegree(value):
+    return 180.0 / math.pi * value
 
 def gpxExport(move):
 
