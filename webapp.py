@@ -270,6 +270,8 @@ def exportMove(id):
                          }
         if formatHandlers.has_key(format):
             exportFile = formatHandlers[format](move)
+            if not exportFile:
+                return redirect(url_for('move', id=id))
             response = make_response(exportFile)
             response.headers["Content-Disposition"] = "attachment; filename= %s_%s_%s.%s" % (isoDate(move.dateTime), move.activity, move.id, format)
             return response

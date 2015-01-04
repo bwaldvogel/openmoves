@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
+from flask import flash
 import math
 import gpxpy.gpx
 
@@ -22,6 +23,10 @@ def gpxExport(move):
     # Create points:
     samples = move.samples.order_by('time asc').all()
     gpsSamples = [sample for sample in samples if sample.sampleType and sample.sampleType.startswith('gps-')]
+
+    if len(gpsSamples) == 0:
+        flash("No GPS samples found for GPX export", 'error')
+        return None
 
     for gpsSample in gpsSamples:
         gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(latitude=radianToDegree(gpsSample.latitude),

@@ -17,7 +17,9 @@
       <span class="caret"></span>
       </button>
       <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="{{url_for('exportMove', id=move.id, format='gpx')}}">GPX</a></li>
+        <li {% if not gpsSamples %}class="disabled"{% endif %} role="presentation">
+          <a role="menuitem" tabindex="-1" href="{{url_for('exportMove', id=move.id, format='gpx') if gpsSamples else "#"}}">as GPX</a>
+        </li>
       </ul>
     </div>
     <br/>
