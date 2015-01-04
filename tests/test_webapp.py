@@ -33,8 +33,9 @@ class TestWebapp(object):
             assert User.query.count() == 1
             assert User.query.filter_by(username='test_user').one()
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(AssertionError) as e:
             create_user(app, username='test_user')
+        assert "user already exists" in str(e.value)
 
         create_user(app, username='test_user2')
         with app.test_request_context():
