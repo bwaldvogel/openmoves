@@ -77,8 +77,9 @@ app.jinja_env.filters['epoch'] = unixEpoch
 
 
 def init(configFile='openmoves.cfg'):
-    app.config.from_pyfile('openmoves.cfg.default', silent=True)
-    app.config.from_pyfile(configFile, silent=True)
+    app.config.from_pyfile('openmoves.cfg.default', silent=False)
+    if configFile:
+        app.config.from_pyfile(configFile, silent=True)
 
     if "SECRET_KEY" not in app.config or not app.config["SECRET_KEY"]:
         print("WARNING: no secret key configured. Using a random secret key")

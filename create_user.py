@@ -13,6 +13,7 @@ def create_user(app, username, password=None):
         wordfile = xp.locate_wordfile()
         mywords = xp.generate_wordlist(wordfile=wordfile, min_length=5, max_length=8)
         if not password:
+            print("generated password: '%s'" % password)
             password = xp.generate_xkcdpassword(mywords, acrostic="ambit")
 
         assert not User.query.filter_by(username=username).scalar(), "user already exists"
@@ -24,7 +25,6 @@ def create_user(app, username, password=None):
         db.session.commit()
 
         print("created user '%s'" % user.username)
-        print("generated password: '%s'" % password)
 
 
 if __name__ == "__main__":
