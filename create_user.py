@@ -8,11 +8,12 @@ from webapp import app_bcrypt
 import xkcdpass.xkcd_password as xp
 
 
-def create_user(app, username):
+def create_user(app, username, password=None):
     with app.app_context():
         wordfile = xp.locate_wordfile()
         mywords = xp.generate_wordlist(wordfile=wordfile, min_length=5, max_length=8)
-        password = xp.generate_xkcdpassword(mywords, acrostic="ambit")
+        if not password:
+            password = xp.generate_xkcdpassword(mywords, acrostic="ambit")
 
         assert not User.query.filter_by(username=username).scalar(), "user already exists"
 
