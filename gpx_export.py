@@ -27,8 +27,8 @@ def gpxExport(move):
         gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(latitude=radianToDegree(gpsSample.latitude),
                                                           longitude=radianToDegree(gpsSample.longitude),
                                                           elevation=gpsSample.gpsAltitude,
-                                                          time=move.dateTime + gpsSample.time
-                                                        ))
+                                                          time=move.dateTime + gpsSample.time,
+                                                          position_dilution=gpsSample.gpsHDOP))
 
     # You can add routes and waypoints, too...
     return gpx.to_xml()
