@@ -19,7 +19,6 @@ import sml_import
 import gpx_export
 import dateutil.parser
 import gzip
-from cookielib import logger
 from flask.helpers import make_response
 
 app = Flask('openmoves')
