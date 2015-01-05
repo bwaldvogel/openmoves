@@ -107,7 +107,7 @@
 		{% set event = (sample.events.keys()|list)[0] %}
 		<td>{{macros.dateTimeOffset(sample.time)}}</td>
 		<td>{{event}}</td>
-		<td class="json">{{sample.events[event] | jsonify}}</td>
+		<td class="json">{{sample.events[event] | tojson}}</td>
 	</tr>
     {%- endif -%}
     {%- endfor -%}

@@ -35,7 +35,7 @@
     <td>{{macros.dateTimeOffset(sample.time)}}</td>
     <td>{{sample.time | duration}}</td>
     <td>{{sample.events['swimming']['prevPoolLengthStyle']}}</td>
-    <td class="json">{{sample.events['swimming']['classificationVector']['item'] | jsonify}}</td>
+    <td class="json">{{sample.events['swimming']['classificationVector']['item'] | tojson}}</td>
 </tr>
 {%- endif -%}
 {%- endfor -%}

@@ -59,12 +59,6 @@ def unixEpoch(date):
     return 1000 * time.mktime(date.timetuple())
 
 
-def jsonify(value):
-    if value:
-        return json.dumps(value)
-
-
-app.jinja_env.filters['jsonify'] = jsonify
 app.jinja_env.filters['dateTime'] = dateTime
 app.jinja_env.filters['dateTimeMillis'] = dateTimeMillis
 app.jinja_env.filters['duration'] = duration
