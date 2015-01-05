@@ -70,6 +70,11 @@ def smlImport(xmlfile):
         device = parseDevice(tree)
         persistentDevice = Device.query.filter_by(serialNumber=device.serialNumber).scalar()
         if persistentDevice:
+            if not persistentDevice.name:
+                flash("update device name to '%s'" % device.name)
+                persistentDevice.name = device.name
+            else:
+                assert device.name == persistentDevice.name
             device = persistentDevice
         else:
             db.session.add(device)

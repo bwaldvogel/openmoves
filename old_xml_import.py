@@ -67,8 +67,9 @@ def oldXmlImport(xmlfile):
         logEntry.source = filename
         device = Device.query.filter_by(serialNumber=serialNumber).scalar()
         if not device:
-            flash("found no device with serial number: '%s'" % serialNumber, 'error')
-            return
+            device = Device()
+            device.serialNumber = serialNumber
+            db.session.add(device)
 
         if LogEntry.query.filter_by(user=current_user, dateTime=logEntry.dateTime, device=device).scalar():
             flash("%s at %s already exists" % (logEntry.activity, logEntry.dateTime), 'warning')

@@ -27,7 +27,7 @@ class JsonEncodedDict(TypeDecorator):
 
 class Device(db.Model):
     id = db.Column(db.Integer, name="id", primary_key=True)
-    name = db.Column(db.String, name="name", nullable=False)
+    name = db.Column(db.String, name="name", nullable=True)
     serialNumber = db.Column(db.String, name="serial_number", unique=True, nullable=False)
 
 
