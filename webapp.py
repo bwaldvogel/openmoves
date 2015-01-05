@@ -213,6 +213,7 @@ def dashboard():
 @login_required
 def moves():
     moves = moves = LogEntry.query.filter_by(user=current_user)
+    totalMovesCount = moves.count()
     sort = request.args.get('sort')
     sortOrder = request.args.get('sortOrder')
     sortDefault = 'dateTime'
@@ -236,7 +237,7 @@ def moves():
         sortAttr = sortAttr.nullslast()
 
     moves = moves.order_by(sortAttr)
-    return render_template('moves.html', moves=moves, sort=sort, sortOrder=sortOrder)
+    return render_template('moves.html', moves=moves, totalMovesCount=totalMovesCount, sort=sort, sortOrder=sortOrder)
 
 
 @app.route("/moves/<int:id>/delete")

@@ -5,6 +5,7 @@
 {% block content %}
 {{super()}}
 <div class="container" role="main">
+    <h3>{{totalMovesCount}} Moves</h3>
     <table class="table table-striped">
         <tr>
             <th>{{macros.sortable('dateTime', 'Time', 'asc')}}</th>
