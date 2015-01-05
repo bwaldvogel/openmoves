@@ -87,6 +87,11 @@ def load_user(username):
     return User.query.filter_by(username=username).scalar()
 
 
+@app.errorhandler(404)
+def error404(error):
+    return render_template('_404.html'), 404
+
+
 @app.route('/import', methods=['GET', 'POST'])
 @login_required
 def moveImport():

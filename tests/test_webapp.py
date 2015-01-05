@@ -131,6 +131,11 @@ class TestWebapp(object):
         response_data = self._validateResponse(response, tmpdir)
         assert u"<title>OpenMoves – Moves</title>" in response_data
 
+    def test_custom_404(self, tmpdir):
+        response = self.client.get('/page-which-does-not-exist')
+        response_data = self._validateResponse(response, tmpdir, code=404, checkContent=True)
+        assert u"<title>OpenMoves – Not found</title>" in response_data
+
     def test_moves_not_logged_in(self, tmpdir):
         self._assertRequiresLogin('/moves')
 
