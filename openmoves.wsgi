@@ -5,7 +5,7 @@ activate_this = 'virtualenv/bin/activate_this.py'
 execfile(activate_this, dict(__file__=activate_this))
 
 import webapp
-application = webapp.init()
+application = webapp.init(configFile='openmoves.cfg')
 
 assert 'ADMINS' in application.config, 'no admins configured'
 admins = application.config['ADMINS']
