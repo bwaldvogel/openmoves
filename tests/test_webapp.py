@@ -34,6 +34,7 @@ class TestWebapp(object):
 
         if checkContent:
             self._validateHtml5(response)
+            return response.data.decode('utf-8')
 
     def _validateHtml5(self, response):
         parser = html5lib.HTMLParser(strict=True)
@@ -94,22 +95,22 @@ class TestWebapp(object):
 
     def test_index(self, tmpdir):
         response = self.client.get('/')
-        self._validateResponse(response, tmpdir)
-        assert u"An open source alternative" in response.data.decode('utf-8')
-        assert u"0 moves already analyzed" in response.data.decode('utf-8')
+        response_data = response_data = self._validateResponse(response, tmpdir)
+        assert u"An open source alternative" in response_data
+        assert u"0 moves already analyzed" in response_data
 
     def test_login_get(self, tmpdir):
         response = self.client.get('/login')
-        self._validateResponse(response, tmpdir)
-        assert u"<title>OpenMoves – Login</title>" in response.data.decode('utf-8')
-        assert u"Please sign in" in response.data.decode('utf-8')
+        response_data = self._validateResponse(response, tmpdir)
+        assert u"<title>OpenMoves – Login</title>" in response_data
+        assert u"Please sign in" in response_data
 
     def test_login_invalid(self, tmpdir):
         data = {'username': 'user which does not exist', 'password': 'test password'}
         response = self.client.post('/login', data=data)
-        self._validateResponse(response, tmpdir)
-        assert u"no such user" in response.data.decode('utf-8')
-        assert u"Please sign in" in response.data.decode('utf-8')
+        response_data = self._validateResponse(response, tmpdir)
+        assert u"no such user" in response_data
+        assert u"Please sign in" in response_data
 
     def test_login_valid(self, tmpdir):
 
@@ -127,8 +128,8 @@ class TestWebapp(object):
 
         data = {'username': username, 'password': password}
         response = self.client.post('/login', data=data, follow_redirects=True)
-        self._validateResponse(response, tmpdir)
-        assert u"<title>OpenMoves – Moves</title>" in response.data.decode('utf-8')
+        response_data = self._validateResponse(response, tmpdir)
+        assert u"<title>OpenMoves – Moves</title>" in response_data
 
     def test_moves_not_logged_in(self, tmpdir):
         self._assertRequiresLogin('/moves')
@@ -136,9 +137,9 @@ class TestWebapp(object):
     def test_moves_empty(self, tmpdir):
         self._login()
         response = self.client.get('/moves')
-        self._validateResponse(response, tmpdir)
-        assert u"<title>OpenMoves – Moves</title>" in response.data.decode('utf-8')
-        assert u"<h3>0 Moves</h3>" in response.data.decode('utf-8')
+        response_data = self._validateResponse(response, tmpdir)
+        assert u"<title>OpenMoves – Moves</title>" in response_data
+        assert u"<h3>0 Moves</h3>" in response_data
 
     def test_move_not_logged_in(self, tmpdir):
         self._assertRequiresLogin('/moves/1')
@@ -162,8 +163,8 @@ class TestWebapp(object):
     def test_dashboard_empty(self, tmpdir):
         self._login()
         response = self.client.get('/dashboard')
-        self._validateResponse(response, tmpdir)
-        assert u"<title>OpenMoves – Dashboard</title>" in response.data.decode('utf-8')
+        response_data = self._validateResponse(response, tmpdir)
+        assert u"<title>OpenMoves – Dashboard</title>" in response_data
 
     def test_export_move_not_found(self, tmpdir):
         self._login()
