@@ -28,9 +28,10 @@ class TestWebapp(object):
         data = {'username': 'test_user', 'password': 'test password'}
         self.client.post('/login', data=data, follow_redirects=True)
 
-    def _validateResponse(self, response, tmpdir, code=200, checkContent=True):
+    def _validateResponse(self, response, tmpdir=None, code=200, checkContent=True):
         assert response.status_code == code, "HTTP status: %s" % response.status
-        tmpdir.join("response.html").write(response.data, mode='wb')
+        if tmpdir:
+            tmpdir.join("response.html").write(response.data, mode='wb')
 
         if checkContent:
             self._validateHtml5(response)
@@ -38,6 +39,17 @@ class TestWebapp(object):
     def _validateHtml5(self, response):
         parser = html5lib.HTMLParser(strict=True)
         parser.parse(response.data)
+
+    def _assertRequiresLogin(self, url):
+        expectedUrl = 'login?next=%s' % url.replace('/', '%2F')
+        return self._assertRedirects(url, expectedUrl, code=302)
+
+    def _assertRedirects(self, url, location, code=301, **requestargs):
+        response = self.client.get("%s" % url, **requestargs)
+        assert response.status_code == code
+        if location.startswith("/"):
+            location = location[1:]
+        assert response.headers["Location"] == "http://localhost/%s" % location
 
     def test_create_schema(self):
         create_schema(app)
@@ -93,6 +105,9 @@ class TestWebapp(object):
         self._validateResponse(response, tmpdir)
         assert u"<title>OpenMoves – Moves</title>" in response.data.decode('utf-8')
 
+    def test_moves_not_logged_in(self, tmpdir):
+        self._assertRequiresLogin('/moves')
+
     def test_moves_empty(self, tmpdir):
         self._login()
         response = self.client.get('/moves')
@@ -100,8 +115,27 @@ class TestWebapp(object):
         assert u"<title>OpenMoves – Moves</title>" in response.data.decode('utf-8')
         assert u"<h3>0 Moves</h3>" in response.data.decode('utf-8')
 
+    def test_move_not_logged_in(self, tmpdir):
+        self._assertRequiresLogin('/moves/1')
+
+    def test_move_not_found(self, tmpdir):
+        self._login()
+        response = self.client.get('/moves/1')
+        self._validateResponse(response, code=404, checkContent=False)
+
+    def test_dashboard_not_logged_in(self, tmpdir):
+        self._assertRequiresLogin('/dashboard')
+
     def test_dashboard_empty(self, tmpdir):
         self._login()
         response = self.client.get('/dashboard')
         self._validateResponse(response, tmpdir)
         assert u"<title>OpenMoves – Dashboard</title>" in response.data.decode('utf-8')
+
+    def test_export_move_not_found(self, tmpdir):
+        self._login()
+        response = self.client.get('/moves/1/export')
+        self._validateResponse(response, code=404, checkContent=False)
+
+    def test_export_move_not_logged_in(self, tmpdir):
+        self._assertRequiresLogin('/moves/1/export')

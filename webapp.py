@@ -239,14 +239,11 @@ def moves():
 @app.route("/moves/<int:id>/delete")
 @login_required
 def deleteMove(id):
-    move = LogEntry.query.filter_by(user=current_user, id=id).scalar()
-    if not move:
-        flash("move %d not found" % id, 'error')
-    else:
-        Sample.query.filter_by(logEntry=move).delete(synchronize_session=False)
-        db.session.delete(move)
-        db.session.commit()
-        flash("move %d deleted" % id, 'success')
+    move = LogEntry.query.filter_by(user=current_user, id=id).first_or_404()
+    Sample.query.filter_by(logEntry=move).delete(synchronize_session=False)
+    db.session.delete(move)
+    db.session.commit()
+    flash("move %d deleted" % id, 'success')
 
     return redirect(url_for('moves'))
 
@@ -254,39 +251,33 @@ def deleteMove(id):
 @app.route("/moves/<int:id>/export")
 @login_required
 def exportMove(id):
-    move = LogEntry.query.filter_by(user=current_user, id=id).scalar()
-    if not move:
-        flash("move %d not found" % id, 'error')
+    move = LogEntry.query.filter_by(user=current_user, id=id).first_or_404()
+
+    if "format" in request.args:
+        format = request.args.get("format").lower()
     else:
-        if "format" in request.args:
-            format = request.args.get("format").lower()
-        else:
-            format = "gpx"  # default
+        format = "gpx"  # default
 
-        formatHandlers = {}
-        formatHandlers['gpx'] = gpx_export.gpxExport
-        # formatHandlers['tcx'] = exportTcx
-        if format in formatHandlers:
-            exportFile = formatHandlers[format](move)
-            if not exportFile:
-                return redirect(url_for('move', id=id))
-            response = make_response(exportFile)
-            dateTime = move.dateTime.strftime("%Y-%m-%dT%H:%M:%S")
-            response.headers["Content-Disposition"] = "attachment; filename= %s_%s_%s.%s" % (dateTime, move.activity, move.id, format)
-            return response
-        else:
-            flash("Export format %s not supported" % format, 'error')
+    formatHandlers = {}
+    formatHandlers['gpx'] = gpx_export.gpxExport
+    # formatHandlers['tcx'] = exportTcx
+    if format not in formatHandlers:
+        flash("Export format %s not supported" % format, 'error')
+        return redirect(url_for('move', id=id))
 
-    return redirect(url_for('move', id=id))
+    exportFile = formatHandlers[format](move)
+    if not exportFile:
+        return redirect(url_for('move', id=id))
+    response = make_response(exportFile)
+    dateTime = move.dateTime.strftime("%Y-%m-%dT%H:%M:%S")
+    response.headers["Content-Disposition"] = "attachment; filename= %s_%s_%s.%s" % (dateTime, move.activity, move.id, format)
+    return response
 
 
 @app.route("/moves/<int:id>")
 @login_required
 def move(id):
-    move = LogEntry.query.filter_by(user=current_user, id=id).scalar()
-    if not move:
-        flash("move %s not found" % id, 'error')
-        return redirect(url_for('moves'))
+    move = LogEntry.query.filter_by(user=current_user, id=id).first_or_404()
 
     samples = move.samples.order_by('time asc').all()
     events = [sample for sample in samples if sample.events]
