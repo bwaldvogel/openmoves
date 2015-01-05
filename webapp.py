@@ -6,7 +6,6 @@ from flask import Flask, render_template, flash, redirect, request, url_for
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager, login_user, current_user, login_required, logout_user
 from model import db, LogEntry, User, Sample
-import json
 from datetime import timedelta, date, datetime
 import math
 import time
