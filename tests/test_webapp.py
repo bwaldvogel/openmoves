@@ -83,7 +83,8 @@ class TestWebapp(object):
     def test_login_get(self, tmpdir):
         response = self.client.get('/login')
         self._validateResponse(response, tmpdir)
-        assert "Please sign in" in str(response.data)
+        assert u"<title>OpenMoves – Login</title>" in response.data.decode('utf-8')
+        assert u"Please sign in" in response.data.decode('utf-8')
 
     def test_login_invalid(self, tmpdir):
         data = {'username': 'user which does not exist', 'password': 'test password'}
