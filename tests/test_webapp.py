@@ -1,7 +1,7 @@
 # vim: set fileencoding=utf-8 :
 
 import webapp
-from commands import CreateSchema, AddUser, RecreateSchema
+from commands import AddUser
 from model import db, User
 import pytest
 import html5lib
@@ -68,10 +68,8 @@ class TestWebapp(object):
         assert tmpfile1.read() != tmpfile2.read()
 
     def test_create_schema(self):
-        CreateSchema(lambda: app.app_context()).run()
-
-    def test_recreate_schema(self):
-        RecreateSchema(lambda: app.app_context(), force=True).run()
+        with app.test_request_context():
+            db.create_all()
 
     def test_add_user(self):
         with app.test_request_context():

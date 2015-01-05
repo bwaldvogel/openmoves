@@ -19,7 +19,6 @@ An open source alternative to Movescount.
 # virtualenv virtualenv
 # source virtualenv/bin/activate
 # pip install -r requirements.txt
-# ./webapp.py create-schema
 # ./webapp.py add-user -u <your_username>
 ```
 
@@ -47,9 +46,13 @@ Then overwrite the openmoves default database url in the `openmoves.cfg` file:
 SQLALCHEMY_DATABASE_URI = 'postgresql://<user>:<password>@localhost:5432/<database>'
 ```
 
-Then create the database schema and an user with
+Then create/upgrade the database schema with:
 ```
-# ./webapp.py create-schema
+# ./webapp.py db upgrade
+```
+
+Create an initial user:
+```
 # ./webapp.py add-user -u <your_username>
 ```
 

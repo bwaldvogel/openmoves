@@ -36,30 +36,3 @@ class AddUser(Command):
             db.session.commit()
 
             print("created user '%s' in '%s'" % (user.username, db.engine.url))
-
-
-class CreateSchema(Command):
-    """ Creates the database schema """
-
-    def __init__(self, app_context):
-        self.app_context = app_context
-
-    def run(self):
-        with self.app_context():
-            db.create_all()
-            print("created schema for '%s'" % db.engine.url)
-
-
-class RecreateSchema(Command):
-    """ Drops and re-creates the database schema """
-
-    def __init__(self, app_context, force=False):
-        self.app_context = app_context
-        self.force = force
-
-    def run(self):
-        with self.app_context():
-            if self.force or prompt_bool("Are you sure to drop '%s'?" % db.engine.url):
-                db.drop_all()
-                db.create_all()
-                print("recreated schema for '%s'" % db.engine.url)

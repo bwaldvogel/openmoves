@@ -18,7 +18,8 @@ import dateutil.parser
 import gzip
 from flask.helpers import make_response
 from flask_script import Manager
-from commands import AddUser, CreateSchema, RecreateSchema
+from flask_migrate import Migrate, MigrateCommand
+from commands import AddUser
 from filters import register_filters
 
 
@@ -26,6 +27,7 @@ app = Flask('openmoves')
 
 login_manager = LoginManager()
 app_bcrypt = Bcrypt()
+migrate = Migrate(app, db)
 
 register_filters(app)
 
@@ -54,6 +56,10 @@ def init(configFile='openmoves.cfg'):
 
     db.init_app(app)
 
+    with app.app_context():
+        if db.engine.name == 'sqlite':
+            db.create_all()
+
     Bootstrap(app)
     app_bcrypt.init_app(app)
 
@@ -72,8 +78,7 @@ manager = Manager(init)
 
 manager.add_option('-c', '--config', dest='configFile', required=False)
 
-manager.add_command('create-schema', CreateSchema(command_app_context))
-manager.add_command('recreate-schema', RecreateSchema(command_app_context))
+manager.add_command('db', MigrateCommand)
 manager.add_command('add-user', AddUser(command_app_context, app_bcrypt))
 
 
