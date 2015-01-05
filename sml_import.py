@@ -3,26 +3,26 @@
 
 from flask import flash
 from model import db
-from model import LogEntry, Device, Sample
+from model import Move, Device, Sample
 from lxml import objectify
 import os
-from _import import addChildren, setAttr, normalizeTag, parseJson, normalizeLogEntry
+from _import import addChildren, setAttr, normalizeTag, parseJson, normalizeMove
 from flask.ext.login import current_user
 
 
-def parseLogEntry(tree):
+def parseMove(tree):
     deviceLog = tree.DeviceLog
-    logEntry = LogEntry()
+    move = Move()
 
-    addChildren(logEntry, deviceLog.Header)
+    addChildren(move, deviceLog.Header)
 
     for child in deviceLog.Device.Info.iterchildren():
         tag = normalizeTag(child.tag)
         attr = "deviceInfo%s" % tag
-        setAttr(logEntry, attr, child.text)
+        setAttr(move, attr, child.text)
 
-    normalizeLogEntry(logEntry)
-    return logEntry
+    normalizeMove(move)
+    return move
 
 
 def parseDevice(tree):
@@ -32,10 +32,10 @@ def parseDevice(tree):
     return device
 
 
-def parseSamples(tree, logEntry):
+def parseSamples(tree, move):
     for sampleNode in tree.DeviceLog.Samples.iterchildren():
         sample = Sample()
-        sample.logEntry = logEntry
+        sample.move = move
         sample.events = None
 
         for child in sampleNode.iterchildren():
@@ -65,8 +65,8 @@ def smlImport(xmlfile):
         filename = xmlfile.filename
 
         tree = objectify.parse(xmlfile).getroot()
-        logEntry = parseLogEntry(tree)
-        logEntry.source = os.path.abspath(filename)
+        move = parseMove(tree)
+        move.source = os.path.abspath(filename)
         device = parseDevice(tree)
         persistentDevice = Device.query.filter_by(serialNumber=device.serialNumber).scalar()
         if persistentDevice:
@@ -79,14 +79,14 @@ def smlImport(xmlfile):
         else:
             db.session.add(device)
 
-        if LogEntry.query.filter_by(user=current_user, dateTime=logEntry.dateTime, device=device).scalar():
-            flash("%s at %s already exists" % (logEntry.activity, logEntry.dateTime), 'warning')
+        if Move.query.filter_by(user=current_user, dateTime=move.dateTime, device=device).scalar():
+            flash("%s at %s already exists" % (move.activity, move.dateTime), 'warning')
         else:
-            logEntry.user = current_user
-            logEntry.device = device
-            db.session.add(logEntry)
+            move.user = current_user
+            move.device = device
+            db.session.add(move)
 
-            for sample in parseSamples(tree, logEntry):
+            for sample in parseSamples(tree, move):
                 db.session.add(sample)
             db.session.commit()
-            return logEntry
+            return move

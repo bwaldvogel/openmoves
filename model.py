@@ -50,8 +50,8 @@ class User(db.Model):
         return self.username
 
 
-class LogEntry(db.Model):
-    __tablename__ = 'logentry'
+class Move(db.Model):
+    __tablename__ = 'move'
     id = db.Column(db.Integer, name="id", primary_key=True)
 
     userId = db.Column(db.Integer, db.ForeignKey(User.id), name="user_id", nullable=False)
@@ -121,8 +121,8 @@ class LogEntry(db.Model):
 class Sample(db.Model):
     id = db.Column(db.Integer, name="id", primary_key=True)
 
-    logEntryId = db.Column(db.Integer, db.ForeignKey(LogEntry.id), name="log_entry_id", nullable=False)
-    logEntry = db.relationship(LogEntry, backref=db.backref('samples', lazy='dynamic'))
+    moveId = db.Column(db.Integer, db.ForeignKey(Move.id), name="move_id", nullable=False)
+    move = db.relationship(Move, backref=db.backref('samples', lazy='dynamic'))
 
     sampleType = db.Column(db.String, name='sample_type')
     time = db.Column(db.Interval, name='time')

@@ -5,14 +5,14 @@ import dateutil.parser
 from datetime import timedelta, datetime
 
 
-def normalizeLogEntry(logEntry):
-    if logEntry.ascentTime.total_seconds() == 0:
-        assert logEntry.ascent == 0
-        logEntry.ascent = None
+def normalizeMove(move):
+    if move.ascentTime.total_seconds() == 0:
+        assert move.ascent == 0
+        move.ascent = None
 
-    if logEntry.descentTime.total_seconds() == 0:
-        assert float(logEntry.descent) == 0
-        logEntry.descent = None
+    if move.descentTime.total_seconds() == 0:
+        assert float(move.descent) == 0
+        move.descent = None
 
 
 def normalizeTag(tag, ns='http://www.suunto.com/schemas/sml'):
@@ -49,18 +49,18 @@ def _convertAttr(columnType, value, attr, message):
         raise Exception("Unknown column type: %s for attribute '%s'" % (columnType, attr))
 
 
-def setAttr(logEntry, attr, value):
-    assert hasattr(logEntry, attr), "attribute '%s' not found" % attr
-    old_value = getattr(logEntry, attr)
+def setAttr(move, attr, value):
+    assert hasattr(move, attr), "attribute '%s' not found" % attr
+    old_value = getattr(move, attr)
     assert old_value is None, "value for '%s' already set'" % attr
-    prop = getattr(type(logEntry), attr).property
+    prop = getattr(type(move), attr).property
     assert len(prop.columns) == 1
 
     value = _convertAttr(type(prop.columns[0].type), value, attr, "illegal value '%s' for '%s'" % (value, attr))
-    setattr(logEntry, attr, value)
+    setattr(move, attr, value)
 
 
-def addChildren(logEntry, element):
+def addChildren(move, element):
     for child in element.iterchildren():
         tag = normalizeTag(child.tag)
         tag = tag[0].lower() + tag[1:]
@@ -71,9 +71,9 @@ def addChildren(logEntry, element):
         if tag in ['speed', 'hr', 'cadence', 'temperature', 'altitude']:
             for subChild in child.iterchildren():
                 subTag = tag + normalizeTag(subChild.tag)
-                setAttr(logEntry, subTag, value=subChild.text)
+                setAttr(move, subTag, value=subChild.text)
         else:
-            setAttr(logEntry, tag, value=child.text)
+            setAttr(move, tag, value=child.text)
 
 
 def _parseRecursive(node):

@@ -5,7 +5,7 @@
 from flask import Flask, render_template, flash, redirect, request, url_for
 from flask_bootstrap import Bootstrap
 from flask_login import LoginManager, login_user, current_user, login_required, logout_user
-from model import db, LogEntry, User, Sample
+from model import db, Move, User, Sample
 from datetime import timedelta, date, datetime
 import os
 from flask_wtf import Form
@@ -163,7 +163,7 @@ def logout():
 
 @app.route("/")
 def index():
-    nrOfMoves = LogEntry.query.count()
+    nrOfMoves = Move.query.count()
 
     return render_template('index.html', nrOfMoves=nrOfMoves)
 
@@ -183,7 +183,7 @@ def dashboard():
     else:
         endDate = date(now.year, now.month, now.day)
 
-    moves = LogEntry.query.filter_by(user=current_user).filter(LogEntry.dateTime >= startDate).filter(LogEntry.dateTime <= endDate).order_by(LogEntry.dateTime.asc()).all()
+    moves = Move.query.filter_by(user=current_user).filter(Move.dateTime >= startDate).filter(Move.dateTime <= endDate).order_by(Move.dateTime.asc()).all()
 
     totalDistance = 0
     totalDuration = timedelta(0)
@@ -209,7 +209,7 @@ def dashboard():
 @app.route("/moves")
 @login_required
 def moves():
-    moves = moves = LogEntry.query.filter_by(user=current_user)
+    moves = moves = Move.query.filter_by(user=current_user)
     totalMovesCount = moves.count()
     sort = request.args.get('sort')
     sortOrder = request.args.get('sortOrder')
@@ -220,11 +220,11 @@ def moves():
     if not sortOrder:
         sortOrder = 'asc'
 
-    if not hasattr(LogEntry, sort):
+    if not hasattr(Move, sort):
         flash("illegal sort field: %s" % sort, 'error')
         sort = sortDefault
 
-    sortAttr = getattr(LogEntry, sort)
+    sortAttr = getattr(Move, sort)
     if not sortOrder or sortOrder == 'asc':
         sortAttr = sortAttr.asc()
     else:
@@ -240,8 +240,8 @@ def moves():
 @app.route("/moves/<int:id>/delete")
 @login_required
 def deleteMove(id):
-    move = LogEntry.query.filter_by(user=current_user, id=id).first_or_404()
-    Sample.query.filter_by(logEntry=move).delete(synchronize_session=False)
+    move = Move.query.filter_by(user=current_user, id=id).first_or_404()
+    Sample.query.filter_by(move=move).delete(synchronize_session=False)
     db.session.delete(move)
     db.session.commit()
     flash("move %d deleted" % id, 'success')
@@ -252,7 +252,7 @@ def deleteMove(id):
 @app.route("/moves/<int:id>/export")
 @login_required
 def exportMove(id):
-    move = LogEntry.query.filter_by(user=current_user, id=id).first_or_404()
+    move = Move.query.filter_by(user=current_user, id=id).first_or_404()
 
     if "format" in request.args:
         format = request.args.get("format").lower()
@@ -278,7 +278,7 @@ def exportMove(id):
 @app.route("/moves/<int:id>")
 @login_required
 def move(id):
-    move = LogEntry.query.filter_by(user=current_user, id=id).first_or_404()
+    move = Move.query.filter_by(user=current_user, id=id).first_or_404()
 
     samples = move.samples.order_by('time asc').all()
     events = [sample for sample in samples if sample.events]
