@@ -99,3 +99,9 @@ class TestWebapp(object):
         self._validateResponse(response, tmpdir)
         assert u"<title>OpenMoves – Moves</title>" in response.data.decode('utf-8')
         assert u"<h3>0 Moves</h3>" in response.data.decode('utf-8')
+
+    def test_dashboard_empty(self, tmpdir):
+        self._login()
+        response = self.client.get('/dashboard')
+        self._validateResponse(response, tmpdir)
+        assert u"<title>OpenMoves – Dashboard</title>" in response.data.decode('utf-8')
