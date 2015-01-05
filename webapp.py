@@ -43,15 +43,15 @@ def initialize_config(f):
     f.write(data)
 
 
-def init(configFile='openmoves.cfg'):
+def init(configFile):
     app.config.from_pyfile('openmoves.cfg.default', silent=False)
     if configFile:
-        if not os.path.isfile(configFile):
+        if not os.path.exists(configFile):
             with open(configFile, 'w') as f:
                 initialize_config(f)
             print("created %s" % configFile)
 
-        app.config.from_pyfile(configFile, silent=True)
+        app.config.from_pyfile(configFile, silent=False)
         assert app.config["SECRET_KEY"]
 
     db.init_app(app)
@@ -76,7 +76,7 @@ def command_app_context():
 
 manager = Manager(init)
 
-manager.add_option('-c', '--config', dest='configFile', required=False)
+manager.add_option('-c', '--config', dest='configFile', default='openmoves.cfg', required=False)
 
 manager.add_command('db', MigrateCommand)
 manager.add_command('add-user', AddUser(command_app_context, app_bcrypt))
