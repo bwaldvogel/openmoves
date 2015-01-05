@@ -17,7 +17,7 @@ import gpx_export
 import dateutil.parser
 import gzip
 from flask.helpers import make_response
-from flask_script import Manager
+from flask_script import Manager, Server
 from flask_migrate import Migrate, MigrateCommand
 from commands import AddUser
 from filters import register_filters
@@ -78,6 +78,7 @@ manager = Manager(init)
 
 manager.add_option('-c', '--config', dest='configFile', default='openmoves.cfg', required=False)
 
+manager.add_command("runserver", Server(use_debugger=True))
 manager.add_command('db', MigrateCommand)
 manager.add_command('add-user', AddUser(command_app_context, app_bcrypt))
 
