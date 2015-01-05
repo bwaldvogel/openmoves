@@ -253,6 +253,7 @@ def deleteMove(id):
 
     return redirect(url_for('moves'))
 
+
 @app.route("/moves/<int:id>/export")
 @login_required
 def exportMove(id):
@@ -265,10 +266,10 @@ def exportMove(id):
         else:
             format = "gpx"  # default
 
-        formatHandlers = {"gpx" : gpx_export.gpxExport,
-                          # "tcx" : exportTcx,
-                         }
-        if formatHandlers.has_key(format):
+        formatHandlers = {}
+        formatHandlers['gpx'] = gpx_export.gpxExport
+        # formatHandlers['tcx'] = exportTcx
+        if format in formatHandlers:
             exportFile = formatHandlers[format](move)
             if not exportFile:
                 return redirect(url_for('move', id=id))
@@ -279,6 +280,7 @@ def exportMove(id):
             flash("Export format %s not supported" % format, 'error')
 
     return redirect(url_for('move', id=id))
+
 
 @app.route("/moves/<int:id>")
 @login_required
