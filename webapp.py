@@ -4,12 +4,10 @@
 
 from flask import Flask, render_template, flash, redirect, request, url_for
 from flask_bootstrap import Bootstrap
-from flask_login import LoginManager, login_user, current_user, login_required, logout_user
-from model import db, Move, User, Sample
+from flask_login import login_user, current_user, login_required, logout_user
+from model import db, Move, Sample
 from datetime import timedelta, date, datetime
 import os
-from flask_wtf import Form
-from wtforms import TextField, PasswordField
 from flask_bcrypt import Bcrypt
 import old_xml_import
 import sml_import
@@ -21,11 +19,10 @@ from flask_script import Manager, Server
 from flask_migrate import Migrate, MigrateCommand
 from commands import AddUser
 from filters import register_filters
-
+from login import login_manager, load_user, LoginForm
 
 app = Flask('openmoves')
 
-login_manager = LoginManager()
 app_bcrypt = Bcrypt()
 migrate = Migrate(app, db)
 
@@ -81,16 +78,6 @@ manager.add_option('-c', '--config', dest='configFile', default='openmoves.cfg',
 manager.add_command("runserver", Server(use_debugger=True))
 manager.add_command('db', MigrateCommand)
 manager.add_command('add-user', AddUser(command_app_context, app_bcrypt))
-
-
-class LoginForm(Form):
-    username = TextField()
-    password = PasswordField()
-
-
-@login_manager.user_loader
-def load_user(username):
-    return User.query.filter_by(username=username).scalar()
 
 
 @app.errorhandler(404)
