@@ -7,8 +7,6 @@ from flask_bootstrap import Bootstrap
 from flask_login import LoginManager, login_user, current_user, login_required, logout_user
 from model import db, LogEntry, User, Sample
 from datetime import timedelta, date, datetime
-import math
-import time
 import os
 from flask_wtf import Form
 from wtforms import TextField, PasswordField
@@ -19,61 +17,40 @@ import gpx_export
 import dateutil.parser
 import gzip
 from flask.helpers import make_response
+from flask_script import Manager
+from commands import AddUser, CreateSchema, RecreateSchema
+from filters import register_filters
+
 
 app = Flask('openmoves')
 
 login_manager = LoginManager()
 app_bcrypt = Bcrypt()
 
-
-class LoginForm(Form):
-    username = TextField()
-    password = PasswordField()
+register_filters(app)
 
 
-def dateTime(time):
-    return time.strftime("%Y-%m-%d %H:%M:%S")
+def initialize_config(f):
 
+    random_bytes = os.urandom(32)
 
-def dateTimeMillis(date):
-    return date.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+    if isinstance(random_bytes[0], str):
+        random_bytes = [ord(c) for c in random_bytes]
 
-
-def duration(value):
-    if isinstance(value, str):
-        value = timedelta(seconds=float(value))
-    elif isinstance(value, float) or isinstance(value, int):
-        value = timedelta(seconds=float(value))
-
-    hours, remainder = divmod(value.total_seconds(), 3600)
-    minutes, seconds = divmod(remainder, 60)
-    return '%02d:%02d:%05.2f' % (hours, minutes, seconds)
-
-
-def radianToDegree(value):
-    return 180.0 / math.pi * value
-
-
-def unixEpoch(date):
-    return 1000 * time.mktime(date.timetuple())
-
-
-app.jinja_env.filters['dateTime'] = dateTime
-app.jinja_env.filters['dateTimeMillis'] = dateTimeMillis
-app.jinja_env.filters['duration'] = duration
-app.jinja_env.filters['degree'] = radianToDegree
-app.jinja_env.filters['epoch'] = unixEpoch
+    data = "SECRET_KEY = '%s'\n" % "".join("{:02x}".format(c) for c in random_bytes)
+    f.write(data)
 
 
 def init(configFile='openmoves.cfg'):
     app.config.from_pyfile('openmoves.cfg.default', silent=False)
     if configFile:
-        app.config.from_pyfile(configFile, silent=True)
+        if not os.path.isfile(configFile):
+            with open(configFile, 'w') as f:
+                initialize_config(f)
+            print("created %s" % configFile)
 
-    if "SECRET_KEY" not in app.config or not app.config["SECRET_KEY"]:
-        print("WARNING: no secret key configured. Using a random secret key")
-        print("Please run 'initialize_config.py' or set SECRET_KEY in '%s'" % configFile)
-        app.config["SECRET_KEY"] = os.urandom(32)
+        app.config.from_pyfile(configFile, silent=True)
+        assert app.config["SECRET_KEY"]
 
     db.init_app(app)
 
@@ -82,7 +59,27 @@ def init(configFile='openmoves.cfg'):
 
     login_manager.init_app(app)
     login_manager.login_view = "login"
+
     return app
+
+
+def command_app_context():
+    app.config.update(SQLALCHEMY_ECHO=False)
+    return app.app_context()
+
+
+manager = Manager(init)
+
+manager.add_option('-c', '--config', dest='configFile', required=False)
+
+manager.add_command('create-schema', CreateSchema(command_app_context))
+manager.add_command('recreate-schema', RecreateSchema(command_app_context))
+manager.add_command('add-user', AddUser(command_app_context, app_bcrypt))
+
+
+class LoginForm(Form):
+    username = TextField()
+    password = PasswordField()
 
 
 @login_manager.user_loader
@@ -301,4 +298,4 @@ def move(id):
     return render_template("move/%s.html" % activity, move=move, samples=samples, events=filteredEvents, pauses=pauses, laps=laps, gpsSamples=gpsSamples)
 
 if __name__ == '__main__':
-    init().run()
+    manager.run()

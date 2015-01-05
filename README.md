@@ -19,14 +19,13 @@ An open source alternative to Movescount.
 # virtualenv virtualenv
 # source virtualenv/bin/activate
 # pip install -r requirements.txt
-# ./initialize_config.py
-# ./create_schema.py
-# ./create_user.py <your_username>
+# ./webapp.py create-schema
+# ./webapp.py add-user -u <your_username>
 ```
 
 ## Running ##
 ```
-# ./webapp.py
+# ./webapp.py runserver
 * Running on http://127.0.0.1:5000/
 ```
 
@@ -50,8 +49,8 @@ SQLALCHEMY_DATABASE_URI = 'postgresql://<user>:<password>@localhost:5432/<databa
 
 Then create the database schema and an user with
 ```
-# ./create_schema.py
-# ./create_user.py <your_username>
+# ./webapp.py create-schema
+# ./webapp.py add-user -u <your_username>
 ```
 
 
