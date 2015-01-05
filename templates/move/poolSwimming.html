@@ -32,7 +32,7 @@
 {%- for sample in events -%}
 {%- if sample.events['swimming'] and sample.events['swimming']['type'] == 'StyleChange' %}
 <tr>
-    <td>{{macros.localoffset(sample.time)}}</td>
+    <td>{{macros.dateTimeOffset(sample.time)}}</td>
     <td>{{sample.time | duration}}</td>
     <td>{{sample.events['swimming']['prevPoolLengthStyle']}}</td>
     <td class="json">{{sample.events['swimming']['classificationVector']['item'] | jsonify}}</td>

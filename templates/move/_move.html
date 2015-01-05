@@ -38,7 +38,7 @@
         </tr>
         <tr>
             {% block tableEntry %}
-            <td>{{macros.localdate(move.dateTime)}}</td>
+            <td>{{move.dateTime | dateTime}}</td>
             <td>{{macros.kmh(move.speedAvg)}}</td>
             <td>{{move.duration | duration}}</td>
 			<td>{{macros.formatMoveDistance(move, move.distance)}}</td>
@@ -61,8 +61,8 @@
 	<tr>
 		{% set start = pause[0].time %}
 		{% set end = pause[1].time %}
-		<td>{{macros.localoffset(start)}}</td>
-		<td>{{macros.localoffset(end)}}</td>
+		<td>{{macros.dateTimeOffset(start)}}</td>
+		<td>{{macros.dateTimeOffset(end)}}</td>
 		<td>{{(end - start) | duration}}</td>
 	</tr>
     {%- endfor %}
@@ -83,7 +83,7 @@
     {%- for sample in laps -%}
 	<tr>
 		<td>{{loop.index}}</td>
-		<td>{{macros.localoffset(sample.time)}}</td>
+		<td>{{macros.dateTimeOffset(sample.time)}}</td>
 		<td>{{sample.events.lap.duration | duration}}</td>
 		<td>{{macros.formatMoveDistance(move, sample.events.lap.distance)}}</td>
 		<td>{{sample.events.lap.type}}</td>
@@ -105,7 +105,7 @@
     {%- if not sample.events.swimming %}
 	<tr>
 		{% set event = (sample.events.keys()|list)[0] %}
-		<td>{{macros.localoffset(sample.time)}}</td>
+		<td>{{macros.dateTimeOffset(sample.time)}}</td>
 		<td>{{event}}</td>
 		<td class="json">{{sample.events[event] | jsonify}}</td>
 	</tr>

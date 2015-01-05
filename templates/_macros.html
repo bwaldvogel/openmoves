@@ -12,25 +12,9 @@
 Date.UTC({{datetime.year}}, {{datetime.month}}, {{datetime.day}}, {{datetime.hour}}, {{datetime.minute}}, {{datetime.second}}, {{"%d" | format(datetime.microsecond/1000)}})
 {%- endmacro %}
 
-{% macro localdate(date) -%}
-<span title="Date: {{date | isoDate}}">
-<script>
-var d=moment("{{date | isoDate}}", "YYYY-MM-DD[T]HH:mm:ss.SZ");
-document.write(d.format("YYYY-MM-DD HH:mm:ss"));
-</script>
-<noscript>{{date}}</noscript>
-</span>
-{%- endmacro %}
 
-{% macro localoffset(offset) -%}
-{% set date = move.dateTime + offset %}
-<span title="Date: {{date | isoDate}} / offset: {{offset | duration}}">
-<script>
-var d=moment("{{date | isoDate}}", "YYYY-MM-DD[T]HH:mm:ss.SZ");
-document.write(d.format("YYYY-MM-DD HH:mm:ss.SSS"));
-</script>
-<noscript>{{date}}</noscript>
-</span>
+{% macro dateTimeOffset(offset) -%}
+{{(move.dateTime + offset) | dateTimeMillis}}
 {%- endmacro %}
 
 

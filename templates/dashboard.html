@@ -5,8 +5,8 @@
 {% block content %}
 {{super()}}
 <div class="container" role="main">
-    <h1>Dashboard</h1>
-    <div>Moves from {{macros.localdate(startDate)}} until {{macros.localdate(endDate)}}</div><br/>
+    <h3>Dashboard</h3>
+    <div>Moves from {{startDate|dateTime}} until {{endDate|dateTime}}</div><br/>
     <table class="table table-striped table-auto-width">
       <tr><th>#Moves</th><td>{{nrOfMoves}}</td></tr>
       <tr><th>Total Distance</th><td>{{macros.formatDistance(totalDistance)}}</td></tr>
@@ -14,8 +14,6 @@
       <tr><th>Total Ascent</th><td>{{macros.formatHm(totalAscent)}}</td></tr>
       <tr><th>Total Descent</th><td>{{macros.formatHm(totalDescent)}}</td></tr>
     </table>
-
-    <!--a href="{{url_for('dashboard', startDate=startDate, endDate=endDate)}}"> open</a-->
 
     <h3>Moves</h3>
     <table class="table table-striped">
@@ -31,7 +29,7 @@
         </tr>
         {% for move in moves %}
         <tr>
-            <td><a href="{{url_for('move', id=move.id)}}">{{macros.localdate(move.dateTime)}}</a></td>
+            <td><a href="{{url_for('move', id=move.id)}}">{{move.dateTime|dateTime}}</a></td>
             <td>{{move.activity}}</td>
             <td>{{move.duration | duration}}</td>
             <td>{{macros.formatMoveDistance(move, move.distance)}}</td>

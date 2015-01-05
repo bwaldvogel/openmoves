@@ -32,16 +32,12 @@ class LoginForm(Form):
     password = PasswordField()
 
 
-def formatTime(time):
-    return time.strftime("%Y-%m-%d %H:%M:%S %z")
+def dateTime(time):
+    return time.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def isoDate(date):
-    return date.strftime("%Y-%m-%dT%H:%M:%S.%f%z")
-
-
-def fromIsoDate(dateString):
-    return datetime.strptime(dateString, "%Y-%m-%dT%H:%M:%S.%f%z")
+def dateTimeMillis(date):
+    return date.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
 
 def duration(value):
@@ -69,8 +65,8 @@ def jsonify(value):
 
 
 app.jinja_env.filters['jsonify'] = jsonify
-app.jinja_env.filters['formatTime'] = formatTime
-app.jinja_env.filters['isoDate'] = isoDate
+app.jinja_env.filters['dateTime'] = dateTime
+app.jinja_env.filters['dateTimeMillis'] = dateTimeMillis
 app.jinja_env.filters['duration'] = duration
 app.jinja_env.filters['degree'] = radianToDegree
 app.jinja_env.filters['epoch'] = unixEpoch
@@ -275,7 +271,8 @@ def exportMove(id):
             if not exportFile:
                 return redirect(url_for('move', id=id))
             response = make_response(exportFile)
-            response.headers["Content-Disposition"] = "attachment; filename= %s_%s_%s.%s" % (isoDate(move.dateTime), move.activity, move.id, format)
+            dateTime = move.dateTime.strftime("%Y-%m-%dT%H:%M:%S")
+            response.headers["Content-Disposition"] = "attachment; filename= %s_%s_%s.%s" % (dateTime, move.activity, move.id, format)
             return response
         else:
             flash("Export format %s not supported" % format, 'error')

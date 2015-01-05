@@ -20,7 +20,7 @@
         </tr>
         {% for move in moves %}
         <tr>
-            <td><a href="{{url_for('move', id=move.id)}}">{{macros.localdate(move.dateTime)}}</a></td>
+            <td><a href="{{url_for('move', id=move.id)}}">{{move.dateTime|dateTime}}</a></td>
             <td>{{move.activity}}</td>
             <td>{{move.duration | duration}}</td>
             <td>{{macros.formatMoveDistance(move, move.distance)}}</td>
