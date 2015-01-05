@@ -165,6 +165,8 @@ class TestWebapp(object):
         response = self.client.get('/dashboard')
         response_data = self._validateResponse(response, tmpdir)
         assert u"<title>OpenMoves – Dashboard</title>" in response_data
+        assert u"<tr><th>Total Distance</th><td>0.000 km</td></tr>" in response_data
+        assert u"<tr><th>Total Time</th><td>0:00:00 h</td></tr>" in response_data
 
     def test_export_move_not_found(self, tmpdir):
         self._login()

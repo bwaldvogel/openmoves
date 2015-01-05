@@ -24,20 +24,20 @@ Date.UTC({{datetime.year}}, {{datetime.month}}, {{datetime.day}}, {{datetime.hou
 
 
 {% macro formatDistance(distance) -%}
-{% if distance > 1000 %}
+{% if distance > 1000 -%}
     {{'%0.2f' | format(distance / 1000.0)}} km
-{% elif distance < 1000 %}
+{% elif distance < 1000 -%}
     {{'%0.3f' | format(distance / 1000.0)}} km
-{% endif %}
+{%- endif %}
 {%- endmacro %}
 
 
 {% macro formatMoveDistance(move, distance) -%}
-{% if move.activity == 'Pool swimming' or move.activity == 'Outdoor swimmin' %}
+{% if move.activity == 'Pool swimming' or move.activity == 'Outdoor swimmin' -%}
     {{distance}} m
-{% else %}
+{% else -%}
     {{formatDistance(distance)}}
-{% endif %}
+{%- endif %}
 {%- endmacro %}
 
 
