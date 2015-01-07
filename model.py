@@ -101,6 +101,8 @@ class Move(db.Model):
     temperatureMinTime = db.Column(db.Float, name="temperature_min_time")
     temperatureMaxTime = db.Column(db.Float, name="temperature_max_time")
 
+    temperatureAvg = db.Column(db.Float, name="temperature_avg")
+
     timeToFirstFix = db.Column(db.Integer, name="time_to_first_fix")
 
     batteryChargeAtStart = db.Column(db.Integer, name="battery_charge_at_start")
