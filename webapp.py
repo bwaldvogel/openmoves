@@ -7,6 +7,7 @@ from flask_bootstrap import Bootstrap
 from flask_login import login_user, current_user, login_required, logout_user
 from model import db, Move, Sample
 from datetime import timedelta, date, datetime
+from sqlalchemy.sql import func
 import os
 from flask_bcrypt import Bcrypt
 import old_xml_import
@@ -104,6 +105,9 @@ def moveImport():
             move = sml_import.smlImport(xmlfile)
         else:
             flash("unknown fileformat: '%s'" % xmlfile.filename, 'error')
+
+        move.temperatureAvg = db.session.query(func.avg(Sample.temperature)).filter(Sample.move == move, Sample.temperature > 0).one()
+        db.session.commit()
 
         if move:
             importedMoves.append(move)
