@@ -31,6 +31,7 @@
             <th>Speed Avg</th>
             <th>Duration</th>
             <th>Distance</th>
+            <th>Avg. Temperature</th>
             {% if move.ascent %}<th>Ascent</th>{% endif %}
             {% if move.descent %}<th>Descent</th>{% endif %}
             {% if gpsSamples %}<th>First fix</th>{% endif %}
@@ -42,6 +43,7 @@
             <td>{{macros.kmh(move.speedAvg)}}</td>
             <td>{{move.duration | duration}}</td>
 			<td>{{macros.formatMoveDistance(move, move.distance)}}</td>
+            <td>{{macros.temperature(move.temperatureAvg)}}</td>
             {% if move.ascent %}<td>{{macros.formatHm(move.ascent)}}</td>{% endif %}
             {% if move.descent %}<td>{{macros.formatHm(move.descent)}}</td>{% endif %}
             {% if gpsSamples %}<td>{{move.timeToFirstFix | duration}}</td>{% endif %}

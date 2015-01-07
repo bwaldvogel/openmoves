@@ -1,5 +1,5 @@
 {% macro temperature(value) -%}
-<span>{{'%.1f' | format(value - 273.15)}}°C</span>
+{% if value %}<span>{{'%.1f' | format(value - 273.15)}}°C</span>{% endif %}
 {%- endmacro %}
 
 {% macro kmh(value) -%}

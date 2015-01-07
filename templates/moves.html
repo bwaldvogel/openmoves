@@ -15,7 +15,7 @@
             <th>{{macros.sortable('speedAvg', 'Speed', 'desc')}}</th>
             <th>{{macros.sortable('ascent', 'Ascent', 'desc')}}</th>
             <th>{{macros.sortable('descent', 'Descent', 'desc')}}</th>
-            <th>Temperature</th>
+            <th>{{macros.sortable('temperatureAvg', 'Temperature', 'asc')}}</th>
             <th></th>
         </tr>
         {% for move in moves %}
@@ -27,11 +27,7 @@
             <td>{{macros.kmh(move.speedAvg)}}</td>
             <td>{{macros.formatHm(move.ascent)}}</td>
             <td>{{macros.formatHm(move.descent)}}</td>
-            <td>
-                {{macros.temperature(move.temperatureMin)}}
-                -
-                {{macros.temperature(move.temperatureMax)}}
-            </td>
+            <td>{{macros.temperature(move.temperatureAvg)}}</td>
             <td>
                 <a class="btn btn-xs btn-black" type="button" onclick="return confirm('Are you sure you want to delete this move?');" href="{{url_for('deleteMove', id=move.id)}}"><span class="glyphicon glyphicon-remove" title="delete" aria-hidden="true"></span></a>
             </td>
