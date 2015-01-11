@@ -1,6 +1,6 @@
 # vim: set fileencoding=utf-8 :
 
-import webapp
+import openmoves
 from commands import AddUser
 from model import db, User
 import pytest
@@ -10,12 +10,12 @@ import re
 app = None
 
 
-class TestWebapp(object):
+class TestOpenMoves(object):
 
     @classmethod
     def setup_class(cls):
         global app
-        app = webapp.init(configFile=None)
+        app = openmoves.init(configFile=None)
         db_uri = 'sqlite:///:memory:'
         app.config.update(SQLALCHEMY_ECHO=False, WTF_CSRF_ENABLED=False, DEBUG=True, TESTING=True, SQLALCHEMY_DATABASE_URI=db_uri, SECRET_KEY="testing")
 
@@ -53,7 +53,7 @@ class TestWebapp(object):
 
     def test_initialize_config(self, tmpdir):
         tmpfile = tmpdir.join("openmoves.cfg")
-        webapp.initialize_config(tmpfile)
+        openmoves.initialize_config(tmpfile)
         lines = tmpfile.readlines()
         assert len(lines) == 1
         assert re.match(r"SECRET_KEY = '[a-f0-9]{64}'", lines[0]), "unexpected line: %s" % lines[0]
@@ -62,8 +62,8 @@ class TestWebapp(object):
 
         tmpfile1 = tmpdir.join("openmoves1.cfg")
         tmpfile2 = tmpdir.join("openmoves2.cfg")
-        webapp.initialize_config(tmpfile1)
-        webapp.initialize_config(tmpfile2)
+        openmoves.initialize_config(tmpfile1)
+        openmoves.initialize_config(tmpfile2)
 
         assert tmpfile1.read() != tmpfile2.read()
 
@@ -75,7 +75,7 @@ class TestWebapp(object):
         with app.test_request_context():
             assert User.query.count() == 0
 
-        cmd = AddUser(lambda: app.app_context(), app_bcrypt=webapp.app_bcrypt)
+        cmd = AddUser(lambda: app.app_context(), app_bcrypt=openmoves.app_bcrypt)
         cmd.run(username='test_user')
 
         with app.test_request_context():
@@ -119,7 +119,7 @@ class TestWebapp(object):
             User.query.delete(synchronize_session=False)
 
             user = User(username=username)
-            user.password = webapp.app_bcrypt.generate_password_hash(password, 10)
+            user.password = openmoves.app_bcrypt.generate_password_hash(password, 10)
             user.active = True
             db.session.add(user)
             db.session.commit()
