@@ -291,13 +291,18 @@ def move(id):
         else:
             filteredEvents.append(sample)
 
-    gpsSamples = [sample for sample in samples if sample.sampleType and sample.sampleType.startswith('gps-')]
+    model = {}
+    model['move'] = move
+    model['samples'] = samples
+    model['events'] = filteredEvents
+    model['pauses'] = pauses
+    model['laps'] = laps
+    model['gpsSamples'] = [sample for sample in samples if sample.sampleType and sample.sampleType.startswith('gps-')]
 
-    # gpsSamples = [sample for sample in gpsSamples if not sample.ehpe or sample.ehpe < 30]
-
-    activity = "".join([a[0].upper() + a[1:] for a in move.activity.split(" ")])
-    activity = activity[0].lower() + activity[1:]
-    return render_template("move/%s.html" % activity, move=move, samples=samples, events=filteredEvents, pauses=pauses, laps=laps, gpsSamples=gpsSamples)
+    # eg. 'Pool swimming' → 'poolSwimming'
+    activityName = "".join([a[0].upper() + a[1:] for a in move.activity.split(" ")])
+    activityName = activityName[0].lower() + activityName[1:]
+    return render_template("move/%s.html" % activityName, **model)
 
 if __name__ == '__main__':
     manager.run()
