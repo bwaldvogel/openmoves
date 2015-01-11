@@ -1,4 +1,4 @@
-{% extends "move/_move.html" %}
+{% extends "move/poolSwimming.html" %}
 
 {% block chartBlocks %}
 {{chart.chartBlock('temperature')}}
@@ -8,4 +8,10 @@
 {% block chartScripts %}
 {{chart.chartByTime('temperature', samples, 0.1, 'celcius')}}
 {{chart.speedChartByTimeEquiDistance('speed', samples, 50, 'kmh')}}
+{% endblock %}
+
+{% block swimmingStyles %}
+{% endblock %}
+
+{% block swimmingTurns %}
 {% endblock %}

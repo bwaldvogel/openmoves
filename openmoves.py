@@ -298,6 +298,8 @@ def move(id):
     model['pauses'] = pauses
     model['laps'] = laps
     model['gpsSamples'] = [sample for sample in samples if sample.sampleType and sample.sampleType.startswith('gps-')]
+    if 'swimming' in move.activity:
+        model['swimmingEvents'] = [sample for sample in filteredEvents if 'swimming' in sample.events]
 
     # eg. 'Pool swimming' → 'poolSwimming'
     activityName = "".join([a[0].upper() + a[1:] for a in move.activity.split(" ")])

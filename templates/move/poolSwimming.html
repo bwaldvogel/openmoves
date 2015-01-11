@@ -21,6 +21,7 @@
 {% endblock %}
 
 {% block additionalInformation %}
+{% block swimmingStyles %}
 <h2>Styles</h2>
 <table class="table table-condensed">
 <tr>
@@ -29,15 +30,46 @@
     <th>Style</th>
     <th>Classification Vector</th>
 </tr>
-{%- for sample in events -%}
-{%- if sample.events['swimming'] and sample.events['swimming']['type'] == 'StyleChange' %}
+{%- for sample in swimmingEvents -%}
+{%- if sample.events['swimming']['type'] == 'StyleChange' %}
+{%- if eventBefore -%}
 <tr>
     <td>{{macros.dateTimeOffset(sample.time)}}</td>
-    <td>{{sample.time | duration}}</td>
+    <td>{{(sample.time - eventBefore.time) | duration}}</td>
     <td>{{sample.events['swimming']['prevPoolLengthStyle']}}</td>
     <td class="json">{{sample.events['swimming']['classificationVector']['item'] | tojson}}</td>
 </tr>
 {%- endif -%}
+{% set eventBefore = sample %}
+{%- endif -%}
 {%- endfor -%}
 </table>
+{% endblock %}
+
+{% block swimmingTurns %}
+<h2>Turns</h2>
+<table class="table table-condensed">
+<tr>
+    <th>Number</th>
+    <th>Timestamp</th>
+    <th>Time</th>
+    <th>Distance</th>
+    <th>Classification Vector</th>
+</tr>
+{%- for sample in swimmingEvents -%}
+{%- if sample.events['swimming']['type'] == 'Turn' %}
+{%- if eventBefore -%}
+<tr>
+    <td>{{sample.events['swimming']['totalLengths']}}</td>
+    <td>{{macros.dateTimeOffset(sample.time)}}</td>
+    <td>{{(sample.time - eventBefore.time) | duration}}</td>
+    <td>{{macros.formatMoveDistance(move, (sample.events['swimming']['totalLengths']|int) * move.poolLength)}}</td>
+    <td class="json">{{sample.events['swimming']['classificationVector']['item'] | tojson}}</td>
+</tr>
+{%- endif -%}
+{% set eventBefore = sample %}
+{%- endif -%}
+{%- endfor -%}
+</table>
+{% endblock %}
 {% endblock %}
