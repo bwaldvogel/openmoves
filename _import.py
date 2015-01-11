@@ -14,6 +14,9 @@ def normalizeMove(move):
         assert float(move.descent) == 0
         move.descent = None
 
+    if move.activity == 'Outdoor swimmin':
+        move.activity = 'Outdoor swimming'
+
 
 def normalizeTag(tag, ns='http://www.suunto.com/schemas/sml'):
     return tag.replace("{%s}" % ns, "")
