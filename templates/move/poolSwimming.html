@@ -2,12 +2,20 @@
 
 {% block tableHeader %}
 {{ super() }}
-<th>Pool Length</th>
+<th>Pace</th>
+<th>Strokes</th>
+<th>m/stroke</th>
+<th>strokes/min</th>
+{% if move.poolLength %}<th>Pool Length</th>{% endif %}
 {% endblock %}
 
 {% block tableEntry %}
 {{ super() }}
-<td>{{move.poolLength}}</td>
+<td>{{swimPace | swimPace}}</td>
+<td>{{swimmingStrokes | length}}</td>
+<td>{{"%.2f" | format(move.distance / (swimmingStrokes | length))}}</td>
+<td>{{"%.1f" | format(60 * (swimmingStrokes | length) / move.duration.total_seconds())}}</td>
+{% if move.poolLength %}<td>{{move.poolLength}}</td>{% endif %}
 {% endblock %}
 
 {% block chartBlocks %}
@@ -30,8 +38,7 @@
     <th>Style</th>
     <th>Classification Vector</th>
 </tr>
-{%- for sample in swimmingEvents -%}
-{%- if sample.events['swimming']['type'] == 'StyleChange' %}
+{%- for sample in swimmingStyleChanges -%}
 {%- if eventBefore -%}
 <tr>
     <td>{{macros.dateTimeOffset(sample.time)}}</td>
@@ -41,7 +48,6 @@
 </tr>
 {%- endif -%}
 {% set eventBefore = sample %}
-{%- endif -%}
 {%- endfor -%}
 </table>
 {% endblock %}
@@ -56,8 +62,7 @@
     <th>Distance</th>
     <th>Classification Vector</th>
 </tr>
-{%- for sample in swimmingEvents -%}
-{%- if sample.events['swimming']['type'] == 'Turn' %}
+{%- for sample in swimmingTurns -%}
 {%- if eventBefore -%}
 <tr>
     <td>{{sample.events['swimming']['totalLengths']}}</td>
@@ -68,7 +73,6 @@
 </tr>
 {%- endif -%}
 {% set eventBefore = sample %}
-{%- endif -%}
 {%- endfor -%}
 </table>
 {% endblock %}

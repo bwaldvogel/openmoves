@@ -299,6 +299,10 @@ def move(id):
     model['gpsSamples'] = [sample for sample in samples if sample.sampleType and sample.sampleType.startswith('gps-')]
     if 'swimming' in move.activity:
         model['swimmingEvents'] = [sample for sample in filteredEvents if 'swimming' in sample.events]
+        model['swimmingStyleChanges'] = [sample for sample in model['swimmingEvents'] if sample.events['swimming']['type'] == 'StyleChange']
+        model['swimmingTurns'] = [sample for sample in model['swimmingEvents'] if sample.events['swimming']['type'] == 'Turn']
+        model['swimmingStrokes'] = [sample for sample in model['swimmingEvents'] if sample.events['swimming']['type'] == 'Stroke']
+        model['swimPace'] = timedelta(seconds=move.duration.total_seconds() / move.distance)
 
     # eg. 'Pool swimming' → 'poolSwimming'
     activityName = "".join([a[0].upper() + a[1:] for a in move.activity.split(" ")])
