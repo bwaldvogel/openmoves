@@ -68,6 +68,7 @@ class Move(db.Model):
     activity = db.Column(db.String, name="activity")
     activityType = db.Column(db.Integer, name="activity_type")
     logItemCount = db.Column(db.Integer, name="log_item_count")
+    strokeCount = db.Column(db.Integer, name="stroke_count")
 
     ascent = db.Column(db.Integer, name="ascent", nullable=True)
     descent = db.Column(db.Integer, name="descent", nullable=True)

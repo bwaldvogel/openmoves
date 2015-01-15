@@ -12,9 +12,9 @@
 {% block tableEntry %}
 {{ super() }}
 <td>{{swimPace | swimPace}}</td>
-<td>{{swimmingStrokes | length}}</td>
-<td>{{"%.2f" | format(move.distance / (swimmingStrokes | length))}}</td>
-<td>{{"%.1f" | format(60 * (swimmingStrokes | length) / move.duration.total_seconds())}}</td>
+<td>{{move.strokeCount | int}}</td>
+<td>{{"%.2f" | format(move.distance / move.strokeCount)}}</td>
+<td>{{"%.1f" | format(60 * move.strokeCount / move.duration.total_seconds())}}</td>
 {% if move.poolLength %}<td>{{move.poolLength}}</td>{% endif %}
 {% endblock %}
 

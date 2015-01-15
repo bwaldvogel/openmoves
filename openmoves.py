@@ -108,6 +108,18 @@ def moveImport():
 
         if move:
             move.temperatureAvg = db.session.query(func.avg(Sample.temperature)).filter(Sample.move == move, Sample.temperature > 0).one()
+
+            strokeCount = 0
+            for events, in db.session.query(Sample.events).filter(Sample.move == move, Sample.events != None):
+                if 'swimming' in events and events['swimming']['type'] == 'Stroke':
+                    strokeCount += 1
+
+            if 'swimming' in move.activity:
+                assert strokeCount > 0
+
+            if strokeCount > 0:
+                move.strokeCount = strokeCount
+
             db.session.commit()
             importedMoves.append(move)
 
@@ -303,6 +315,8 @@ def move(id):
         model['swimmingTurns'] = [sample for sample in model['swimmingEvents'] if sample.events['swimming']['type'] == 'Turn']
         model['swimmingStrokes'] = [sample for sample in model['swimmingEvents'] if sample.events['swimming']['type'] == 'Stroke']
         model['swimPace'] = timedelta(seconds=move.duration.total_seconds() / move.distance)
+
+        assert len(model['swimmingStrokes']) == move.strokeCount
 
     # eg. 'Pool swimming' → 'poolSwimming'
     activityName = "".join([a[0].upper() + a[1:] for a in move.activity.split(" ")])
