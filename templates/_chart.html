@@ -46,9 +46,9 @@
     }
 {% endmacro %}
 
-{% macro chartWithSliderEquiDistance(data, attr, defaultDistanceInterval, unit) %}
+{% macro chartWithSliderIntervalSampling(data, attr, defaultInterval, intervalUnit, unit) %}
     var {{attr}}_chart_data = {{data}};
-    var {{attr}}_default_chart_data = calculateSpeed({{attr}}_chart_data, {{defaultDistanceInterval}}, {{unit}});
+    var {{attr}}_default_chart_data = calculateSpeed({{attr}}_chart_data, {{defaultInterval}}, {{unit}});
 
 
     $('#{{attr}}_chart').highcharts({
@@ -56,7 +56,7 @@
         plotOptions: {spline:{marker:{enabled:false}}},
         title: {"text": '{{attr}}'},
         xAxis: {"title": {"text": 'time'}, "type": "datetime"},
-        yAxis: {"title": {"text": '{{attr}}'}},
+        yAxis: {"title": {"text": '{{attr}} [{{unit}}]'}},
         series: [{
             "name": '{{attr}}',
             "data": {{attr}}_default_chart_data
@@ -64,15 +64,15 @@
     });
 
     $("#{{attr}}_chart_slider").slider({
-        value: {{defaultDistanceInterval}},
-        min: {{defaultDistanceInterval}},
-        max: {{10 * defaultDistanceInterval}},
-        step: {{defaultDistanceInterval}},
+        value: {{defaultInterval}},
+        min: {{defaultInterval}},
+        max: {{10 * defaultInterval}},
+        step: {{defaultInterval}},
         slide: function( event, ui ) {
             var chart = $('#{{attr}}_chart').highcharts();
             var newData = calculateSpeed({{attr}}_chart_data, ui.value, {{unit}});
             var newSeries = {
-                name: chart.series[0].name + " (equi distance: "+ui.value+")",
+                name: chart.series[0].name + " (sampling interval: "+ui.value+" {{intervalUnit}})",
                 data: newData
             };
             if (chart.series.length == 1) {
@@ -106,5 +106,5 @@ var {{attr}}_distance_over_time = [{% for sample in samples -%}
         [{{macros.datetimeToDateUTC(move.dateTime + sample.time)}}, null],
     {%- endif -%}
 {%- endfor %}];
-{{ chartWithSliderEquiDistance("%s_distance_over_time" % attr, attr, defaultDistanceInterval, unit) }}
+{{ chartWithSliderIntervalSampling("%s_distance_over_time" % attr, attr, defaultDistanceInterval, 'm', unit) }}
 {%- endmacro %}

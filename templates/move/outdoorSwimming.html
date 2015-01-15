@@ -1,13 +1,11 @@
 {% extends "move/poolSwimming.html" %}
 
 {% block chartBlocks %}
-{{chart.chartBlock('temperature')}}
-{{chart.chartBlock('speed')}}
+{{super()}}
 {% endblock %}
 
 {% block chartScripts %}
-{{chart.chartByTime('temperature', samples, 0.1, 'celcius')}}
-{{chart.speedChartByTimeEquiDistance('speed', samples, 50, 'kmh')}}
+{{super()}}
 {% endblock %}
 
 {% block swimmingStyles %}

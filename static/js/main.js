@@ -13,6 +13,10 @@ function celcius(val) {
     return val - 273.15;
 }
 
+function per_min(val) {
+    return val * 60;
+}
+
 function bpm(val) {
     return val * 60;
 }

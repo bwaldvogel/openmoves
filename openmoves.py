@@ -21,6 +21,7 @@ from flask_migrate import Migrate, MigrateCommand
 from commands import AddUser
 from filters import register_filters
 from login import login_manager, load_user, LoginForm
+import itertools
 
 app = Flask('openmoves')
 
@@ -310,10 +311,18 @@ def move(id):
     model['laps'] = laps
     model['gpsSamples'] = [sample for sample in samples if sample.sampleType and sample.sampleType.startswith('gps-')]
     if 'swimming' in move.activity:
-        model['swimmingEvents'] = [sample for sample in filteredEvents if 'swimming' in sample.events]
-        model['swimmingStyleChanges'] = [sample for sample in model['swimmingEvents'] if sample.events['swimming']['type'] == 'StyleChange']
-        model['swimmingTurns'] = [sample for sample in model['swimmingEvents'] if sample.events['swimming']['type'] == 'Turn']
-        model['swimmingStrokes'] = [sample for sample in model['swimmingEvents'] if sample.events['swimming']['type'] == 'Stroke']
+        swimmingEvents = [sample for sample in filteredEvents if 'swimming' in sample.events]
+        model['swimmingEvents'] = swimmingEvents
+
+        model['swimmingStyleChanges'] = [sample for sample in swimmingEvents if sample.events['swimming']['type'] == 'StyleChange']
+        model['swimmingTurns'] = [sample for sample in swimmingEvents if sample.events['swimming']['type'] == 'Turn']
+
+        swimmingStrokes = [sample for sample in swimmingEvents if sample.events['swimming']['type'] == 'Stroke']
+        model['swimmingStrokes'] = swimmingStrokes
+
+        pauseSamples = list(itertools.chain.from_iterable(pauses))
+        model['swimmingStrokesAndPauses'] = sorted(swimmingStrokes + pauseSamples, key=lambda sample: sample.time)
+
         model['swimPace'] = timedelta(seconds=move.duration.total_seconds() / move.distance)
 
         assert len(model['swimmingStrokes']) == move.strokeCount

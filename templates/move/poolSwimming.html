@@ -21,11 +21,22 @@
 {% block chartBlocks %}
 {{chart.chartBlock('temperature')}}
 {{chart.chartBlock('speed')}}
+{{chart.chartBlock('strokes')}}
 {% endblock %}
 
 {% block chartScripts %}
 {{chart.chartByTime('temperature', samples, 0.1, 'celcius')}}
-{{chart.speedChartByTimeEquiDistance('speed', samples, move.poolLength, 'kmh')}}
+{{chart.speedChartByTimeEquiDistance('speed', samples, move.poolLength|int(default=50), 'kmh')}}
+
+var strokesData = [{% for sample in swimmingStrokesAndPauses -%}
+    {%- if sample.time and sample.events['pause'] -%}
+        [{{macros.datetimeToDateUTC(move.dateTime + sample.time)}}, null],
+    {%- else -%}
+        [{{macros.datetimeToDateUTC(move.dateTime + sample.time)}}, {{loop.index}}],
+    {%- endif -%}
+{%- endfor %}
+];
+{{ chart.chartWithSliderIntervalSampling('strokesData', 'strokes', 10, 'strokes', 'per_min') }}
 {% endblock %}
 
 {% block additionalInformation %}
