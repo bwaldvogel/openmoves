@@ -15,9 +15,9 @@ def dateTimeMillis(date):
 
 
 def duration(value):
-    if isinstance(value, str):
+    if type(value).__name__ in ('str', 'unicode'):
         value = timedelta(seconds=float(value))
-    elif isinstance(value, float) or isinstance(value, int):
+    elif isinstance(value, (float, int)):
         value = timedelta(seconds=float(value))
 
     hours, remainder = divmod(value.total_seconds(), 3600)
