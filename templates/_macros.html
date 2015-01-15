@@ -33,7 +33,7 @@ Date.UTC({{datetime.year}}, {{datetime.month}}, {{datetime.day}}, {{datetime.hou
 
 
 {% macro formatMoveDistance(move, distance) -%}
-{% if move.activity == 'Pool swimming' or move.activity == 'Outdoor swimmin' -%}
+{% if move.activity == 'Pool swimming' or move.activity == 'Outdoor swimming' -%}
     {{distance}} m
 {% else -%}
     {{formatDistance(distance)}}
