@@ -87,7 +87,7 @@
 		<td>{{loop.index}}</td>
 		<td>{{macros.dateTimeOffset(sample.time)}}</td>
 		<td>{{sample.events.lap.duration | duration}}</td>
-		<td>{{macros.formatMoveDistance(move, sample.events.lap.distance)}}</td>
+		<td>{{macros.formatMoveDistance(move, sample.events.lap.distance | float)}}</td>
 		<td>{{sample.events.lap.type}}</td>
 	</tr>
     {%- endfor -%}
