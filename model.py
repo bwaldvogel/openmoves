@@ -26,12 +26,14 @@ class JsonEncodedDict(TypeDecorator):
 
 
 class Device(db.Model):
+    __tablename__ = 'device'
     id = db.Column(db.Integer, name="id", primary_key=True)
     name = db.Column(db.String, name="name", nullable=True)
     serialNumber = db.Column(db.String, name="serial_number", unique=True, nullable=False)
 
 
 class User(db.Model):
+    __tablename__ = 'user'
     id = db.Column(db.Integer, name="id", primary_key=True)
     username = db.Column(db.String, name="username", unique=True, nullable=False)
     password = db.Column(db.String, name="password", nullable=False)
@@ -121,6 +123,7 @@ class Move(db.Model):
 
 
 class Sample(db.Model):
+    __tablename__ = 'sample'
     id = db.Column(db.Integer, name="id", primary_key=True)
 
     moveId = db.Column(db.Integer, db.ForeignKey(Move.id), name="move_id", nullable=False)
