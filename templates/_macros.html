@@ -14,7 +14,7 @@ Date.UTC({{datetime.year}}, {{datetime.month}}, {{datetime.day}}, {{datetime.hou
 
 
 {% macro dateTimeOffset(offset) -%}
-{{(move.dateTime + offset) | dateTimeMillis}}
+<span class="date-time">{{(move.dateTime + offset) | dateTimeMillis}}</span>
 {%- endmacro %}
 
 

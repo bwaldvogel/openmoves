@@ -35,3 +35,7 @@ table.table-auto-width {
 {
 	padding: 8px 15px;
 }
+
+span.date-time {
+    white-space: nowrap;
+}
