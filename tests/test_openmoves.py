@@ -6,6 +6,7 @@ from model import db, User
 import pytest
 import html5lib
 import re
+import os
 
 app = None
 
@@ -167,9 +168,9 @@ class TestOpenMoves(object):
         self._login()
         response = self.client.get('/dashboard')
         response_data = self._validateResponse(response, tmpdir)
-        assert u"<title>OpenMoves – Dashboard</title>" in response_data
-        assert u"<tr><th>Total Distance</th><td>0.000 km</td></tr>" in response_data
-        assert u"<tr><th>Total Time</th><td>0:00:00 h</td></tr>" in response_data
+        assert u'<title>OpenMoves – Dashboard</title>' in response_data
+        assert u'<tr><th>Total Distance</th><td>0.000 km</td></tr>' in response_data
+        assert u'<tr><th>Total Time</th><td>0:00:00 h</td></tr>' in response_data
 
     def test_export_move_not_found(self, tmpdir):
         self._login()
@@ -178,3 +179,46 @@ class TestOpenMoves(object):
 
     def test_export_move_not_logged_in(self, tmpdir):
         self._assertRequiresLogin('/moves/1/export')
+
+    def test_import_move(self, tmpdir):
+        self._login()
+        response = self.client.get('/import')
+        response_data = self._validateResponse(response, tmpdir)
+        assert u'<title>OpenMoves – Import</title>' in response_data
+        assert 'Please find' in response_data
+        assert '%AppData%/Suunto/Moveslink2' in response_data
+
+    def test_import_move_upload(self, tmpdir):
+        self._login()
+        data = {}
+
+        filename = 'CAFEBABECAFEBABE-2014-11-09T14_55_13-0.sml.gz'
+        dn = os.path.dirname(os.path.realpath(__file__))
+        with open(os.path.join(dn, filename), 'rb') as f:
+            data['files'] = ((f, filename))
+            response = self.client.post('/import', data=data, follow_redirects=True)
+
+        response_data = self._validateResponse(response, tmpdir)
+        assert u'<title>OpenMoves – Move 1</title>' in response_data
+        assert u"imported &#39;%s&#39;: move 1" % filename in response_data
+        assert u'<h1>Pool swimming</h1>' in response_data
+        assert u'<td>2014-11-09 14:55:13</td>' in response_data
+        assert u'<td>02:07.80 min / 100 m</td>' in response_data
+        assert u'<td>795</td>' in response_data  # strokes
+        # first pause
+        assert u'<span class="date-time">2014-11-09 15:15:49.991</span>' in response_data
+        assert u'<span class="date-time">2014-11-09 15:26:45.314</span>' in response_data
+        assert u'<td>00:10:55.32</td>' in response_data
+
+    def test_moves(self, tmpdir):
+        self._login()
+        response = self.client.get('/moves')
+        response_data = self._validateResponse(response, tmpdir)
+        assert u'<title>OpenMoves – Moves</title>' in response_data
+        assert u'<td><a href="/moves/1">2014-11-09 14:55:13</a></td>' in response_data
+        assert u'<td>Pool swimming</td>' in response_data
+        assert u'<td>00:31:25.00</td>' in response_data
+        assert u'<td>1475 m</td>' in response_data
+        assert u'<td><span>2.8 km/h</span></td>' in response_data
+        assert u'<td><span>27.4°C</span></td>' in response_data
+        assert u'<td>795</td>' in response_data

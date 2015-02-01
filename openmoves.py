@@ -108,7 +108,7 @@ def moveImport():
             flash("unknown fileformat: '%s'" % xmlfile.filename, 'error')
 
         if move:
-            move.temperatureAvg = db.session.query(func.avg(Sample.temperature)).filter(Sample.move == move, Sample.temperature > 0).one()
+            move.temperatureAvg, = db.session.query(func.avg(Sample.temperature)).filter(Sample.move == move, Sample.temperature > 0).one()
 
             strokeCount = 0
             for events, in db.session.query(Sample.events).filter(Sample.move == move, Sample.events != None):
