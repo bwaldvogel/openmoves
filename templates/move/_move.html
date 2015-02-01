@@ -140,7 +140,7 @@
 
 {% block scripts %}
 {{super()}}
-<script src="http://code.highcharts.com/highcharts.js"></script>
+<script src="{{url_for('.static', filename='js/highcharts.js')}}"></script>
 
 <script>
 $(document).ready(function() {
