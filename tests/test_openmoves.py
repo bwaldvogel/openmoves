@@ -195,7 +195,7 @@ class TestOpenMoves(object):
         filename = 'CAFEBABECAFEBABE-2014-11-09T14_55_13-0.sml.gz'
         dn = os.path.dirname(os.path.realpath(__file__))
         with open(os.path.join(dn, filename), 'rb') as f:
-            data['files'] = ((f, filename))
+            data['files'] = [(f, filename)]
             response = self.client.post('/import', data=data, follow_redirects=True)
 
         response_data = self._validateResponse(response, tmpdir)
@@ -209,6 +209,23 @@ class TestOpenMoves(object):
         assert u'<span class="date-time">2014-11-09 15:15:49.991</span>' in response_data
         assert u'<span class="date-time">2014-11-09 15:26:45.314</span>' in response_data
         assert u'<td>00:10:55.32</td>' in response_data
+
+    def test_import_move_upload_multiple(self, tmpdir):
+
+        self._login()
+        data = {}
+
+        dn = os.path.dirname(os.path.realpath(__file__))
+        filename1 = 'CAFEBABECAFEBABE-2014-12-31T12_00_32-0.sml.gz'
+        filename2 = 'log-CAFEBABECAFEBABE-2014-07-23T18_56_14-5.xml.gz'
+        with open(os.path.join(dn, filename1), 'rb') as file1:
+            with open(os.path.join(dn, filename2), 'rb') as file2:
+                data['files'] = [(file1, filename1), (file2, filename2)]
+                response = self.client.post('/import', data=data, follow_redirects=True)
+        response_data = self._validateResponse(response, tmpdir)
+
+        assert u'<title>OpenMoves – Moves</title>' in response_data
+        assert u'imported 2 moves' in response_data
 
     def test_moves(self, tmpdir):
         self._login()
