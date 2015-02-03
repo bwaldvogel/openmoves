@@ -35,6 +35,8 @@ class TestOpenMoves(object):
 
         if checkContent:
             self._validateHtml5(response)
+
+        if response.data:
             return response.data.decode('utf-8')
 
     def _validateHtml5(self, response):
@@ -239,3 +241,11 @@ class TestOpenMoves(object):
         assert u'<td><span>2.8 km/h</span></td>' in response_data
         assert u'<td><span>27.4°C</span></td>' in response_data
         assert u'<td>795</td>' in response_data
+
+    def test_gpx_export(self, tmpdir):
+        self._login()
+        response = self.client.get('/moves/3/export?format=gpx')
+        response_data = self._validateResponse(response, checkContent=False)
+        assert u'<gpx ' in response_data
+        assert u'lat="50.632' in response_data
+        assert u'lon="6.952' in response_data
