@@ -8,6 +8,7 @@ from flask_login import login_user, current_user, login_required, logout_user
 from model import db, Move, Sample
 from datetime import timedelta, date, datetime
 from sqlalchemy.sql import func
+from sqlalchemy import distinct, literal
 import os
 from flask_bcrypt import Bcrypt
 import old_xml_import
@@ -19,9 +20,10 @@ from flask.helpers import make_response
 from flask_script import Manager, Server
 from flask_migrate import Migrate, MigrateCommand
 from commands import AddUser
-from filters import register_filters
+from filters import register_filters, register_globals
 from login import login_manager, load_user, LoginForm
 import itertools
+from collections import OrderedDict
 
 app = Flask('openmoves')
 
@@ -29,6 +31,7 @@ app_bcrypt = Bcrypt()
 migrate = Migrate(app, db)
 
 register_filters(app)
+register_globals(app)
 
 
 def initialize_config(f):
@@ -187,7 +190,10 @@ def dashboard():
     else:
         end_date = date(now.year, now.month, now.day)
 
-    moves = Move.query.filter_by(user=current_user).filter(Move.date_time >= start_date).filter(Move.date_time <= end_date).order_by(Move.date_time.asc()).all()
+    moves = _current_user_filtered(Move.query).filter(Move.date_time >= start_date) \
+                                              .filter(Move.date_time <= end_date) \
+                                              .order_by(Move.date_time.asc()) \
+                                              .all()
 
     total_distance = 0
     total_duration = timedelta(0)
@@ -210,11 +216,32 @@ def dashboard():
                            total_ascent=total_ascent, total_descent=total_descent)
 
 
+def _parse_move_filter(filter_query):
+    if not filter_query:
+        return lambda query: query
+
+    filter_parts = [part.strip() for part in filter_query.split(':')]
+    if len(filter_parts) != 2 or filter_parts[0] not in ('activity'):
+        flash("illegal filter: '%s'" % filter_query, 'error')
+        return lambda query: query
+    else:
+        filter_attr = getattr(Move, filter_parts[0])
+        filter_value = filter_parts[1]
+        return lambda query: query.filter(filter_attr == filter_value)
+
+
+def _current_user_filtered(query):
+    return query.filter_by(user=current_user)
+
+
 @app.route("/moves")
 @login_required
 def moves():
-    moves = moves = Move.query.filter_by(user=current_user)
+    moves = _current_user_filtered(Move.query)
     total_moves_count = moves.count()
+    move_filter = _parse_move_filter(request.args.get('filter'))
+    moves = move_filter(moves)
+
     sort = request.args.get('sort')
     sort_order = request.args.get('sort_order')
     sort_default = 'date_time'
@@ -228,6 +255,13 @@ def moves():
         flash("illegal sort field: %s" % sort, 'error')
         sort = sort_default
 
+    activity_counts = OrderedDict(_current_user_filtered(db.session.query(Move.activity, func.count(Move.id)))
+                                  .group_by(Move.activity)
+                                  .order_by(func.count(Move.id).desc()))
+
+    actual_activities_query = move_filter(_current_user_filtered(db.session.query(distinct(Move.activity))))
+    actual_activities = set([activity for activity, in actual_activities_query])
+
     sort_attr = getattr(Move, sort)
     if not sort_order or sort_order == 'asc':
         sort_attr = sort_attr.asc()
@@ -237,14 +271,27 @@ def moves():
     if db.engine.name == "postgresql":
         sort_attr = sort_attr.nullslast()
 
+    show_columns = {}
+    for column in ('ascent', 'descent', 'stroke_count', 'pool_length'):
+        attr = getattr(Move, column)
+        exists = db.session.query(literal(True)).filter(move_filter(_current_user_filtered(db.session.query(attr).filter(attr != None))).exists()).scalar()
+        show_columns[column] = exists
+
     moves = moves.order_by(sort_attr)
-    return render_template('moves.html', moves=moves, total_moves_count=total_moves_count, sort=sort, sort_order=sort_order)
+    return render_template('moves.html',
+                           moves=moves,
+                           total_moves_count=total_moves_count,
+                           activity_counts=activity_counts,
+                           actual_activities=actual_activities,
+                           show_columns=show_columns,
+                           sort=sort,
+                           sort_order=sort_order)
 
 
 @app.route("/moves/<int:id>/delete")
 @login_required
 def delete_move(id):
-    move = Move.query.filter_by(user=current_user, id=id).first_or_404()
+    move = _current_user_filtered(Move.query).filter_by(id=id).first_or_404()
     Sample.query.filter_by(move=move).delete(synchronize_session=False)
     db.session.delete(move)
     db.session.commit()
@@ -256,7 +303,7 @@ def delete_move(id):
 @app.route("/moves/<int:id>/export")
 @login_required
 def export_move(id):
-    move = Move.query.filter_by(user=current_user, id=id).first_or_404()
+    move = _current_user_filtered(Move.query).filter_by(id=id).first_or_404()
 
     if "format" in request.args:
         format = request.args.get("format").lower()
@@ -281,7 +328,7 @@ def export_move(id):
 @app.route("/moves/<int:id>")
 @login_required
 def move(id):
-    move = Move.query.filter_by(user=current_user, id=id).first_or_404()
+    move = _current_user_filtered(Move.query).filter_by(id=id).first_or_404()
 
     samples = move.samples.order_by('time asc').all()
     events = [sample for sample in samples if sample.events]

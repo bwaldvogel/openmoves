@@ -145,7 +145,7 @@ class TestOpenMoves(object):
         response = self.client.get('/moves')
         response_data = self._validate_response(response, tmpdir)
         assert u"<title>OpenMoves – Moves</title>" in response_data
-        assert u"<h3>0 Moves</h3>" in response_data
+        assert u'All moves <span class="badge">0</span>' in response_data
 
     def test_move_not_logged_in(self, tmpdir):
         self._assert_requires_login('/moves/1')
@@ -234,12 +234,14 @@ class TestOpenMoves(object):
         response = self.client.get('/moves')
         response_data = self._validate_response(response, tmpdir)
 
-        with app.test_request_context():
-            total_moves = Move.query.count()
-
         assert u'<title>OpenMoves – Moves</title>' in response_data
         assert u'<td><a href="/moves/1">2014-11-09 14:55:13</a></td>' in response_data
-        assert u"<h3>%d Moves</h3>" % total_moves in response_data
+
+        assert u'All moves <span class="badge">3</span>' in response_data
+        assert u'Cycling <span class="badge">1</span>' in response_data
+        assert u'Trekking <span class="badge">1</span>' in response_data
+        assert u'Pool swimming <span class="badge">1</span>' in response_data
+
         assert u'<td>Pool swimming</td>' in response_data
         assert u'<td>00:31:25.00</td>' in response_data
         assert u'<td>1475 m</td>' in response_data
@@ -267,13 +269,17 @@ class TestOpenMoves(object):
     def test_delete_moves(self, tmpdir):
         self._login()
         with app.test_request_context():
-            for move in Move.query:
+            total_moves_before = Move.query.count()
+            assert total_moves_before > 0
+
+            for idx, move in enumerate(Move.query):
                 response = self.client.get("/moves/%d/delete" % move.id, follow_redirects=True)
                 response_data = self._validate_response(response)
                 assert u'<title>OpenMoves – Moves</title>' in response_data
 
                 total_moves = Move.query.count()
-                assert u"<h3>%d Moves</h3>" % total_moves in response_data
+                assert total_moves == total_moves_before - (idx + 1)
+                assert u"All moves <span class=\"badge\">%d</span>" % total_moves in response_data
 
             total_moves = Move.query.count()
             assert total_moves == 0

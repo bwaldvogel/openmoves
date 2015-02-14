@@ -2,6 +2,7 @@
 # vim: set fileencoding=utf-8 :
 
 from datetime import timedelta
+from flask import url_for, request
 import math
 import time
 
@@ -39,6 +40,19 @@ def radian_to_degree(value):
 
 def unix_epoch(date):
     return 1000 * time.mktime(date.timetuple())
+
+
+# inspired by http://flask.pocoo.org/snippets/44/
+def url_for_sortable(sort, sort_order):
+    args = request.view_args.copy()
+    args.update(request.args)
+    args['sort'] = sort
+    args['sort_order'] = sort_order
+    return url_for(request.endpoint, **args)
+
+
+def register_globals(app):
+    app.jinja_env.globals['url_for_sortable'] = url_for_sortable
 
 
 def register_filters(app):

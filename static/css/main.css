@@ -40,3 +40,15 @@ table.table-auto-width {
 span.date-time {
     white-space: nowrap;
 }
+
+div.activity-filter ul li {
+    white-space: nowrap;
+}
+
+table.moves td, table.moves th {
+    white-space: nowrap;
+}
+
+a.all-moves {
+	font-weight: bold;
+}

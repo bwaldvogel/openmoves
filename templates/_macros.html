@@ -56,7 +56,7 @@ Date.UTC({{datetime.year}}, {{datetime.month}}, {{datetime.day}}, {{datetime.hou
 {% else %}
     {% set _sort_order = default_sort_order %}
 {% endif %}
-<a href="{{url_for(active_page, sort=key, sort_order=_sort_order)}}">{{display_name}}</a>
+<a href="{{url_for_sortable(key, sort_order=_sort_order)}}">{{display_name}}</a>
 {% if key == sort -%}
 {% if sort_order=='asc' %}<span class="dropup">{% endif %}
 <span class="caret"></span>
