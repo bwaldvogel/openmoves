@@ -233,8 +233,13 @@ class TestOpenMoves(object):
         self._login()
         response = self.client.get('/moves')
         response_data = self._validate_response(response, tmpdir)
+
+        with app.test_request_context():
+            total_moves = Move.query.count()
+
         assert u'<title>OpenMoves – Moves</title>' in response_data
         assert u'<td><a href="/moves/1">2014-11-09 14:55:13</a></td>' in response_data
+        assert u"<h3>%d Moves</h3>" % total_moves in response_data
         assert u'<td>Pool swimming</td>' in response_data
         assert u'<td>00:31:25.00</td>' in response_data
         assert u'<td>1475 m</td>' in response_data
@@ -258,3 +263,17 @@ class TestOpenMoves(object):
         assert u'<gpx ' in response_data
         assert u'lat="50.632' in response_data
         assert u'lon="6.952' in response_data
+
+    def test_delete_moves(self, tmpdir):
+        self._login()
+        with app.test_request_context():
+            for move in Move.query:
+                response = self.client.get("/moves/%d/delete" % move.id, follow_redirects=True)
+                response_data = self._validate_response(response)
+                assert u'<title>OpenMoves – Moves</title>' in response_data
+
+                total_moves = Move.query.count()
+                assert u"<h3>%d Moves</h3>" % total_moves in response_data
+
+            total_moves = Move.query.count()
+            assert total_moves == 0
