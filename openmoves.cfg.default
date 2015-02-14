@@ -1,4 +1,4 @@
-# vim: set ft=cfg :
+# vim: set ft=python :
 # see http://flask.pocoo.org/docs/0.10/config/#builtin-configuration-values
 DEBUG = False
 BOOTSTRAP_SERVE_LOCAL = False
