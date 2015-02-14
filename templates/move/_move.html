@@ -19,8 +19,8 @@
       <span class="caret"></span>
       </button>
       <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-        <li {% if not gpsSamples %}class="disabled"{% endif %} role="presentation">
-          <a role="menuitem" tabindex="-1" href="{{url_for('exportMove', id=move.id, format='gpx') if gpsSamples else "#"}}">as GPX</a>
+        <li {% if not gps_samples %}class="disabled"{% endif %} role="presentation">
+          <a role="menuitem" tabindex="-1" href="{{url_for('export_move', id=move.id, format='gpx') if gps_samples else "#"}}">as GPX</a>
         </li>
       </ul>
     </div>
@@ -28,7 +28,7 @@
 
     <table class="table table-condensed">
         <tr>
-            {% block tableHeader %}
+            {% block table_header %}
             <th>Time</th>
             <th>Speed Avg</th>
             <th>Duration</th>
@@ -36,19 +36,19 @@
             <th>Avg. Temperature</th>
             {% if move.ascent %}<th>Ascent</th>{% endif %}
             {% if move.descent %}<th>Descent</th>{% endif %}
-            {% if gpsSamples %}<th>First fix</th>{% endif %}
+            {% if gps_samples %}<th>First fix</th>{% endif %}
             {% endblock %}
         </tr>
         <tr>
-            {% block tableEntry %}
-            <td>{{move.dateTime | dateTime}}</td>
-            <td>{{macros.kmh(move.speedAvg)}}</td>
+            {% block table_entry %}
+            <td>{{move.date_time | date_time}}</td>
+            <td>{{macros.kmh(move.speed_avg)}}</td>
             <td>{{move.duration | duration}}</td>
-			<td>{{macros.formatMoveDistance(move, move.distance)}}</td>
-            <td>{{macros.temperature(move.temperatureAvg)}}</td>
-            {% if move.ascent %}<td>{{macros.formatHm(move.ascent)}}</td>{% endif %}
-            {% if move.descent %}<td>{{macros.formatHm(move.descent)}}</td>{% endif %}
-            {% if gpsSamples %}<td>{{move.timeToFirstFix | duration}}</td>{% endif %}
+			<td>{{macros.format_move_distance(move, move.distance)}}</td>
+            <td>{{macros.temperature(move.temperature_avg)}}</td>
+            {% if move.ascent %}<td>{{macros.format_hm(move.ascent)}}</td>{% endif %}
+            {% if move.descent %}<td>{{macros.format_hm(move.descent)}}</td>{% endif %}
+            {% if gps_samples %}<td>{{move.time_to_first_fix | duration}}</td>{% endif %}
             {% endblock %}
         </tr>
     </table>
@@ -65,8 +65,8 @@
 	<tr>
 		{% set start = pause[0].time %}
 		{% set end = pause[1].time %}
-		<td>{{macros.dateTimeOffset(start)}}</td>
-		<td>{{macros.dateTimeOffset(end)}}</td>
+		<td>{{macros.date_time_offset(start)}}</td>
+		<td>{{macros.date_time_offset(end)}}</td>
 		<td>{{(end - start) | duration}}</td>
 	</tr>
     {%- endfor %}
@@ -87,9 +87,9 @@
     {%- for sample in laps -%}
 	<tr>
 		<td>{{loop.index}}</td>
-		<td>{{macros.dateTimeOffset(sample.time)}}</td>
+		<td>{{macros.date_time_offset(sample.time)}}</td>
 		<td>{{sample.events.lap.duration | duration}}</td>
-		<td>{{macros.formatMoveDistance(move, sample.events.lap.distance | float)}}</td>
+		<td>{{macros.format_move_distance(move, sample.events.lap.distance | float)}}</td>
 		<td>{{sample.events.lap.type}}</td>
 	</tr>
     {%- endfor -%}
@@ -109,7 +109,7 @@
     {%- if not sample.events.swimming %}
 	<tr>
 		{% set event = (sample.events.keys()|list)[0] %}
-		<td>{{macros.dateTimeOffset(sample.time)}}</td>
+		<td>{{macros.date_time_offset(sample.time)}}</td>
 		<td>{{event}}</td>
 		<td class="json">{{sample.events[event] | tojson}}</td>
 	</tr>
@@ -118,22 +118,22 @@
 	</table>
 	{% endblock %}
 
-    {% if gpsSamples %}
+    {% if gps_samples %}
     <h2>Map</h2>
 	<div id="map" class="map img-thumbnail"></div>
     {% endif %}
 
-    {% block chartBlocks %}
-    {{chart.chartBlock('temperature')}}
-    {{chart.chartBlock('altitude')}}
-    {{chart.chartBlock('hr')}}
-        {% block speedChartBlocks %}
-        {{chart.chartBlock('speed')}}
-        {{chart.chartBlock('speed_equidistant')}}
+    {% block chart_blocks %}
+    {{chart.chart_block('temperature')}}
+    {{chart.chart_block('altitude')}}
+    {{chart.chart_block('hr')}}
+        {% block speed_chart_blocks %}
+        {{chart.chart_block('speed')}}
+        {{chart.chart_block('speed_equidistant')}}
         {% endblock %}
     {% endblock %}
 
-    {% block additionalInformation %}
+    {% block additional_information %}
     {% endblock %}
 </div>
 {% endblock %}
@@ -144,15 +144,15 @@
 
 <script>
 $(document).ready(function() {
-{% block chartScripts %}
-    {{chart.chartByTime('temperature', samples, 0.1, 'celcius')}}
-    {{chart.chartByTime('altitude', samples, 1.5)}}
-    {{chart.chartByTime('hr', samples, 0.1, 'bpm')}}
-    {{chart.chartByTime('speed', samples, 0.1, 'kmh')}}
-    {{chart.speedChartByTimeEquiDistance('speed_equidistant', samples, 100, 'kmh')}}
+{% block chart_scripts %}
+    {{chart.chart_by_time('temperature', samples, 0.1, 'celcius')}}
+    {{chart.chart_by_time('altitude', samples, 1.5)}}
+    {{chart.chart_by_time('hr', samples, 0.1, 'bpm')}}
+    {{chart.chart_by_time('speed', samples, 0.1, 'kmh')}}
+    {{chart.speed_chart_by_time_equidistance('speed_equidistant', samples, 100, 'kmh')}}
 {% endblock %}
 
-{% if gpsSamples %}
+{% if gps_samples %}
 var styles = {
   'LineString': [new ol.style.Style({
     stroke: new ol.style.Stroke({
@@ -209,7 +209,7 @@ var styleFunction = function(feature, resolution) {
       "geometry": {
         "type": "LineString",
         "coordinates": [
-          {%- for sample in gpsSamples -%}
+          {%- for sample in gps_samples -%}
           ol.proj.transform([
               {{sample.longitude | degree}},
               {{sample.latitude | degree}}
@@ -240,7 +240,7 @@ var styleFunction = function(feature, resolution) {
         vectorLayer
       ],
       view: new ol.View({
-          center: ol.proj.transform([{{gpsSamples[0].longitude | degree}}, {{gpsSamples[0].latitude | degree}}], 'EPSG:4326', 'EPSG:3857'),
+          center: ol.proj.transform([{{gps_samples[0].longitude | degree}}, {{gps_samples[0].latitude | degree}}], 'EPSG:4326', 'EPSG:3857'),
         zoom: 12
       })
     });

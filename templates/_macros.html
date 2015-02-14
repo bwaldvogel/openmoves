@@ -8,22 +8,22 @@
 {%- endif -%}
 {%- endmacro %}
 
-{% macro datetimeToDateUTC(datetime) -%}
+{% macro datetime_to_date_utc(datetime) -%}
 Date.UTC({{datetime.year}}, {{datetime.month}}, {{datetime.day}}, {{datetime.hour}}, {{datetime.minute}}, {{datetime.second}}, {{"%d" | format(datetime.microsecond/1000)}})
 {%- endmacro %}
 
 
-{% macro dateTimeOffset(offset) -%}
-<span class="date-time">{{(move.dateTime + offset) | dateTimeMillis}}</span>
+{% macro date_time_offset(offset) -%}
+<span class="date-time">{{(move.date_time + offset) | date_time_millis}}</span>
 {%- endmacro %}
 
 
-{% macro formatHm(hm) -%}
+{% macro format_hm(hm) -%}
 {% if hm and hm > 0 %}{{hm}} m{% endif %}
 {%- endmacro %}
 
 
-{% macro formatDistance(distance) -%}
+{% macro format_distance(distance) -%}
 {% if distance > 1000 -%}
     {{'%0.2f' | format(distance / 1000.0)}} km
 {% elif distance < 1000 -%}
@@ -32,35 +32,35 @@ Date.UTC({{datetime.year}}, {{datetime.month}}, {{datetime.day}}, {{datetime.hou
 {%- endmacro %}
 
 
-{% macro formatMoveDistance(move, distance) -%}
+{% macro format_move_distance(move, distance) -%}
 {%- if move.activity == 'Pool swimming' or move.activity == 'Outdoor swimming' -%}
     {{distance}} m
 {%- else -%}
-    {{formatDistance(distance)}}
+    {{format_distance(distance)}}
 {%- endif -%}
 {%- endmacro %}
 
 
-{% macro formatDuration(duration) -%}
+{% macro format_duration(duration) -%}
     {{duration}} h
 {%- endmacro %}
 
 
-{% macro sortable(key, displayName, defaultSortOrder='desc') -%}
+{% macro sortable(key, display_name, default_sort_order='desc') -%}
 {% if key == sort %}
-    {% if sortOrder=='desc' %}
-        {% set _sortOrder = 'asc' %}
+    {% if sort_order=='desc' %}
+        {% set _sort_order = 'asc' %}
     {% else %}
-        {% set _sortOrder = 'desc' %}
+        {% set _sort_order = 'desc' %}
     {% endif %}
 {% else %}
-    {% set _sortOrder = defaultSortOrder %}
+    {% set _sort_order = default_sort_order %}
 {% endif %}
-<a href="{{url_for(active_page, sort=key, sortOrder=_sortOrder)}}">{{displayName}}</a>
+<a href="{{url_for(active_page, sort=key, sort_order=_sort_order)}}">{{display_name}}</a>
 {% if key == sort -%}
-{% if sortOrder=='asc' %}<span class="dropup">{% endif %}
+{% if sort_order=='asc' %}<span class="dropup">{% endif %}
 <span class="caret"></span>
-{% if sortOrder=='asc' %}</span>{% endif %}
+{% if sort_order=='asc' %}</span>{% endif %}
 {%- endif %}
 {%- endmacro %}
 

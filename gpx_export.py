@@ -4,10 +4,12 @@ from flask import flash
 import math
 import gpxpy.gpx
 
-def radianToDegree(value):
+
+def radian_to_degree(value):
     return 180.0 / math.pi * value
 
-def gpxExport(move):
+
+def gpx_export(move):
 
     gpx = gpxpy.gpx.GPX()
     gpx.creator = "OpenMoves - http://www.openmoves.net/"
@@ -22,18 +24,18 @@ def gpxExport(move):
 
     # Create points:
     samples = move.samples.order_by('time asc').all()
-    gpsSamples = [sample for sample in samples if sample.sampleType and sample.sampleType.startswith('gps-')]
+    gps_samples = [sample for sample in samples if sample.sample_type and sample.sample_type.startswith('gps-')]
 
-    if len(gpsSamples) == 0:
+    if len(gps_samples) == 0:
         flash("No GPS samples found for GPX export", 'error')
         return None
 
-    for gpsSample in gpsSamples:
-        gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(latitude=radianToDegree(gpsSample.latitude),
-                                                          longitude=radianToDegree(gpsSample.longitude),
-                                                          elevation=gpsSample.gpsAltitude,
-                                                          time=move.dateTime + gpsSample.time,
-                                                          position_dilution=gpsSample.gpsHDOP))
+    for gps_sample in gps_samples:
+        gpx_segment.points.append(gpxpy.gpx.GPXTrackPoint(latitude=radian_to_degree(gps_sample.latitude),
+                                                          longitude=radian_to_degree(gps_sample.longitude),
+                                                          elevation=gps_sample.gps_altitude,
+                                                          time=move.date_time + gps_sample.time,
+                                                          position_dilution=gps_sample.gps_hdop))
 
     # You can add routes and waypoints, too...
     return gpx.to_xml()

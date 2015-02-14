@@ -6,46 +6,44 @@ from model import db
 from model import Move, Device, Sample
 from lxml import objectify
 import re
-from _import import addChildren, setAttr, parseJson, normalizeMove
+from _import import add_children, set_attr, parse_json, normalize_move, normalize_tag
 from flask.ext.login import current_user
 
 
-def parseMove(tree):
+def parse_move(tree):
     move = Move()
-    addChildren(move, tree.header)
-    normalizeMove(move)
+    add_children(move, tree.header)
+    normalize_move(move)
     return move
 
 
-def parseSamples(tree, move):
-    for sampleNode in tree.Samples.iterchildren():
+def parse_samples(tree, move):
+    for sample_node in tree.Samples.iterchildren():
         sample = Sample()
         sample.move = move
 
-        for child in sampleNode.iterchildren():
-            tag = child.tag
+        for child in sample_node.iterchildren():
+            tag = normalize_tag(child.tag)
             value = child.text
 
-            if tag in ['UTC', 'EHPE', 'HR']:
-                tag = tag.lower()
-                setAttr(sample, tag, value)
-            elif tag.startswith('GPS'):
+            if tag in ['utc', 'ehpe', 'hr']:
+                set_attr(sample, tag, value)
+            elif tag.startswith('gps'):
                 tag = tag[0:3].lower() + tag[3:]
-                setAttr(sample, tag, value)
-            elif tag == 'Events':
-                sample.events = parseJson(child)
-            elif tag == 'Satellites':
-                sample.satellites = parseJson(child)
-            elif tag == 'AppsData':
-                sample.appsData = parseJson(child)
+                set_attr(sample, tag, value)
+            elif tag == 'events':
+                sample.events = parse_json(child)
+            elif tag == 'satellites':
+                sample.satellites = parse_json(child)
+            elif tag == 'apps_data':
+                sample.apps_data = parse_json(child)
             else:
-                tag = tag[0].lower() + tag[1:]
-                setAttr(sample, tag, value)
+                set_attr(sample, tag, value)
 
         yield sample
 
 
-def oldXmlImport(xmlfile):
+def old_xml_import(xmlfile):
         filename = xmlfile.filename
         data = xmlfile.readlines()
 
@@ -60,25 +58,25 @@ def oldXmlImport(xmlfile):
             flash("illegal filename: '%s'" % filename, 'error')
             return
 
-        serialNumber = filematch.group(1)
+        serial_number = filematch.group(1)
 
         tree = objectify.fromstring("\n".join(data).encode('utf-8'))
-        move = parseMove(tree)
+        move = parse_move(tree)
         move.source = filename
-        device = Device.query.filter_by(serialNumber=serialNumber).scalar()
+        device = Device.query.filter_by(serial_number=serial_number).scalar()
         if not device:
             device = Device()
-            device.serialNumber = serialNumber
+            device.serial_number = serial_number
             db.session.add(device)
 
-        if Move.query.filter_by(user=current_user, dateTime=move.dateTime, device=device).scalar():
-            flash("%s at %s already exists" % (move.activity, move.dateTime), 'warning')
+        if Move.query.filter_by(user=current_user, date_time=move.date_time, device=device).scalar():
+            flash("%s at %s already exists" % (move.activity, move.date_time), 'warning')
         else:
             move.user = current_user
             move.device = device
             db.session.add(move)
 
-            for sample in parseSamples(tree, move):
+            for sample in parse_samples(tree, move):
                 db.session.add(sample)
             db.session.commit()
             return move

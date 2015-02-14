@@ -29,7 +29,7 @@ class Device(db.Model):
     __tablename__ = 'device'
     id = db.Column(db.Integer, name="id", primary_key=True)
     name = db.Column(db.String, name="name", nullable=True)
-    serialNumber = db.Column(db.String, name="serial_number", unique=True, nullable=False)
+    serial_number = db.Column(db.String, name="serial_number", unique=True, nullable=False)
 
 
 class User(db.Model):
@@ -56,69 +56,69 @@ class Move(db.Model):
     __tablename__ = 'move'
     id = db.Column(db.Integer, name="id", primary_key=True)
 
-    userId = db.Column(db.Integer, db.ForeignKey(User.id), name="user_id", nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), name="user_id", nullable=False)
     user = db.relationship(User, backref=db.backref('entries', lazy='dynamic'))
 
-    deviceId = db.Column(db.Integer, db.ForeignKey(Device.id), name="device_id", nullable=False)
+    device_id = db.Column(db.Integer, db.ForeignKey(Device.id), name="device_id", nullable=False)
     device = db.relationship(Device, backref=db.backref('devices', lazy='dynamic'))
 
-    dateTime = db.Column(db.DateTime, name="date_time", nullable=False)
+    date_time = db.Column(db.DateTime, name="date_time", nullable=False)
     duration = db.Column(db.Interval, name="duration")
     distance = db.Column(db.Integer, name="distance")
     activity = db.Column(db.String, name="activity")
-    activityType = db.Column(db.Integer, name="activity_type")
-    logItemCount = db.Column(db.Integer, name="log_item_count")
-    strokeCount = db.Column(db.Integer, name="stroke_count")
+    activity_type = db.Column(db.Integer, name="activity_type")
+    log_item_count = db.Column(db.Integer, name="log_item_count")
+    stroke_count = db.Column(db.Integer, name="stroke_count")
 
     ascent = db.Column(db.Integer, name="ascent", nullable=True)
     descent = db.Column(db.Integer, name="descent", nullable=True)
-    ascentTime = db.Column(db.Interval, name="ascent_time")
-    descentTime = db.Column(db.Interval, name="descent_time")
+    ascent_time = db.Column(db.Interval, name="ascent_time")
+    descent_time = db.Column(db.Interval, name="descent_time")
 
-    recoveryTime = db.Column(db.Interval, name="recovery_time")
+    recovery_time = db.Column(db.Interval, name="recovery_time")
 
-    speedAvg = db.Column(db.Float, name="speed_avg")
-    speedMax = db.Column(db.Float, name="speed_max")
-    speedMaxTime = db.Column(db.Interval, name="speed_max_time")
+    speed_avg = db.Column(db.Float, name="speed_avg")
+    speed_max = db.Column(db.Float, name="speed_max")
+    speed_max_time = db.Column(db.Interval, name="speed_max_time")
 
-    hrAvg = db.Column(db.Float, name="hr_avg")
-    hrMin = db.Column(db.Float, name="hr_min")
-    hrMax = db.Column(db.Float, name="hr_max")
-    hrMinTime = db.Column(db.Interval, name="hr_min_time")
-    hrMaxTime = db.Column(db.Interval, name="hr_max_time")
+    hr_avg = db.Column(db.Float, name="hr_avg")
+    hr_min = db.Column(db.Float, name="hr_min")
+    hr_max = db.Column(db.Float, name="hr_max")
+    hr_min_time = db.Column(db.Interval, name="hr_min_time")
+    hr_max_time = db.Column(db.Interval, name="hr_max_time")
 
-    peakTrainingEffect = db.Column(db.Float, name="peak_training_effect")
+    peak_training_effect = db.Column(db.Float, name="peak_training_effect")
     energy = db.Column(db.Float, name="energy")
 
-    cadenceAvg = db.Column(db.Float, name="cadence_avg")
-    cadenceMax = db.Column(db.Float, name="cadence_max")
-    cadenceMaxTime = db.Column(db.Interval, name="cadence_max_time")
+    cadence_avg = db.Column(db.Float, name="cadence_avg")
+    cadence_max = db.Column(db.Float, name="cadence_max")
+    cadence_max_time = db.Column(db.Interval, name="cadence_max_time")
 
-    altitudeMin = db.Column(db.Integer, name="altitude_min")
-    altitudeMax = db.Column(db.Integer, name="altitude_max")
-    altitudeMinTime = db.Column(db.Interval, name="altitude_min_time")
-    altitudeMaxTime = db.Column(db.Interval, name="altitude_max_time")
+    altitude_min = db.Column(db.Integer, name="altitude_min")
+    altitude_max = db.Column(db.Integer, name="altitude_max")
+    altitude_min_time = db.Column(db.Interval, name="altitude_min_time")
+    altitude_max_time = db.Column(db.Interval, name="altitude_max_time")
 
-    temperatureMin = db.Column(db.Float, name="temperature_min")
-    temperatureMax = db.Column(db.Float, name="temperature_max")
-    temperatureMinTime = db.Column(db.Float, name="temperature_min_time")
-    temperatureMaxTime = db.Column(db.Float, name="temperature_max_time")
+    temperature_min = db.Column(db.Float, name="temperature_min")
+    temperature_max = db.Column(db.Float, name="temperature_max")
+    temperature_min_time = db.Column(db.Float, name="temperature_min_time")
+    temperature_max_time = db.Column(db.Float, name="temperature_max_time")
 
-    temperatureAvg = db.Column(db.Float, name="temperature_avg")
+    temperature_avg = db.Column(db.Float, name="temperature_avg")
 
-    timeToFirstFix = db.Column(db.Integer, name="time_to_first_fix")
+    time_to_first_fix = db.Column(db.Integer, name="time_to_first_fix")
 
-    batteryChargeAtStart = db.Column(db.Integer, name="battery_charge_at_start")
-    batteryCharge = db.Column(db.Integer, name="battery_charge")
+    battery_charge_at_start = db.Column(db.Integer, name="battery_charge_at_start")
+    battery_charge = db.Column(db.Integer, name="battery_charge")
 
-    distanceBeforeCalibrationChange = db.Column(db.Integer, name="distance_before_calibration_change")
+    distance_before_calibration_change = db.Column(db.Integer, name="distance_before_calibration_change")
 
-    poolLength = db.Column(db.Integer, name="pool_length")
+    pool_length = db.Column(db.Integer, name="pool_length")
 
-    deviceInfoSW = db.Column(db.String, name="device_info_sw")
-    deviceInfoHW = db.Column(db.String, name="device_info_hw")
-    deviceInfoBSL = db.Column(db.String, name="device_info_bsl")
-    deviceInfoSWBuildDateTime = db.Column(db.DateTime, name="device_info_sw_build_date_time")
+    device_info_sw = db.Column(db.String, name="device_info_sw")
+    device_info_hw = db.Column(db.String, name="device_info_hw")
+    device_info_bsl = db.Column(db.String, name="device_info_bsl")
+    device_info_sw_build_date_time = db.Column(db.DateTime, name="device_info_sw_build_date_time")
 
     source = db.Column(db.String, name="source")
 
@@ -127,10 +127,10 @@ class Sample(db.Model):
     __tablename__ = 'sample'
     id = db.Column(db.Integer, name="id", primary_key=True)
 
-    moveId = db.Column(db.Integer, db.ForeignKey(Move.id), name="move_id", nullable=False)
+    move_id = db.Column(db.Integer, db.ForeignKey(Move.id), name="move_id", nullable=False)
     move = db.relationship(Move, backref=db.backref('samples', lazy='dynamic'))
 
-    sampleType = db.Column(db.String, name='sample_type')
+    sample_type = db.Column(db.String, name='sample_type')
     time = db.Column(db.Interval, name='time')
     utc = db.Column(db.DateTime, name='utc')
 
@@ -139,17 +139,17 @@ class Sample(db.Model):
     temperature = db.Column(db.Float, name='temperature')
 
     hr = db.Column(db.Float, name='hr')
-    energyConsumption = db.Column(db.Float, name='energy_consumption')
+    energy_consumption = db.Column(db.Float, name='energy_consumption')
 
-    verticalSpeed = db.Column(db.Float, name='vertical_speed')
-    seaLevelPressure = db.Column(db.Float, name='sea_level_pressure')
+    vertical_speed = db.Column(db.Float, name='vertical_speed')
+    sea_level_pressure = db.Column(db.Float, name='sea_level_pressure')
 
-    gpsAltitude = db.Column(db.Float, name='gps_altitude')
-    gpsHeading = db.Column(db.Float, name='gps_heading')
-    gpsSpeed = db.Column(db.Float, name='gps_speed')
-    gpsHDOP = db.Column(db.Float, name='gps_hdop')
+    gps_altitude = db.Column(db.Float, name='gps_altitude')
+    gps_heading = db.Column(db.Float, name='gps_heading')
+    gps_speed = db.Column(db.Float, name='gps_speed')
+    gps_hdop = db.Column(db.Float, name='gps_hdop')
 
-    numberOfSatellites = db.Column(db.Integer, name='number_of_satellites')
+    number_of_satellites = db.Column(db.Integer, name='number_of_satellites')
 
     latitude = db.Column(db.Float, name='latitude')
     longitude = db.Column(db.Float, name='longitude')
@@ -160,10 +160,10 @@ class Sample(db.Model):
 
     cadence = db.Column(db.Float, name='cadence')
 
-    navType = db.Column(db.Integer, name='nav_type')
-    navValid = db.Column(db.String, name='nav_valid')
-    navTypeExplanation = db.Column(db.String, name='nav_type_explanation')
+    nav_type = db.Column(db.Integer, name='nav_type')
+    nav_valid = db.Column(db.String, name='nav_valid')
+    nav_type_explanation = db.Column(db.String, name='nav_type_explanation')
 
     events = db.Column(JsonEncodedDict(4096), name='events')
     satellites = db.Column(JsonEncodedDict(4096), name='satellites')
-    appsData = db.Column(JsonEncodedDict(4096), name='apps_data')
+    apps_data = db.Column(JsonEncodedDict(4096), name='apps_data')

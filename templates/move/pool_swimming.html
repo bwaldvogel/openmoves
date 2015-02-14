@@ -1,0 +1,90 @@
+{% extends "move/_move.html" %}
+
+{% block table_header %}
+{{ super() }}
+<th>Pace</th>
+<th>Strokes</th>
+<th>m/stroke</th>
+<th>strokes/min</th>
+{% if move.pool_length %}<th>Pool Length</th>{% endif %}
+{% endblock %}
+
+{% block table_entry %}
+{{ super() }}
+<td>{{swim_pace | swim_pace}}</td>
+<td>{{move.stroke_count | int}}</td>
+<td>{{"%.2f" | format(move.distance / move.stroke_count)}}</td>
+<td>{{"%.1f" | format(60 * move.stroke_count / move.duration.total_seconds())}}</td>
+{% if move.pool_length %}<td>{{move.pool_length}}</td>{% endif %}
+{% endblock %}
+
+{% block chart_blocks %}
+{{chart.chart_block('temperature')}}
+{{chart.chart_block('speed')}}
+{{chart.chart_block('strokes')}}
+{% endblock %}
+
+{% block chart_scripts %}
+{{chart.chart_by_time('temperature', samples, 0.1, 'celcius')}}
+{{chart.speed_chart_by_time_equidistance('speed', samples, move.pool_length|int(default=50), 'kmh')}}
+
+var strokes_data = [{% for sample in swimming_strokes_and_pauses -%}
+    {%- if sample.time and sample.events['pause'] -%}
+        [{{macros.datetime_to_date_utc(move.date_time + sample.time)}}, null],
+    {%- else -%}
+        [{{macros.datetime_to_date_utc(move.date_time + sample.time)}}, {{loop.index}}],
+    {%- endif -%}
+{%- endfor %}
+];
+{{ chart.chart_with_slider_interval_sampling('strokes_data', 'strokes', 10, 'strokes', 'per_min') }}
+{% endblock %}
+
+{% block additional_information %}
+{% block swimming_styles %}
+<h2>Styles</h2>
+<table class="table table-condensed">
+<tr>
+    <th>Timestamp</th>
+    <th>Time</th>
+    <th>Style</th>
+    <th>Classification Vector</th>
+</tr>
+{%- for sample in swimming_style_changes -%}
+{%- if event_before -%}
+<tr>
+    <td>{{macros.date_time_offset(sample.time)}}</td>
+    <td>{{(sample.time - event_before.time) | duration}}</td>
+    <td>{{sample.events['swimming']['prevPoolLengthStyle']}}</td>
+    <td class="json">{{sample.events['swimming']['classificationVector']['item'] | tojson}}</td>
+</tr>
+{%- endif -%}
+{% set event_before = sample %}
+{%- endfor -%}
+</table>
+{% endblock %}
+
+{% block swimming_turns %}
+<h2>Turns</h2>
+<table class="table table-condensed">
+<tr>
+    <th>Number</th>
+    <th>Timestamp</th>
+    <th>Time</th>
+    <th>Distance</th>
+    <th>Classification Vector</th>
+</tr>
+{%- for sample in swimming_turns -%}
+{%- if event_before -%}
+<tr>
+    <td>{{sample.events['swimming']['totalLengths']}}</td>
+    <td>{{macros.date_time_offset(sample.time)}}</td>
+    <td>{{(sample.time - event_before.time) | duration}}</td>
+    <td>{{macros.format_move_distance(move, (sample.events['swimming']['totalLengths']|int) * move.pool_length)}}</td>
+    <td class="json">{{sample.events['swimming']['classificationVector']['item'] | tojson}}</td>
+</tr>
+{%- endif -%}
+{% set event_before = sample %}
+{%- endfor -%}
+</table>
+{% endblock %}
+{% endblock %}

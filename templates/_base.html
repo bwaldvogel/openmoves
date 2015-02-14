@@ -32,7 +32,7 @@ OpenMoves {% if active_page and active_page != 'index' %}– {{active_page|capit
             <ul class="nav navbar-nav">
                 <li{% if active_page == 'dashboard' %} class="active"{% endif %}><a href="{{url_for('dashboard')}}">Dashboard</a></li>
                 <li{% if active_page == 'moves' %} class="active"{% endif %}><a href="{{url_for('moves')}}">Moves</a></li>
-                <li{% if active_page == 'import' %} class="active"{% endif %}><a href="{{url_for('moveImport')}}">Import</a></li>
+                <li{% if active_page == 'import' %} class="active"{% endif %}><a href="{{url_for('move_import')}}">Import</a></li>
             </ul>
             {% endif %}
             <ul class="nav navbar-nav navbar-right">

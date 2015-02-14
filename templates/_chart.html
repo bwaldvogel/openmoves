@@ -1,12 +1,12 @@
 {% import '_macros.html' as macros with context %}
 
-{% macro chartBlock(id) -%}
+{% macro chart_block(id) -%}
 <div id="{{id}}_chart" class="panel panel-default" style="margin: 15px auto;height: 300px; width: 800px"></div>
 <div id="{{id}}_chart_slider" style="margin: auto; width: 200px;"></div>
 {%- endmacro %}
 
-{% macro chartWithSlider(data, attr, pruneMinDelta=0.0) %}
-    var {{attr}}_chart_data = pruneLowDeltas({{data}}, {{pruneMinDelta}});
+{% macro chart_with_slider(data, attr, prune_min_delta=0.0) %}
+    var {{attr}}_chart_data = pruneLowDeltas({{data}}, {{prune_min_delta}});
 
     $('#{{attr}}_chart').highcharts({
         chart: {type:'spline',zoomType: 'y'},
@@ -28,27 +28,27 @@
         slide: function( event, ui ) {
             var chart = $('#{{attr}}_chart').highcharts();
             var newData = moveMean({{attr}}_chart_data, ui.value);
-            var newSeries = {
+            var new_series = {
                 name: chart.series[0].name + " (moving average "+ui.value+")",
                 data: newData
             };
             if (chart.series.length == 1) {
-                chart.addSeries(newSeries);
+                chart.addSeries(new_series);
             } else {
-                chart.series[1].update(newSeries);
+                chart.series[1].update(new_series);
             }
         }
     });
 
-    if (pruneLowDeltas(pruneNulls({{attr}}_chart_data), {{pruneMinDelta}}).length <= 2) {
+    if (pruneLowDeltas(pruneNulls({{attr}}_chart_data), {{prune_min_delta}}).length <= 2) {
         $("#{{attr}}_chart").hide();
         $("#{{attr}}_chart_slider").hide();
     }
 {% endmacro %}
 
-{% macro chartWithSliderIntervalSampling(data, attr, defaultInterval, intervalUnit, unit) %}
+{% macro chart_with_slider_interval_sampling(data, attr, default_interval, interval_unit, unit) %}
     var {{attr}}_chart_data = {{data}};
-    var {{attr}}_default_chart_data = calculateSpeed({{attr}}_chart_data, {{defaultInterval}}, {{unit}});
+    var {{attr}}_default_chart_data = calculateSpeed({{attr}}_chart_data, {{default_interval}}, {{unit}});
 
 
     $('#{{attr}}_chart').highcharts({
@@ -64,47 +64,47 @@
     });
 
     $("#{{attr}}_chart_slider").slider({
-        value: {{defaultInterval}},
-        min: {{defaultInterval}},
-        max: {{10 * defaultInterval}},
-        step: {{defaultInterval}},
+        value: {{default_interval}},
+        min: {{default_interval}},
+        max: {{10 * default_interval}},
+        step: {{default_interval}},
         slide: function( event, ui ) {
             var chart = $('#{{attr}}_chart').highcharts();
-            var newData = calculateSpeed({{attr}}_chart_data, ui.value, {{unit}});
-            var newSeries = {
-                name: chart.series[0].name + " (sampling interval: "+ui.value+" {{intervalUnit}})",
-                data: newData
+            var new_data = calculateSpeed({{attr}}_chart_data, ui.value, {{unit}});
+            var new_series = {
+                name: chart.series[0].name + " (sampling interval: "+ui.value+" {{interval_unit}})",
+                data: new_data
             };
             if (chart.series.length == 1) {
-                chart.addSeries(newSeries);
+                chart.addSeries(new_series);
             } else {
-                chart.series[1].update(newSeries);
+                chart.series[1].update(new_series);
             }
         }
     });
 {% endmacro %}
 
-{% macro chartByTime(attr, samples, pruneMinDelta=0.0, unit=None) -%}
-var {{attr}}OverTime = [{% for sample in samples -%}
+{% macro chart_by_time(attr, samples, prune_min_delta=0.0, unit=None) -%}
+var {{attr}}_over_time = [{% for sample in samples -%}
     {%- if sample.time and sample[attr] -%}
-        [{{macros.datetimeToDateUTC(move.dateTime + sample.time)}}, {{sample[attr]}}],
+        [{{macros.datetime_to_date_utc(move.date_time + sample.time)}}, {{sample[attr]}}],
     {%- elif sample.time and sample.events['pause'] -%}
-        [{{macros.datetimeToDateUTC(move.dateTime + sample.time)}}, null],
+        [{{macros.datetime_to_date_utc(move.date_time + sample.time)}}, null],
     {%- endif -%}
 {%- endfor %}];
 {%- if unit %}
-    {{attr}}OverTime = mapData({{attr}}OverTime, {{unit}});
+    {{attr}}_over_time = mapData({{attr}}_over_time, {{unit}});
 {% endif -%}
-{{ chartWithSlider("%sOverTime" % attr, attr, pruneMinDelta) }}
+{{ chart_with_slider("%s_over_time" % attr, attr, prune_min_delta) }}
 {%- endmacro %}
 
-{% macro speedChartByTimeEquiDistance(attr, samples, defaultDistanceInterval, unit=None) -%}
+{% macro speed_chart_by_time_equidistance(attr, samples, default_distance_interval, unit=None) -%}
 var {{attr}}_distance_over_time = [{% for sample in samples -%}
     {%- if sample.time and sample.distance -%}
-        [{{macros.datetimeToDateUTC(move.dateTime + sample.time)}}, {{sample.distance}}],
+        [{{macros.datetime_to_date_utc(move.date_time + sample.time)}}, {{sample.distance}}],
     {%- elif sample.time and sample.events['pause'] -%}
-        [{{macros.datetimeToDateUTC(move.dateTime + sample.time)}}, null],
+        [{{macros.datetime_to_date_utc(move.date_time + sample.time)}}, null],
     {%- endif -%}
 {%- endfor %}];
-{{ chartWithSliderIntervalSampling("%s_distance_over_time" % attr, attr, defaultDistanceInterval, 'm', unit) }}
+{{ chart_with_slider_interval_sampling("%s_distance_over_time" % attr, attr, default_distance_interval, 'm', unit) }}
 {%- endmacro %}

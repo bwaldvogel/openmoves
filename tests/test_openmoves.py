@@ -2,7 +2,7 @@
 
 import openmoves
 from commands import AddUser
-from model import db, User
+from model import db, User, Move
 import pytest
 import html5lib
 import re
@@ -16,7 +16,7 @@ class TestOpenMoves(object):
     @classmethod
     def setup_class(cls):
         global app
-        app = openmoves.init(configFile=None)
+        app = openmoves.init(configfile=None)
         db_uri = 'sqlite:///:memory:'
         app.config.update(SQLALCHEMY_ECHO=False, WTF_CSRF_ENABLED=False, DEBUG=True, TESTING=True, SQLALCHEMY_DATABASE_URI=db_uri, SECRET_KEY="testing")
 
@@ -28,26 +28,26 @@ class TestOpenMoves(object):
         data = {'username': 'test_user', 'password': 'test password'}
         self.client.post('/login', data=data, follow_redirects=True)
 
-    def _validateResponse(self, response, tmpdir=None, code=200, checkContent=True):
+    def _validate_response(self, response, tmpdir=None, code=200, check_content=True):
         assert response.status_code == code, "HTTP status: %s" % response.status
         if tmpdir:
             tmpdir.join("response.html").write(response.data, mode='wb')
 
-        if checkContent:
-            self._validateHtml5(response)
+        if check_content:
+            self._validate_html5(response)
 
         if response.data:
             return response.data.decode('utf-8')
 
-    def _validateHtml5(self, response):
+    def _validate_html5(self, response):
         parser = html5lib.HTMLParser(strict=True)
         parser.parse(response.data)
 
-    def _assertRequiresLogin(self, url):
-        expectedUrl = 'login?next=%s' % url.replace('/', '%2F')
-        return self._assertRedirects(url, expectedUrl, code=302)
+    def _assert_requires_login(self, url):
+        expected_url = 'login?next=%s' % url.replace('/', '%2F')
+        return self._assert_redirects(url, expected_url, code=302)
 
-    def _assertRedirects(self, url, location, code=301, **requestargs):
+    def _assert_redirects(self, url, location, code=301, **requestargs):
         response = self.client.get("%s" % url, **requestargs)
         assert response.status_code == code
         if location.startswith("/"):
@@ -96,20 +96,20 @@ class TestOpenMoves(object):
 
     def test_index(self, tmpdir):
         response = self.client.get('/')
-        response_data = response_data = self._validateResponse(response, tmpdir)
+        response_data = response_data = self._validate_response(response, tmpdir)
         assert u"An open source alternative" in response_data
         assert u"0 moves already analyzed" in response_data
 
     def test_login_get(self, tmpdir):
         response = self.client.get('/login')
-        response_data = self._validateResponse(response, tmpdir)
+        response_data = self._validate_response(response, tmpdir)
         assert u"<title>OpenMoves – Login</title>" in response_data
         assert u"Please sign in" in response_data
 
     def test_login_invalid(self, tmpdir):
         data = {'username': 'user which does not exist', 'password': 'test password'}
         response = self.client.post('/login', data=data)
-        response_data = self._validateResponse(response, tmpdir)
+        response_data = self._validate_response(response, tmpdir)
         assert u"no such user" in response_data
         assert u"Please sign in" in response_data
 
@@ -129,47 +129,47 @@ class TestOpenMoves(object):
 
         data = {'username': username, 'password': password}
         response = self.client.post('/login', data=data, follow_redirects=True)
-        response_data = self._validateResponse(response, tmpdir)
+        response_data = self._validate_response(response, tmpdir)
         assert u"<title>OpenMoves – Moves</title>" in response_data
 
     def test_custom_404(self, tmpdir):
         response = self.client.get('/page-which-does-not-exist')
-        response_data = self._validateResponse(response, tmpdir, code=404, checkContent=True)
+        response_data = self._validate_response(response, tmpdir, code=404, check_content=True)
         assert u"<title>OpenMoves – Not found</title>" in response_data
 
     def test_moves_not_logged_in(self, tmpdir):
-        self._assertRequiresLogin('/moves')
+        self._assert_requires_login('/moves')
 
     def test_moves_empty(self, tmpdir):
         self._login()
         response = self.client.get('/moves')
-        response_data = self._validateResponse(response, tmpdir)
+        response_data = self._validate_response(response, tmpdir)
         assert u"<title>OpenMoves – Moves</title>" in response_data
         assert u"<h3>0 Moves</h3>" in response_data
 
     def test_move_not_logged_in(self, tmpdir):
-        self._assertRequiresLogin('/moves/1')
+        self._assert_requires_login('/moves/1')
 
     def test_move_not_found(self, tmpdir):
         self._login()
         response = self.client.get('/moves/1')
-        self._validateResponse(response, code=404, checkContent=False)
+        self._validate_response(response, code=404, check_content=False)
 
     def test_delete_move_not_logged_in(self, tmpdir):
-        self._assertRequiresLogin('/moves/1/delete')
+        self._assert_requires_login('/moves/1/delete')
 
     def test_delete_move_not_found(self, tmpdir):
         self._login()
         response = self.client.get('/moves/1/delete')
-        self._validateResponse(response, code=404, checkContent=False)
+        self._validate_response(response, code=404, check_content=False)
 
     def test_dashboard_not_logged_in(self, tmpdir):
-        self._assertRequiresLogin('/dashboard')
+        self._assert_requires_login('/dashboard')
 
     def test_dashboard_empty(self, tmpdir):
         self._login()
         response = self.client.get('/dashboard')
-        response_data = self._validateResponse(response, tmpdir)
+        response_data = self._validate_response(response, tmpdir)
         assert u'<title>OpenMoves – Dashboard</title>' in response_data
         assert u'<tr><th>Total Distance</th><td>0.000 km</td></tr>' in response_data
         assert u'<tr><th>Total Time</th><td>0:00:00 h</td></tr>' in response_data
@@ -177,15 +177,15 @@ class TestOpenMoves(object):
     def test_export_move_not_found(self, tmpdir):
         self._login()
         response = self.client.get('/moves/1/export')
-        self._validateResponse(response, code=404, checkContent=False)
+        self._validate_response(response, code=404, check_content=False)
 
     def test_export_move_not_logged_in(self, tmpdir):
-        self._assertRequiresLogin('/moves/1/export')
+        self._assert_requires_login('/moves/1/export')
 
     def test_import_move(self, tmpdir):
         self._login()
         response = self.client.get('/import')
-        response_data = self._validateResponse(response, tmpdir)
+        response_data = self._validate_response(response, tmpdir)
         assert u'<title>OpenMoves – Import</title>' in response_data
         assert 'Please find' in response_data
         assert '%AppData%/Suunto/Moveslink2' in response_data
@@ -200,7 +200,7 @@ class TestOpenMoves(object):
             data['files'] = [(f, filename)]
             response = self.client.post('/import', data=data, follow_redirects=True)
 
-        response_data = self._validateResponse(response, tmpdir)
+        response_data = self._validate_response(response, tmpdir)
         assert u'<title>OpenMoves – Move 1</title>' in response_data
         assert u"imported &#39;%s&#39;: move 1" % filename in response_data
         assert u'<h1>Pool swimming</h1>' in response_data
@@ -224,7 +224,7 @@ class TestOpenMoves(object):
             with open(os.path.join(dn, filename2), 'rb') as file2:
                 data['files'] = [(file1, filename1), (file2, filename2)]
                 response = self.client.post('/import', data=data, follow_redirects=True)
-        response_data = self._validateResponse(response, tmpdir)
+        response_data = self._validate_response(response, tmpdir)
 
         assert u'<title>OpenMoves – Moves</title>' in response_data
         assert u'imported 2 moves' in response_data
@@ -232,7 +232,7 @@ class TestOpenMoves(object):
     def test_moves(self, tmpdir):
         self._login()
         response = self.client.get('/moves')
-        response_data = self._validateResponse(response, tmpdir)
+        response_data = self._validate_response(response, tmpdir)
         assert u'<title>OpenMoves – Moves</title>' in response_data
         assert u'<td><a href="/moves/1">2014-11-09 14:55:13</a></td>' in response_data
         assert u'<td>Pool swimming</td>' in response_data
@@ -242,10 +242,19 @@ class TestOpenMoves(object):
         assert u'<td><span>27.4°C</span></td>' in response_data
         assert u'<td>795</td>' in response_data
 
+    def test_move_pages(self, tmpdir):
+        self._login()
+        with app.test_request_context():
+            for move in Move.query:
+                response = self.client.get("/moves/%d" % move.id)
+                response_data = self._validate_response(response, tmpdir)
+                assert u"<title>OpenMoves – Move %d</title>" % move.id in response_data
+                assert u"<h1>%s</h1>" % move.activity in response_data
+
     def test_gpx_export(self, tmpdir):
         self._login()
         response = self.client.get('/moves/3/export?format=gpx')
-        response_data = self._validateResponse(response, checkContent=False)
+        response_data = self._validate_response(response, check_content=False)
         assert u'<gpx ' in response_data
         assert u'lat="50.632' in response_data
         assert u'lon="6.952' in response_data

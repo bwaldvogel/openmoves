@@ -15,7 +15,7 @@
 		<p>Files can also be uploaded when compressed with gzip.
 		Note that file type detection is based on filenames and thus files should <em>not</em> be renamed manually before uploading.</p>
 	</div>
-    <form class="form-import" action="{{url_for('moveImport')}}" method="POST" enctype="multipart/form-data">
+    <form class="form-import" action="{{url_for('move_import')}}" method="POST" enctype="multipart/form-data">
         <h2 class="form-import-heading">Import</h2>
         <input type="file" name="files" multiple="multiple" />
         <button class="btn btn-lg btn-primary btn-block" type="submit">Upload</button>

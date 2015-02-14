@@ -42,15 +42,15 @@ def initialize_config(f):
     f.write(data)
 
 
-def init(configFile):
+def init(configfile):
     app.config.from_pyfile('openmoves.cfg.default', silent=False)
-    if configFile:
-        if not os.path.exists(configFile):
-            with open(configFile, 'w') as f:
+    if configfile:
+        if not os.path.exists(configfile):
+            with open(configfile, 'w') as f:
                 initialize_config(f)
-            print("created %s" % configFile)
+            print("created %s" % configfile)
 
-        app.config.from_pyfile(configFile, silent=False)
+        app.config.from_pyfile(configfile, silent=False)
         assert app.config["SECRET_KEY"]
 
     db.init_app(app)
@@ -75,7 +75,7 @@ def command_app_context():
 
 manager = Manager(init)
 
-manager.add_option('-c', '--config', dest='configFile', default='openmoves.cfg', required=False)
+manager.add_option('-c', '--config', dest='configfile', default='openmoves.cfg', required=False)
 
 manager.add_command("runserver", Server(use_debugger=True))
 manager.add_command('db', MigrateCommand)
@@ -89,9 +89,9 @@ def error404(error):
 
 @app.route('/import', methods=['GET', 'POST'])
 @login_required
-def moveImport():
+def move_import():
     xmlfiles = request.files.getlist('files')
-    importedMoves = []
+    imported_moves = []
 
     for xmlfile in xmlfiles:
         move = None
@@ -102,36 +102,36 @@ def moveImport():
             filename = filename[:-len('.gz')]
 
         if filename.endswith('.xml'):
-            move = old_xml_import.oldXmlImport(xmlfile)
+            move = old_xml_import.old_xml_import(xmlfile)
         elif filename.endswith('.sml'):
-            move = sml_import.smlImport(xmlfile)
+            move = sml_import.sml_import(xmlfile)
         else:
             flash("unknown fileformat: '%s'" % xmlfile.filename, 'error')
 
         if move:
-            move.temperatureAvg, = db.session.query(func.avg(Sample.temperature)).filter(Sample.move == move, Sample.temperature > 0).one()
+            move.temperature_avg, = db.session.query(func.avg(Sample.temperature)).filter(Sample.move == move, Sample.temperature > 0).one()
 
-            strokeCount = 0
+            stroke_count = 0
             for events, in db.session.query(Sample.events).filter(Sample.move == move, Sample.events != None):
                 if 'swimming' in events and events['swimming']['type'] == 'Stroke':
-                    strokeCount += 1
+                    stroke_count += 1
 
             if 'swimming' in move.activity:
-                assert strokeCount > 0
+                assert stroke_count > 0
 
-            if strokeCount > 0:
-                move.strokeCount = strokeCount
+            if stroke_count > 0:
+                move.stroke_count = stroke_count
 
             db.session.commit()
-            importedMoves.append(move)
+            imported_moves.append(move)
 
-    if importedMoves:
-        if len(importedMoves) == 1:
-            move = importedMoves[0]
+    if imported_moves:
+        if len(imported_moves) == 1:
+            move = imported_moves[0]
             flash("imported '%s': move %d" % (xmlfile.filename, move.id))
             return redirect(url_for('move', id=move.id))
         else:
-            flash("imported %d moves" % len(importedMoves))
+            flash("imported %d moves" % len(imported_moves))
             return redirect(url_for('moves'))
     else:
         return render_template('import.html')
@@ -167,83 +167,83 @@ def logout():
 
 @app.route("/")
 def index():
-    nrOfMoves = Move.query.count()
+    nr_of_moves = Move.query.count()
 
-    return render_template('index.html', nrOfMoves=nrOfMoves)
+    return render_template('index.html', nr_of_moves=nr_of_moves)
 
 
 @app.route("/dashboard")
 @login_required
 def dashboard():
     now = datetime.utcnow()
-    # Determine dashboad startDate
-    if 'startDate' in request.args:
-        startDate = dateutil.parser.parse(request.args.get('startDate'))
+    # Determine dashboad start_date
+    if 'start_date' in request.args:
+        start_date = dateutil.parser.parse(request.args.get('start_date'))
     else:
-        startDate = date(now.year, now.month, now.day) - timedelta(days=7)
-    # Determine dashboad endDate
-    if 'endDate' in request.args:
-        endDate = dateutil.parser.parse(request.args.get('startDate'))
+        start_date = date(now.year, now.month, now.day) - timedelta(days=7)
+    # Determine dashboad end_date
+    if 'end_date' in request.args:
+        end_date = dateutil.parser.parse(request.args.get('end_date'))
     else:
-        endDate = date(now.year, now.month, now.day)
+        end_date = date(now.year, now.month, now.day)
 
-    moves = Move.query.filter_by(user=current_user).filter(Move.dateTime >= startDate).filter(Move.dateTime <= endDate).order_by(Move.dateTime.asc()).all()
+    moves = Move.query.filter_by(user=current_user).filter(Move.date_time >= start_date).filter(Move.date_time <= end_date).order_by(Move.date_time.asc()).all()
 
-    totalDistance = 0
-    totalDuration = timedelta(0)
-    totalAscent = 0
-    totalDescent = 0
+    total_distance = 0
+    total_duration = timedelta(0)
+    total_ascent = 0
+    total_descent = 0
     for move in moves:
-        totalDistance += move.distance
-        totalDuration += move.duration
+        total_distance += move.distance
+        total_duration += move.duration
         if move.ascent:
-            totalAscent += move.ascent
+            total_ascent += move.ascent
         if move.descent:
-            totalDescent += move.descent
+            total_descent += move.descent
 
-    nrOfMoves = len(moves)
+    nr_of_moves = len(moves)
 
     return render_template('dashboard.html', moves=moves,
-                           startDate=startDate, endDate=endDate,
-                           nrOfMoves=nrOfMoves,
-                           totalDistance=totalDistance, totalDuration=totalDuration,
-                           totalAscent=totalAscent, totalDescent=totalDescent)
+                           start_date=start_date, end_date=end_date,
+                           nr_of_moves=nr_of_moves,
+                           total_distance=total_distance, total_duration=total_duration,
+                           total_ascent=total_ascent, total_descent=total_descent)
 
 
 @app.route("/moves")
 @login_required
 def moves():
     moves = moves = Move.query.filter_by(user=current_user)
-    totalMovesCount = moves.count()
+    total_moves_count = moves.count()
     sort = request.args.get('sort')
-    sortOrder = request.args.get('sortOrder')
-    sortDefault = 'dateTime'
+    sort_order = request.args.get('sort_order')
+    sort_default = 'date_time'
     if not sort:
-        sort = sortDefault
-        sortOrder = 'desc'
-    if not sortOrder:
-        sortOrder = 'asc'
+        sort = sort_default
+        sort_order = 'desc'
+    if not sort_order:
+        sort_order = 'asc'
 
     if not hasattr(Move, sort):
         flash("illegal sort field: %s" % sort, 'error')
-        sort = sortDefault
+        sort = sort_default
 
-    sortAttr = getattr(Move, sort)
-    if not sortOrder or sortOrder == 'asc':
-        sortAttr = sortAttr.asc()
+    sort_attr = getattr(Move, sort)
+    if not sort_order or sort_order == 'asc':
+        sort_attr = sort_attr.asc()
     else:
-        sortAttr = sortAttr.desc()
+        sort_attr = sort_attr.desc()
 
     if db.engine.name == "postgresql":
-        sortAttr = sortAttr.nullslast()
+        sort_attr = sort_attr.nullslast()
 
-    moves = moves.order_by(sortAttr)
-    return render_template('moves.html', moves=moves, totalMovesCount=totalMovesCount, sort=sort, sortOrder=sortOrder)
+    moves = moves.order_by(sort_attr)
+    return render_template('moves.html', moves=moves, total_moves_count=total_moves_count, sort=sort, sort_order=sort_order)
 
 
 @app.route("/moves/<int:id>/delete")
 @login_required
-def deleteMove(id):
+def delete_move(id):
     move = Move.query.filter_by(user=current_user, id=id).first_or_404()
     Sample.query.filter_by(move=move).delete(synchronize_session=False)
     db.session.delete(move)
@@ -255,7 +255,7 @@ def deleteMove(id):
 
 @app.route("/moves/<int:id>/export")
 @login_required
-def exportMove(id):
+def export_move(id):
     move = Move.query.filter_by(user=current_user, id=id).first_or_404()
 
     if "format" in request.args:
@@ -263,19 +263,18 @@ def exportMove(id):
     else:
         format = "gpx"  # default
 
-    formatHandlers = {}
-    formatHandlers['gpx'] = gpx_export.gpxExport
-    # formatHandlers['tcx'] = exportTcx
-    if format not in formatHandlers:
+    format_handlers = {}
+    format_handlers['gpx'] = gpx_export.gpx_export
+    if format not in format_handlers:
         flash("Export format %s not supported" % format, 'error')
         return redirect(url_for('move', id=id))
 
-    exportFile = formatHandlers[format](move)
-    if not exportFile:
+    export_file = format_handlers[format](move)
+    if not export_file:
         return redirect(url_for('move', id=id))
-    response = make_response(exportFile)
-    dateTime = move.dateTime.strftime("%Y-%m-%dT%H:%M:%S")
-    response.headers["Content-Disposition"] = "attachment; filename= %s_%s_%s.%s" % (dateTime, move.activity, move.id, format)
+    response = make_response(export_file)
+    date_time = move.date_time.strftime("%Y-%m-%dT%H:%M:%S")
+    response.headers["Content-Disposition"] = "attachment; filename= %s_%s_%s.%s" % (date_time, move.activity, move.id, format)
     return response
 
 
@@ -287,51 +286,50 @@ def move(id):
     samples = move.samples.order_by('time asc').all()
     events = [sample for sample in samples if sample.events]
 
-    filteredEvents = []
+    filtered_events = []
     pauses = []
     laps = []
-    pauseBegin = None
+    pause_begin = None
     for sample in events:
         assert len(sample.events.keys()) == 1
         if 'pause' in sample.events:
             state = sample.events['pause']['state'].lower() == 'true'
             if state:
-                pauseBegin = sample
-            elif not state and pauseBegin:
-                pauses.append([pauseBegin, sample])
+                pause_begin = sample
+            elif not state and pause_begin:
+                pauses.append([pause_begin, sample])
         elif 'lap' in sample.events:
             laps.append(sample)
         else:
-            filteredEvents.append(sample)
+            filtered_events.append(sample)
 
     model = {}
     model['move'] = move
     model['samples'] = samples
-    model['events'] = filteredEvents
+    model['events'] = filtered_events
     model['pauses'] = pauses
     model['laps'] = laps
-    model['gpsSamples'] = [sample for sample in samples if sample.sampleType and sample.sampleType.startswith('gps-')]
+    model['gps_samples'] = [sample for sample in samples if sample.sample_type and sample.sample_type.startswith('gps-')]
     if 'swimming' in move.activity:
-        swimmingEvents = [sample for sample in filteredEvents if 'swimming' in sample.events]
-        model['swimmingEvents'] = swimmingEvents
+        swimming_events = [sample for sample in filtered_events if 'swimming' in sample.events]
+        model['swimming_events'] = swimming_events
 
-        model['swimmingStyleChanges'] = [sample for sample in swimmingEvents if sample.events['swimming']['type'] == 'StyleChange']
-        model['swimmingTurns'] = [sample for sample in swimmingEvents if sample.events['swimming']['type'] == 'Turn']
+        model['swimming_style_changes'] = [sample for sample in swimming_events if sample.events['swimming']['type'] == 'StyleChange']
+        model['swimming_turns'] = [sample for sample in swimming_events if sample.events['swimming']['type'] == 'Turn']
 
-        swimmingStrokes = [sample for sample in swimmingEvents if sample.events['swimming']['type'] == 'Stroke']
-        model['swimmingStrokes'] = swimmingStrokes
+        swimming_strokes = [sample for sample in swimming_events if sample.events['swimming']['type'] == 'Stroke']
+        model['swimming_strokes'] = swimming_strokes
 
-        pauseSamples = list(itertools.chain.from_iterable(pauses))
-        model['swimmingStrokesAndPauses'] = sorted(swimmingStrokes + pauseSamples, key=lambda sample: sample.time)
+        pause_samples = list(itertools.chain.from_iterable(pauses))
+        model['swimming_strokes_and_pauses'] = sorted(swimming_strokes + pause_samples, key=lambda sample: sample.time)
 
-        model['swimPace'] = timedelta(seconds=move.duration.total_seconds() / move.distance)
+        model['swim_pace'] = timedelta(seconds=move.duration.total_seconds() / move.distance)
 
-        assert len(model['swimmingStrokes']) == move.strokeCount
+        assert len(model['swimming_strokes']) == move.stroke_count
 
-    # eg. 'Pool swimming' → 'poolSwimming'
-    activityName = "".join([a[0].upper() + a[1:] for a in move.activity.split(" ")])
-    activityName = activityName[0].lower() + activityName[1:]
-    return render_template("move/%s.html" % activityName, **model)
+    # eg. 'Pool swimming' → 'pool_swimming'
+    activity_name = move.activity.lower().replace(' ', '_')
+    return render_template("move/%s.html" % activity_name, **model)
 
 if __name__ == '__main__':
     manager.run()

@@ -6,11 +6,11 @@ import math
 import time
 
 
-def dateTime(time):
+def format_date_time(time):
     return time.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def dateTimeMillis(date):
+def format_date_time_millis(date):
     return date.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
 
@@ -25,7 +25,7 @@ def duration(value):
     return '%02d:%02d:%05.2f' % (hours, minutes, seconds)
 
 
-def swimPace(value):
+def swim_pace(value):
     assert isinstance(value, timedelta)
     hours, remainder = divmod(100 * value.total_seconds(), 3600)
     minutes, seconds = divmod(remainder, 60)
@@ -33,18 +33,18 @@ def swimPace(value):
     return '%02d:%05.2f min / 100 m' % (minutes, seconds)
 
 
-def radianToDegree(value):
+def radian_to_degree(value):
     return 180.0 / math.pi * value
 
 
-def unixEpoch(date):
+def unix_epoch(date):
     return 1000 * time.mktime(date.timetuple())
 
 
 def register_filters(app):
-    app.jinja_env.filters['dateTime'] = dateTime
-    app.jinja_env.filters['dateTimeMillis'] = dateTimeMillis
+    app.jinja_env.filters['date_time'] = format_date_time
+    app.jinja_env.filters['date_time_millis'] = format_date_time_millis
     app.jinja_env.filters['duration'] = duration
-    app.jinja_env.filters['degree'] = radianToDegree
-    app.jinja_env.filters['epoch'] = unixEpoch
-    app.jinja_env.filters['swimPace'] = swimPace
+    app.jinja_env.filters['degree'] = radian_to_degree
+    app.jinja_env.filters['epoch'] = unix_epoch
+    app.jinja_env.filters['swim_pace'] = swim_pace
