@@ -30,7 +30,9 @@
 					<th>{{macros.sortable('activity', 'Activity', 'asc')}}</th>
 					<th>{{macros.sortable('duration', 'Duration', 'desc')}}</th>
 					<th>{{macros.sortable('distance', 'Distance', 'desc')}}</th>
-					<th>{{macros.sortable('speed_avg', 'Speed', 'desc')}}</th>
+					{% if show_columns.speed_avg %}
+						<th>{{macros.sortable('speed_avg', 'Speed', 'desc')}}</th>
+					{% endif %}
 					<th>{{macros.sortable('temperature_avg', 'Temperature', 'asc')}}</th>
 					{% if show_columns.ascent %}
 						<th>{{macros.sortable('ascent', 'Ascent', 'desc')}}</th>
@@ -52,7 +54,9 @@
 					<td>{{move.activity}}</td>
 					<td>{{move.duration | duration}}</td>
 					<td>{{macros.format_move_distance(move, move.distance)}}</td>
-					<td>{{macros.kmh(move.speed_avg)}}</td>
+					{% if show_columns.speed_avg %}
+						<td>{{macros.kmh(move.speed_avg)}}</td>
+					{% endif %}
 					<td>{{macros.temperature(move.temperature_avg)}}</td>
 					{% if show_columns.ascent %}
 						<td>{{macros.format_hm(move.ascent)}}</td>
