@@ -283,7 +283,7 @@ class TestOpenMoves(object):
 
         response = self.client.get('/moves')
         response_data = self._validate_response(response, tmpdir)
-        assert u'<th><a href="/moves?sort=hr_avg&amp;sort_order=desc">Heart Rate</a></th>' in response_data
+        assert re.search(u'<th><a href="/moves.+?">Heart Rate</a></th>', response_data)
         assert u'<td><span>97 bpm</span></td>' in response_data
 
     def test_delete_moves(self, tmpdir):
