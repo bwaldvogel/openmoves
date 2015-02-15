@@ -1,7 +1,6 @@
 # vim: set fileencoding=utf-8 :
 import sqlalchemy
 import re
-import dateutil.parser
 from datetime import timedelta, datetime
 
 
@@ -18,49 +17,73 @@ def normalize_move(move):
         move.activity = 'Outdoor swimming'
 
 
-def normalize_tag(tag, ns='http://www.suunto.com/schemas/sml', camel_case_to_underscores=True):
-    normalized_tag = tag.replace("{%s}" % ns, '')
-    if camel_case_to_underscores:
-        # http://stackoverflow.com/a/1176023/4308
-        normalized_tag = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', normalized_tag)
-        normalized_tag = re.sub('([a-z0-9])([A-Z])', r'\1_\2', normalized_tag).lower()
+def remove_namespace(tag, ns='http://www.suunto.com/schemas/sml'):
+    if tag.startswith('{'):
+        ns = "{%s}" % ns
+        assert tag.startswith(ns), "illegal tag: '%s'" % tag
+        return tag[len(ns):]
+    else:
+        return tag
+
+
+normalized_tags_cache = {}
+
+
+def normalize_tag(tag):
+    if tag in normalized_tags_cache:
+        return normalized_tags_cache[tag]
+
+    normalized_tag = remove_namespace(tag)
+
+    # http://stackoverflow.com/a/1176023/4308
+    normalized_tag = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', normalized_tag)
+    normalized_tag = re.sub('([a-z0-9])([A-Z])', r'\1_\2', normalized_tag)
+    normalized_tag = normalized_tag.lower()
+
+    normalized_tags_cache[tag] = normalized_tag
     return normalized_tag
 
 
 def _convert_attr(column_type, value, attr, message):
     if column_type == sqlalchemy.sql.sqltypes.Float:
-        assert re.match(r"^\-?\d+(\.\d+)?$", value), message
         return float(value)
     elif column_type == sqlalchemy.sql.sqltypes.Interval:
-        assert re.match(r"^\-?\d+(\.\d+)?$", value), message
         seconds = float(value)
         return timedelta(seconds=seconds)
     elif column_type == sqlalchemy.sql.sqltypes.Integer:
-        if (value == "0"):
+        if value == '0':
             return 0
         else:
-            assert re.match(r"^\-?(\d+|0x[0-9A-F]+)$", value), message
-            if re.match(r"^0x[0-9A-F]+$", value):
+            if value.startswith('0x'):
                 return int(value, 16)
             else:
                 return int(value, 10)
 
     elif column_type == sqlalchemy.sql.sqltypes.String:
-        assert re.match(r"^[0-9a-zA-Z ,-.]+$", value), message
         return value
     elif column_type == sqlalchemy.sql.sqltypes.DateTime:
-        assert re.match(r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?Z?$", value), message
-        value = dateutil.parser.parse(value)
-        assert isinstance(value, datetime)
-        return value
+        date, time = value.split('T')
+        year, month, day = date.split('-')
+        if time[-1] == 'Z':
+            time = time[:-1]
+        hour, minute, seconds = time.split(':')
+        seconds = float(seconds)
+        second = int(seconds)
+        microsecond = int((seconds - second) * (10 ** 6))
+        datetime_value = datetime(year=int(year),
+                                  month=int(month),
+                                  day=int(day),
+                                  hour=int(hour),
+                                  minute=int(minute),
+                                  second=second,
+                                  microsecond=microsecond)
+
+        return datetime_value
     else:
         raise Exception("Unknown column type: %s for attribute '%s'" % (column_type, attr))
 
 
 def set_attr(move, attr, value):
-    assert hasattr(move, attr), "attribute '%s' not found" % attr
-    old_value = getattr(move, attr)
-    assert old_value is None, "value for '%s' already set'" % attr
     prop = getattr(type(move), attr).property
     assert len(prop.columns) == 1
 
@@ -84,7 +107,7 @@ def _parse_recursive(node):
     if node.countchildren() > 0:
         events = {}
         for child in node.iterchildren():
-            tag = normalize_tag(child.tag, camel_case_to_underscores=False)
+            tag = remove_namespace(child.tag)
             if len(tag) > 2 and tag.upper() != tag:
                 tag = tag[0].lower() + tag[1:]
 

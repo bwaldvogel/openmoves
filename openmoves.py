@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
-# written by Benedikt Waldvogel
 
 from flask import Flask, render_template, flash, redirect, request, url_for
 from flask_bootstrap import Bootstrap
@@ -11,15 +10,13 @@ from sqlalchemy.sql import func
 from sqlalchemy import distinct, literal
 import os
 from flask_bcrypt import Bcrypt
-import old_xml_import
-import sml_import
+import imports
 import gpx_export
 import dateutil.parser
-import gzip
 from flask.helpers import make_response
 from flask_script import Manager, Server
 from flask_migrate import Migrate, MigrateCommand
-from commands import AddUser
+from commands import AddUser, ImportMove, DeleteMove, ListMoves
 from filters import register_filters, register_globals
 from login import login_manager, load_user, LoginForm
 import itertools
@@ -83,6 +80,9 @@ manager.add_option('-c', '--config', dest='configfile', default='openmoves.cfg',
 manager.add_command("runserver", Server(use_debugger=True))
 manager.add_command('db', MigrateCommand)
 manager.add_command('add-user', AddUser(command_app_context, app_bcrypt))
+manager.add_command('import-move', ImportMove(command_app_context))
+manager.add_command('delete-move', DeleteMove(command_app_context))
+manager.add_command('list-moves', ListMoves(command_app_context))
 
 
 @app.errorhandler(404)
@@ -100,32 +100,8 @@ def move_import():
         move = None
         filename = xmlfile.filename
         app.logger.info("importing '%s'" % filename)
-        if filename.endswith('.gz'):
-            xmlfile = gzip.GzipFile(fileobj=xmlfile, mode='rb', filename=filename)
-            filename = filename[:-len('.gz')]
-
-        if filename.endswith('.xml'):
-            move = old_xml_import.old_xml_import(xmlfile)
-        elif filename.endswith('.sml'):
-            move = sml_import.sml_import(xmlfile)
-        else:
-            flash("unknown fileformat: '%s'" % xmlfile.filename, 'error')
-
+        move = imports.move_import(xmlfile, filename, current_user)
         if move:
-            move.temperature_avg, = db.session.query(func.avg(Sample.temperature)).filter(Sample.move == move, Sample.temperature > 0).one()
-
-            stroke_count = 0
-            for events, in db.session.query(Sample.events).filter(Sample.move == move, Sample.events != None):
-                if 'swimming' in events and events['swimming']['type'] == 'Stroke':
-                    stroke_count += 1
-
-            if 'swimming' in move.activity:
-                assert stroke_count > 0
-
-            if stroke_count > 0:
-                move.stroke_count = stroke_count
-
-            db.session.commit()
             imported_moves.append(move)
 
     if imported_moves:

@@ -7,7 +7,6 @@ from model import Move, Device, Sample
 from lxml import objectify
 import os
 from _import import add_children, set_attr, normalize_tag, parse_json, normalize_move
-from flask.ext.login import current_user
 
 
 def parse_move(tree):
@@ -59,7 +58,7 @@ def parse_samples(tree, move):
         yield sample
 
 
-def sml_import(xmlfile):
+def sml_import(xmlfile, user):
         filename = xmlfile.filename
         tree = objectify.parse(xmlfile).getroot()
         move = parse_move(tree)
@@ -76,10 +75,10 @@ def sml_import(xmlfile):
         else:
             db.session.add(device)
 
-        if Move.query.filter_by(user=current_user, date_time=move.date_time, device=device).scalar():
+        if Move.query.filter_by(user=user, date_time=move.date_time, device=device).scalar():
             flash("%s at %s already exists" % (move.activity, move.date_time), 'warning')
         else:
-            move.user = current_user
+            move.user = user
             move.device = device
             db.session.add(move)
 
