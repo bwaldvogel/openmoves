@@ -8,6 +8,12 @@
 {%- endif -%}
 {%- endmacro %}
 
+{% macro hr(value) -%}
+{%- if value -%}
+<span>{{'%d' | format(value * 60)}} bpm</span>
+{%- endif -%}
+{%- endmacro %}
+
 {% macro datetime_to_date_utc(datetime) -%}
 Date.UTC({{datetime.year}}, {{datetime.month}}, {{datetime.day}}, {{datetime.hour}}, {{datetime.minute}}, {{datetime.second}}, {{"%d" | format(datetime.microsecond/1000)}})
 {%- endmacro %}
@@ -24,9 +30,9 @@ Date.UTC({{datetime.year}}, {{datetime.month}}, {{datetime.day}}, {{datetime.hou
 
 
 {% macro format_distance(distance) -%}
-{% if distance > 1000 -%}
+{%- if distance > 1000 -%}
     {{'%0.2f' | format(distance / 1000.0)}} km
-{% elif distance < 1000 -%}
+{%- elif distance < 1000 -%}
     {{'%0.3f' | format(distance / 1000.0)}} km
 {%- endif %}
 {%- endmacro %}
@@ -47,20 +53,20 @@ Date.UTC({{datetime.year}}, {{datetime.month}}, {{datetime.day}}, {{datetime.hou
 
 
 {% macro sortable(key, display_name, default_sort_order='desc') -%}
-{% if key == sort %}
-    {% if sort_order=='desc' %}
-        {% set _sort_order = 'asc' %}
-    {% else %}
-        {% set _sort_order = 'desc' %}
-    {% endif %}
-{% else %}
-    {% set _sort_order = default_sort_order %}
-{% endif %}
+{%- if key == sort -%}
+    {%- if sort_order=='desc' -%}
+        {%- set _sort_order = 'asc' -%}
+    {%- else -%}
+        {%- set _sort_order = 'desc' -%}
+    {%- endif -%}
+{%- else -%}
+    {%- set _sort_order = default_sort_order -%}
+{%- endif -%}
 <a href="{{url_for_sortable(key, sort_order=_sort_order)}}">{{display_name}}</a>
-{% if key == sort -%}
-{% if sort_order=='asc' %}<span class="dropup">{% endif %}
+{%- if key == sort -%}
+{%- if sort_order=='asc' -%}<span class="dropup">{%- endif -%}
 <span class="caret"></span>
-{% if sort_order=='asc' %}</span>{% endif %}
-{%- endif %}
+{%- if sort_order=='asc' -%}</span>{%- endif -%}
+{%- endif -%}
 {%- endmacro %}
 

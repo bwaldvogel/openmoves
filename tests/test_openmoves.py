@@ -213,7 +213,6 @@ class TestOpenMoves(object):
         assert u'<td>00:10:55.32</td>' in response_data
 
     def test_import_move_upload_multiple(self, tmpdir):
-
         self._login()
         data = {}
 
@@ -265,6 +264,27 @@ class TestOpenMoves(object):
         assert u'<gpx ' in response_data
         assert u'lat="50.632' in response_data
         assert u'lon="6.952' in response_data
+
+    def test_move_with_heart_rate(self, tmpdir):
+        self._login()
+        data = {}
+
+        filename = 'CAFEBABECAFEBABE-2014-11-02T13_08_09-0.sml.gz'
+        dn = os.path.dirname(os.path.realpath(__file__))
+        with open(os.path.join(dn, filename), 'rb') as f:
+            data['files'] = [(f, filename)]
+            response = self.client.post('/import', data=data, follow_redirects=True)
+
+        response_data = self._validate_response(response, tmpdir)
+        assert u'<title>OpenMoves – Move 4</title>' in response_data
+        assert u'<h1>Kayaking</h1>' in response_data
+        assert u'<th>Avg. Heart Rate</th>' in response_data
+        assert u'<td><span>97 bpm</span></td>' in response_data
+
+        response = self.client.get('/moves')
+        response_data = self._validate_response(response, tmpdir)
+        assert u'<th><a href="/moves?sort=hr_avg&amp;sort_order=desc">Heart Rate</a></th>' in response_data
+        assert u'<td><span>97 bpm</span></td>' in response_data
 
     def test_delete_moves(self, tmpdir):
         self._login()
