@@ -10,10 +10,29 @@ import time
 def format_date_time(time):
     return time.strftime("%Y-%m-%d %H:%M:%S")
 
-
 def format_date_time_millis(date):
     return date.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
 
+def format_distance(distance, unit=True):
+    if distance > 1000:
+        return "%0.2f%s" % (distance / 1000.0, " km" if unit else "")
+    elif distance < 1000:
+        return "%0.3f%s" % (distance / 1000.0, " km" if unit else "")
+
+def format_speed(speed, unit=True):
+    return "%0.1f%s" % (speed * 3.6, " km/h" if unit else "")
+
+def format_altitude(altitude, unit=True):
+    return "%d%s" % (altitude, " m" if unit else "")
+
+def format_temparature(temperature, unit=True):
+    return "%0.1f%s" % (temperature - 273.15, " °C" if unit else "")
+
+def format_hr(hr, unit=True):
+    return "%d%s" % (hr * 60, " bpm" if unit else "")
+
+def format_energyconsumption(energyconsumption, unit=True):
+    return "%0.1f%s" % (energyconsumption / 6.978 / 10.0, " kcal/min" if unit else "")
 
 def duration(value):
     if type(value).__name__ in ('str', 'unicode'):

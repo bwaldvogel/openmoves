@@ -12,6 +12,7 @@ import os
 from flask_bcrypt import Bcrypt
 import imports
 import gpx_export
+import csv_export
 import dateutil.parser
 from flask.helpers import make_response
 from flask_script import Manager, Server
@@ -288,13 +289,17 @@ def export_move(id):
 
     format_handlers = {}
     format_handlers['gpx'] = gpx_export.gpx_export
+    format_handlers['csv'] = csv_export.csv_export
     if format not in format_handlers:
         flash("Export format %s not supported" % format, 'error')
         return redirect(url_for('move', id=id))
 
     export_file = format_handlers[format](move)
+
     if not export_file:
         return redirect(url_for('move', id=id))
+
+    # app.logger.debug("Move export (format %s):\n%s" % (format, export_file))
     response = make_response(export_file)
     date_time = move.date_time.strftime("%Y-%m-%dT%H:%M:%S")
     response.headers["Content-Disposition"] = "attachment; filename= %s_%s_%s.%s" % (date_time, move.activity, move.id, format)
