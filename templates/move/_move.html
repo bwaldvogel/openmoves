@@ -22,8 +22,8 @@
         <li {% if not gps_samples %}class="disabled"{% endif %} role="presentation">
           <a role="menuitem" tabindex="-1" href="{{url_for('export_move', id=move.id, format='gpx') if gps_samples else "#"}}">as GPX</a>
         </li>
-        <li {% if not gps_samples %}class="disabled"{% endif %} role="presentation">
-          <a role="menuitem" tabindex="-1" href="{{url_for('export_move', id=move.id, format='csv') if gps_samples else "#"}}">as CSV</a>
+        <li>
+          <a role="menuitem" tabindex="-1" href="{{url_for('export_move', id=move.id, format='csv')}}">as CSV</a>
         </li>
       </ul>
     </div>
