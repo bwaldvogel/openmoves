@@ -302,7 +302,7 @@ def export_move(id):
     # app.logger.debug("Move export (format %s):\n%s" % (format, export_file))
     response = make_response(export_file)
     date_time = move.date_time.strftime("%Y-%m-%dT%H:%M:%S")
-    response.headers["Content-Disposition"] = "attachment; filename= %s_%s_%s.%s" % (date_time, move.activity, move.id, format)
+    response.headers["Content-Disposition"] = "attachment; filename= Move_%s_%s.%s" % (date_time, move.activity.replace(" ", "_"), format)
     return response
 
 
