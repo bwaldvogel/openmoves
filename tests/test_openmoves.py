@@ -257,10 +257,21 @@ class TestOpenMoves(object):
                 assert u"<title>OpenMoves – Move %d</title>" % move.id in response_data
                 assert u"<h1>%s</h1>" % move.activity in response_data
 
+    def test_csv_export(self, tmpdir):
+        self._login()
+        with app.test_request_context():
+            for move in Move.query:
+                response = self.client.get("/moves/%d/export?format=csv" % move.id)
+                response_data = self._validate_response(response, tmpdir, check_content=False)
+                lines = response_data.split('\r\n')
+                header = lines[0]
+                assert 'Timestamp;Duration;Latitude' in header
+                assert len(lines) == move.samples.count() + 1
+
     def test_gpx_export(self, tmpdir):
         self._login()
         response = self.client.get('/moves/3/export?format=gpx')
-        response_data = self._validate_response(response, check_content=False)
+        response_data = self._validate_response(response, tmpdir, check_content=False)
         assert u'<gpx ' in response_data
         assert u'lat="50.632' in response_data
         assert u'lon="6.952' in response_data
