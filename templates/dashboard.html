@@ -1,12 +1,89 @@
 {% extends "_base.html" %}
 
+
+
+
+{% block scripts %}
+{{super()}}
+<script src="{{url_for('.static', filename='js/moment.min.js')}}"></script>
+<script src="{{url_for('.static', filename='js/bootstrap-datetimepicker.min.js')}}"></script>
+
+{{ flask_util_js.js }}
+
+<script type="text/javascript">
+    $(function () {
+        <!-- Date time picker configuration -->
+        $('#dtpStart').datetimepicker({
+        defaultDate: '{{start_date}}',
+        format: 'LL',          <!-- http://momentjs.com/docs/#/displaying/format/ -->
+        calendarWeeks: true,
+        showTodayButton: true
+        });
+
+        $('#dtpEnd').datetimepicker({
+        defaultDate: '{{end_date}}',
+        format: 'LL',          <!-- http://momentjs.com/docs/#/displaying/format/ -->
+        calendarWeeks: true,
+        showTodayButton: true
+        });
+
+        <!-- Linked date time pickers: http://eonasdan.github.io/bootstrap-datetimepicker/#linked-pickers -->
+        $("#dtpStart").on("dp.change",function (e) {
+            $('#dtpEnd').data("DateTimePicker").minDate(e.date);
+        });
+        $("#dtpEnd").on("dp.change",function (e) {
+            $('#dtpStart').data("DateTimePicker").maxDate(e.date);
+        });
+
+        <!-- Update page on click -->
+        $('#updateButton').on('click', function (e) {
+          var startD = $('#dtpStart').data("DateTimePicker").date();
+          var endD = $('#dtpEnd').data("DateTimePicker").date();
+          window.location.href = flask_util.url_for('dashboard', {start_date: startD, end_date: endD});
+        })
+    });
+</script>
+
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='css/bootstrap-datetimepicker.css')}}">
+{% endblock %}
+
 {% set active_page = 'dashboard' -%}
 
 {% block content %}
 {{super()}}
 <div class="container" role="main">
     <h3>Dashboard</h3>
-    <div>Moves from {{start_date|date_time}} until {{end_date|date_time}}</div><br/>
+    <div class="container">
+        <div class='col-md-3'>
+              <div>from:</div>
+            <div class="form-group">
+                <div class='input-group date' id='dtpStart'>
+                    <input type='text' class="form-control" />
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class='col-md-3'>
+            <div>to:</div>
+            <div class="form-group">
+                <div class='input-group date' id='dtpEnd'>
+                    <input type='text' class="form-control" />
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class='col-md-1'>
+        <div>&nbsp;</div>
+            <button type="button" class="btn btn-default" id='updateButton'>update</button>
+        </div>
+    </div>
+
     <table class="table table-striped table-auto-width">
       <tr><th>#Moves</th><td>{{nr_of_moves}}</td></tr>
       <tr><th>Total Distance</th><td>{{macros.format_distance(total_distance)}}</td></tr>

@@ -22,8 +22,10 @@ from filters import register_filters, register_globals
 from login import login_manager, load_user, LoginForm
 import itertools
 from collections import OrderedDict
+from flask_util_js import FlaskUtilJs
 
 app = Flask('openmoves')
+fujs = FlaskUtilJs(app)
 
 app_bcrypt = Bcrypt()
 migrate = Migrate(app, db)
