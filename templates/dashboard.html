@@ -11,6 +11,9 @@
 {{ flask_util_js.js }}
 
 <script type="text/javascript">
+    function reloadWithDate(startDate, endDate) {
+        window.location.href = flask_util.url_for('dashboard', {start_date: startDate, end_date: endDate});
+    }
     $(function () {
         <!-- Date time picker configuration -->
         $('#dtpStart').datetimepicker({
@@ -30,17 +33,12 @@
         <!-- Linked date time pickers: http://eonasdan.github.io/bootstrap-datetimepicker/#linked-pickers -->
         $("#dtpStart").on("dp.change",function (e) {
             $('#dtpEnd').data("DateTimePicker").minDate(e.date);
+            reloadWithDate($('#dtpStart').data("DateTimePicker").date(), $('#dtpEnd').data("DateTimePicker").date());
         });
         $("#dtpEnd").on("dp.change",function (e) {
             $('#dtpStart').data("DateTimePicker").maxDate(e.date);
+            reloadWithDate($('#dtpStart').data("DateTimePicker").date(), $('#dtpEnd').data("DateTimePicker").date());
         });
-
-        <!-- Update page on click -->
-        $('#updateButton').on('click', function (e) {
-          var startD = $('#dtpStart').data("DateTimePicker").date();
-          var endD = $('#dtpEnd').data("DateTimePicker").date();
-          window.location.href = flask_util.url_for('dashboard', {start_date: startD, end_date: endD});
-        })
     });
 </script>
 
@@ -77,10 +75,6 @@
                     </span>
                 </div>
             </div>
-        </div>
-        <div class='col-md-1'>
-        <div>&nbsp;</div>
-            <button type="button" class="btn btn-default" id='updateButton'>update</button>
         </div>
     </div>
 
