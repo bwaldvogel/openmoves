@@ -31,7 +31,10 @@
 					<th>{{macros.sortable('duration', 'Duration', 'desc')}}</th>
 					<th>{{macros.sortable('distance', 'Distance', 'desc')}}</th>
 					{% if show_columns.speed_avg -%}
-						<th>{{macros.sortable('speed_avg', 'Speed', 'desc')}}</th>
+						<th>{{macros.sortable('speed_avg', 'Avg. Speed', 'desc')}}</th>
+					{%- endif %}
+					{% if show_columns.speed_max -%}
+						<th>{{macros.sortable('speed_max', 'Max. Speed', 'desc')}}</th>
 					{%- endif %}
 					{% if show_columns.hr_avg -%}
 						<th>{{macros.sortable('hr_avg', 'Heart Rate', 'desc')}}</th>
@@ -59,6 +62,9 @@
 					<td>{{macros.format_move_distance(move, move.distance)}}</td>
 					{% if show_columns.speed_avg -%}
 						<td>{{macros.kmh(move.speed_avg)}}</td>
+					{%- endif %}
+					{% if show_columns.speed_max -%}
+						<td>{{macros.kmh(move.speed_max)}}</td>
 					{%- endif %}
 					{% if show_columns.hr_avg -%}
 						<td>{{macros.hr(move.hr_avg)}}</td>
