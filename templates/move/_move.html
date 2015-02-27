@@ -33,7 +33,8 @@
         <tr>
             {% block table_header %}
             <th>Time</th>
-            <th>Speed Avg</th>
+            <th>Avg. Speed</th>
+            {% if move.speed_max %}<th>Max. Speed</th>{% endif %}
             <th>Duration</th>
             <th>Distance</th>
             <th>Avg. Temperature</th>
@@ -47,6 +48,7 @@
             {% block table_entry %}
             <td>{{move.date_time | date_time}}</td>
             <td>{{macros.kmh(move.speed_avg)}}</td>
+            {% if move.speed_max %}<td>{{macros.hr(move.speed_max)}}</td>{% endif %}
             <td>{{move.duration | duration}}</td>
 			<td>{{macros.format_move_distance(move, move.distance)}}</td>
             <td>{{macros.temperature(move.temperature_avg)}}</td>
