@@ -18,11 +18,12 @@ from flask.helpers import make_response
 from flask_script import Manager, Server
 from flask_migrate import Migrate, MigrateCommand
 from commands import AddUser, ImportMove, DeleteMove, ListMoves
-from filters import register_filters, register_globals
+from filters import register_filters, register_globals, radian_to_degree
 from login import login_manager, load_user, LoginForm
 import itertools
 from collections import OrderedDict
 from flask_util_js import FlaskUtilJs
+from geopy.geocoders import Nominatim
 
 app = Flask('openmoves')
 fujs = FlaskUtilJs(app)
@@ -340,6 +341,19 @@ def move(id):
     model['pauses'] = pauses
     model['laps'] = laps
     model['gps_samples'] = [sample for sample in samples if sample.sample_type and sample.sample_type.startswith('gps-')]
+
+    if model['gps_samples']:
+        first_sample = model['gps_samples'][0]
+        latitude = first_sample.latitude
+        longitude = first_sample.longitude
+        try:
+            geolocator = Nominatim()
+            location = geolocator.reverse("%f, %f" % (radian_to_degree(latitude), radian_to_degree(longitude)))
+            model['location'] = location
+        except Exception as e:
+            flash('failed to resolve geolocation', 'error')
+            app.logger.error('failed to resolve geolocation:' + repr(e))
+
     if 'swimming' in move.activity:
         swimming_events = [sample for sample in filtered_events if 'swimming' in sample.events]
         model['swimming_events'] = swimming_events

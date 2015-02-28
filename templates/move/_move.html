@@ -13,6 +13,20 @@
 <div class="container" role="main">
     <h1>{{move.activity}}</h1>
 
+    {% if location -%}
+    <h3>
+        {%- if location.raw.address.city -%}
+            {{location.raw.address.city}}
+        {%- elif location.raw.address.town -%}
+            {{location.raw.address.town}}
+        {%- elif location.raw.address.village -%}
+            {{location.raw.address.village}}
+        {%- endif -%}
+        , {{location.raw.address.country}}
+    </h3>
+    <p title="{{location.raw}}">{{location.address}}</p>
+    {%- endif %}
+
     <div class="dropdown">
       <button class="btn btn-default dropdown-toggle" type="button" id="dropdownExport" data-toggle="dropdown" aria-expanded="true">
         Export Move
