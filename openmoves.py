@@ -24,6 +24,10 @@ import itertools
 from collections import OrderedDict
 from flask_util_js import FlaskUtilJs
 from geopy.geocoders import Nominatim
+import numpy as np
+from math import atan2
+from geopy.distance import vincenty
+
 
 app = Flask('openmoves')
 fujs = FlaskUtilJs(app)
@@ -33,6 +37,33 @@ migrate = Migrate(app, db)
 
 register_filters(app)
 register_globals(app)
+
+
+# http://stackoverflow.com/questions/6671183/calculate-the-center-point-of-multiple-latitude-longitude-coordinate-pairs
+def calculate_gps_center(gps_samples):
+    coordinates = np.ndarray(shape=(len(gps_samples), 2), dtype=float)
+    for idx, sample in enumerate(gps_samples):
+        coordinates[idx][0] = sample.latitude
+        coordinates[idx][1] = sample.longitude
+
+    # Convert lat/lon (must be in radians) to Cartesian coordinates for each location.
+    cos_lat = np.cos(coordinates[:, 0])
+    sin_lat = np.sin(coordinates[:, 0])
+    cos_lon = np.cos(coordinates[:, 1])
+    sin_lon = np.sin(coordinates[:, 1])
+
+    # Compute average x, y and z coordinates.
+    x = np.average(cos_lat * cos_lon)
+    y = np.average(cos_lat * sin_lon)
+    z = np.average(sin_lat)
+
+    # Convert average x, y, z coordinate to latitude and longitude.
+    lon = atan2(y, x)
+    hyp = np.sqrt(x * x + y * y)
+    lat = atan2(z, hyp)
+
+    center = (lat, lon)
+    return center
 
 
 def initialize_config(f):
@@ -340,12 +371,15 @@ def move(id):
     model['events'] = filtered_events
     model['pauses'] = pauses
     model['laps'] = laps
-    model['gps_samples'] = [sample for sample in samples if sample.sample_type and sample.sample_type.startswith('gps-')]
 
-    if model['gps_samples']:
-        first_sample = model['gps_samples'][0]
+    gps_samples = [sample for sample in samples if sample.sample_type and sample.sample_type.startswith('gps-')]
+    model['gps_samples'] = gps_samples
+
+    if gps_samples:
+        first_sample = gps_samples[0]
         latitude = first_sample.latitude
         longitude = first_sample.longitude
+
         try:
             geolocator = Nominatim()
             location = geolocator.reverse("%f, %f" % (radian_to_degree(latitude), radian_to_degree(longitude)))
@@ -353,6 +387,34 @@ def move(id):
         except Exception as e:
             flash('failed to resolve geolocation', 'error')
             app.logger.error('failed to resolve geolocation:' + repr(e))
+
+        gps_center = calculate_gps_center(gps_samples)
+        gps_center_degrees = [radian_to_degree(x) for x in gps_center]
+
+        model['gps_center'] = {'latitude': gps_center[0], 'longitude': gps_center[1]}
+
+        max_gps_distance = 0
+        for sample in gps_samples:
+            point = (sample.latitude, sample.longitude)
+            point_degrees = [radian_to_degree(x) for x in point]
+            distance = vincenty(gps_center_degrees, point_degrees).meters
+            max_gps_distance = max(max_gps_distance, distance)
+
+        model['max_gps_distance'] = max_gps_distance
+
+        # empirically determined values
+        if max_gps_distance < 2000:
+            map_zoom_level = 14
+        elif max_gps_distance < 4000:
+            map_zoom_level = 13
+        elif max_gps_distance < 7500:
+            map_zoom_level = 12
+        elif max_gps_distance < 10000:
+            map_zoom_level = 11
+        else:
+            map_zoom_level = 10
+
+        model['map_zoom_level'] = map_zoom_level
 
     if 'swimming' in move.activity:
         swimming_events = [sample for sample in filtered_events if 'swimming' in sample.events]

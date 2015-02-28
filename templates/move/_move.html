@@ -261,8 +261,8 @@ var styleFunction = function(feature, resolution) {
         vectorLayer
       ],
       view: new ol.View({
-          center: ol.proj.transform([{{gps_samples[0].longitude | degree}}, {{gps_samples[0].latitude | degree}}], 'EPSG:4326', 'EPSG:3857'),
-        zoom: 12
+          center: ol.proj.transform([{{gps_center.longitude | degree}}, {{gps_center.latitude | degree}}], 'EPSG:4326', 'EPSG:3857'),
+        zoom: {{map_zoom_level}}
       })
     });
 {% endif %}
