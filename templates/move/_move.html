@@ -14,11 +14,11 @@
     <h1>{{move.activity}}</h1>
 
     <div class="dropdown">
-      <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+      <button class="btn btn-default dropdown-toggle" type="button" id="dropdownExport" data-toggle="dropdown" aria-expanded="true">
         Export Move
       <span class="caret"></span>
       </button>
-      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+      <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownExport">
         <li {% if not gps_samples %}class="disabled"{% endif %} role="presentation">
           <a role="menuitem" tabindex="-1" href="{{url_for('export_move', id=move.id, format='gpx') if gps_samples else "#"}}">as GPX</a>
         </li>
