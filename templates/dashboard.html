@@ -1,8 +1,5 @@
 {% extends "_base.html" %}
 
-
-
-
 {% block scripts %}
 {{super()}}
 <script src="{{url_for('.static', filename='js/moment.min.js')}}"></script>
@@ -11,33 +8,79 @@
 {{ flask_util_js.js }}
 
 <script type="text/javascript">
-    function reloadWithDate(startDate, endDate) {
-        window.location.href = flask_util.url_for('dashboard', {start_date: startDate, end_date: endDate});
+    function reload_with_date(start_date, end_date) {
+        window.location.href = flask_util.url_for('dashboard', {start_date: start_date, end_date: end_date});
     }
+
+    $( document ).ready(function() {
+        <!-- Pre-select the date time period dropdown by the selected date range -->
+        var start_date = moment("{{start_date}}");
+        var end_date = moment("{{end_date}}");
+
+        var dropdown_selection = "custom"
+        if(end_date.diff(start_date, 'weeks') == 1) {
+          dropdown_selection = "1 week"
+        } else if (end_date.diff(start_date, 'months') == 1) {
+          dropdown_selection = "1 month";
+        } else if (end_date.diff(start_date, 'years') == 1) {
+          dropdown_selection = "1 year";
+        } else if (start_date.isSame('1970-01-01')) {
+          dropdown_selection = "all moves";
+        }
+
+        $(".dropdown").find('.btn').find('.selection').text(dropdown_selection);
+    });
+
     $(function () {
         <!-- Date time picker configuration -->
-        $('#dtpStart').datetimepicker({
-        defaultDate: '{{start_date}}',
-        format: 'LL',          <!-- http://momentjs.com/docs/#/displaying/format/ -->
-        calendarWeeks: true,
-        showTodayButton: true
+        $('#dtp_start').datetimepicker({
+            defaultDate: '{{start_date}}',
+            maxDate: '{{end_date}}',
+            format: 'LL',          <!-- http://momentjs.com/docs/#/displaying/format/ -->
+            calendarWeeks: true,
+            showTodayButton: true
         });
-
-        $('#dtpEnd').datetimepicker({
-        defaultDate: '{{end_date}}',
-        format: 'LL',          <!-- http://momentjs.com/docs/#/displaying/format/ -->
-        calendarWeeks: true,
-        showTodayButton: true
+        $('#dtp_end').datetimepicker({
+            defaultDate: '{{end_date}}',
+            minDate: '{{start_date}}',
+            format: 'LL',          <!-- http://momentjs.com/docs/#/displaying/format/ -->
+            calendarWeeks: true,
+            showTodayButton: true
         });
 
         <!-- Linked date time pickers: http://eonasdan.github.io/bootstrap-datetimepicker/#linked-pickers -->
-        $("#dtpStart").on("dp.change",function (e) {
-            $('#dtpEnd').data("DateTimePicker").minDate(e.date);
-            reloadWithDate($('#dtpStart').data("DateTimePicker").date(), $('#dtpEnd').data("DateTimePicker").date());
+        $("#dtp_start").on("dp.change",function (e) {
+            reload_with_date($('#dtp_start').data("DateTimePicker").date(), $('#dtp_end').data("DateTimePicker").date());
         });
-        $("#dtpEnd").on("dp.change",function (e) {
-            $('#dtpStart').data("DateTimePicker").maxDate(e.date);
-            reloadWithDate($('#dtpStart').data("DateTimePicker").date(), $('#dtpEnd').data("DateTimePicker").date());
+        $("#dtp_end").on("dp.change",function (e) {
+            reload_with_date($('#dtp_start').data("DateTimePicker").date(), $('#dtp_end').data("DateTimePicker").date());
+        });
+
+        $(".dropdown-menu li a").click(function(){
+          $(this).parents(".dropdown").find('.btn').find('.selection').text($(this).text());
+
+          var start_date = null;
+          switch($(this).text()) {
+              case "1 week":
+                  start_date = moment().subtract(1, 'weeks');
+                  break;
+              case "1 month":
+                  start_date = moment().subtract(1, 'months');
+                  break;
+              case "1 year":
+                  start_date = moment().subtract(1, 'years');
+                  break;
+              case "all moves":
+                  start_date = moment().set({'year': 1970, 'month': 0, 'date': 1});;
+                  break;
+              default:
+                  start_date = moment().subtract(7, 'days');
+                  break;
+          }
+          start_date.set({'hour': 0, 'minute': 0, 'second': 0, 'millisecond': 0});
+          var end_date = moment().set({'hour': 0, 'minute': 0, 'second': 0, 'millisecond': 0});
+          reload_with_date(start_date.format(), end_date.format());
+          ;
         });
     });
 </script>
@@ -59,7 +102,7 @@
         <div class='col-md-3'>
               <div>from:</div>
             <div class="form-group">
-                <div class='input-group date' id='dtpStart'>
+                <div class='input-group date' id='dtp_start'>
                     <input type='text' class="form-control" />
                     <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
                     </span>
@@ -69,11 +112,27 @@
         <div class='col-md-3'>
             <div>to:</div>
             <div class="form-group">
-                <div class='input-group date' id='dtpEnd'>
+                <div class='input-group date' id='dtp_end'>
                     <input type='text' class="form-control" />
                     <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
                     </span>
                 </div>
+            </div>
+        </div>
+        <div class='col-md-1'>
+            <div>&nbsp;</div>
+            <!-- http://stackoverflow.com/questions/13437446/how-to-display-selected-item-in-bootstrap-button-dropdown-title -->
+            <div class="dropdown">
+              <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+                Period: <strong><span class="selection">1 week</span></strong>
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 week</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 month</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 year</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">all moves</a></li>
+              </ul>
             </div>
         </div>
     </div>
