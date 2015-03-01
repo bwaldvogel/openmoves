@@ -25,12 +25,7 @@ def parse_samples(tree, move):
             tag = normalize_tag(child.tag)
             value = child.text
 
-            if tag in ['utc', 'ehpe', 'hr']:
-                set_attr(sample, tag, value)
-            elif tag.startswith('gps'):
-                tag = tag[0:3].lower() + tag[3:]
-                set_attr(sample, tag, value)
-            elif tag == 'events':
+            if tag == 'events':
                 sample.events = parse_json(child)
             elif tag == 'satellites':
                 sample.satellites = parse_json(child)
