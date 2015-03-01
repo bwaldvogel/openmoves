@@ -3,6 +3,8 @@
 from flask import flash
 import gpxpy.gpx
 from filters import radian_to_degree
+from model import Sample
+
 
 def gpx_export(move):
 
@@ -18,10 +20,9 @@ def gpx_export(move):
     gpx_track.segments.append(gpx_segment)
 
     # Create points:
-    samples = move.samples.order_by('time asc').all()
-    gps_samples = [sample for sample in samples if sample.sample_type and sample.sample_type.startswith('gps-')]
+    gps_samples = move.samples.filter(Sample.sample_type.like('gps-%')).order_by('time asc')
 
-    if len(gps_samples) == 0:
+    if gps_samples.count() == 0:
         flash("No GPS samples found for GPX export", 'error')
         return None
 
