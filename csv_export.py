@@ -2,26 +2,28 @@
 # vim: set fileencoding=utf-8 :
 from flask import flash
 from filters import radian_to_degree, format_distance, format_speed, format_altitude, format_temparature, format_hr, \
-    format_energyconsumption, format_date_time_millis, format_date_time
+    format_energyconsumption, format_date_time
 from functools import partial
 
 
-csvExportUnit = False
+csv_export_unit = False
 
-def addValue(rowArray, value, formatter=None):
+
+def addValue(row_array, value, formatter=None):
     if not value:
-        rowArray.append("")
+        row_array.append("")
     else:
         if formatter:
-            rowArray.append(str(formatter(value)))
+            row_array.append(str(formatter(value)))
         else:
-            rowArray.append(str(value))
+            row_array.append(str(value))
+
 
 def csv_export(move):
-    samples = move.samples.order_by('time asc').all()
+    samples = move.samples.order_by('time asc')
 
-    if len(samples) == 0:
-        flash("No samples found for GPX export", 'error')
+    if samples.count() == 0:
+        flash("No samples found for CSV export", 'error')
         return None
 
     # Header
@@ -50,20 +52,20 @@ def csv_export(move):
         addValue(row, sample.time)
         addValue(row, sample.latitude, formatter=radian_to_degree)
         addValue(row, sample.longitude, formatter=radian_to_degree)
-        addValue(row, sample.altitude, formatter=partial(format_altitude, unit=csvExportUnit))
+        addValue(row, sample.altitude, formatter=partial(format_altitude, unit=csv_export_unit))
 
-        addValue(row, sample.distance, formatter=partial(format_distance, unit=csvExportUnit))
-        addValue(row, sample.speed, formatter=partial(format_speed, unit=csvExportUnit))
-        addValue(row, sample.temperature, formatter=partial(format_temparature, unit=csvExportUnit))
-        addValue(row, sample.hr, formatter=partial(format_hr, unit=csvExportUnit))
-        addValue(row, sample.energy_consumption, formatter=partial(format_energyconsumption, unit=csvExportUnit))
+        addValue(row, sample.distance, formatter=partial(format_distance, unit=csv_export_unit))
+        addValue(row, sample.speed, formatter=partial(format_speed, unit=csv_export_unit))
+        addValue(row, sample.temperature, formatter=partial(format_temparature, unit=csv_export_unit))
+        addValue(row, sample.hr, formatter=partial(format_hr, unit=csv_export_unit))
+        addValue(row, sample.energy_consumption, formatter=partial(format_energyconsumption, unit=csv_export_unit))
 
         addValue(row, sample.gps_hdop)
-        addValue(row, sample.vertical_speed, formatter=partial(format_speed, unit=csvExportUnit))
+        addValue(row, sample.vertical_speed, formatter=partial(format_speed, unit=csv_export_unit))
         addValue(row, sample.number_of_satellites)
 
         rows.append(";".join(row))
 
     # Finally merge all rows
-    csvExport = "\r\n".join(rows)
-    return csvExport
+    csv_data = "\r\n".join(rows)
+    return csv_data
