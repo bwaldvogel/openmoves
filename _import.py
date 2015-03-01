@@ -27,6 +27,9 @@ def parse_samples(samples, move):
 
 
 def normalize_move(move):
+
+    move.import_date_time = datetime.now()
+
     if move.ascent_time.total_seconds() == 0:
         assert move.ascent == 0
         move.ascent = None

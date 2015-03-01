@@ -121,6 +121,7 @@ class Move(db.Model):
     device_info_sw_build_date_time = db.Column(db.DateTime, name="device_info_sw_build_date_time")
 
     source = db.Column(db.String, name="source")
+    import_date_time = db.Column(db.DateTime, name="import_date_time", nullable=False)
 
 
 class Sample(db.Model):
