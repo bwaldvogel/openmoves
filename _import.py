@@ -2,6 +2,28 @@
 import sqlalchemy
 import re
 from datetime import timedelta, datetime
+from model import Sample
+
+
+def parse_samples(samples, move):
+    for sample_node in samples:
+        sample = Sample()
+        sample.move = move
+
+        for child in sample_node.iterchildren():
+            tag = normalize_tag(child.tag)
+            value = child.text
+
+            if tag == 'events':
+                sample.events = parse_json(child)
+            elif tag == 'satellites':
+                sample.satellites = parse_json(child)
+            elif tag == 'apps_data':
+                sample.apps_data = parse_json(child)
+            else:
+                set_attr(sample, tag, value)
+
+        yield sample
 
 
 def normalize_move(move):

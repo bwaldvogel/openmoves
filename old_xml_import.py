@@ -3,10 +3,10 @@
 
 from flask import flash
 from model import db
-from model import Move, Device, Sample
+from model import Move, Device
 from lxml import objectify
 import re
-from _import import add_children, set_attr, parse_json, normalize_move, normalize_tag
+from _import import add_children, normalize_move, parse_samples
 
 
 def parse_move(tree):
@@ -14,27 +14,6 @@ def parse_move(tree):
     add_children(move, tree.header)
     normalize_move(move)
     return move
-
-
-def parse_samples(tree, move):
-    for sample_node in tree.Samples.iterchildren():
-        sample = Sample()
-        sample.move = move
-
-        for child in sample_node.iterchildren():
-            tag = normalize_tag(child.tag)
-            value = child.text
-
-            if tag == 'events':
-                sample.events = parse_json(child)
-            elif tag == 'satellites':
-                sample.satellites = parse_json(child)
-            elif tag == 'apps_data':
-                sample.apps_data = parse_json(child)
-            else:
-                set_attr(sample, tag, value)
-
-        yield sample
 
 
 def old_xml_import(xmlfile, user):
@@ -70,7 +49,7 @@ def old_xml_import(xmlfile, user):
             move.device = device
             db.session.add(move)
 
-            for sample in parse_samples(tree, move):
+            for sample in parse_samples(tree.Samples.iterchildren(), move):
                 db.session.add(sample)
             db.session.commit()
             return move
