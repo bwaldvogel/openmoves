@@ -19,11 +19,11 @@
 
         var dropdown_selection = "custom"
         if(end_date.diff(start_date, 'weeks') == 1) {
-          dropdown_selection = "one week"
+          dropdown_selection = "1 week"
         } else if (end_date.diff(start_date, 'months') == 1) {
-          dropdown_selection = "one month";
+          dropdown_selection = "1 month";
         } else if (end_date.diff(start_date, 'years') == 1) {
-          dropdown_selection = "one year";
+          dropdown_selection = "1 year";
         } else if (start_date.isSame('1970-01-01')) {
           dropdown_selection = "all moves";
         }
@@ -61,13 +61,13 @@
 
           var start_date = null;
           switch($(this).text()) {
-              case "one week":
+              case "1 week":
                   start_date = moment().subtract(1, 'weeks');
                   break;
-              case "one month":
+              case "1 month":
                   start_date = moment().subtract(1, 'months');
                   break;
-              case "one year":
+              case "1 year":
                   start_date = moment().subtract(1, 'years');
                   break;
               case "all moves":
@@ -124,13 +124,13 @@
             <!-- http://stackoverflow.com/questions/13437446/how-to-display-selected-item-in-bootstrap-button-dropdown-title -->
             <div class="dropdown">
               <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-                Period: <strong><span class="selection">one week</span></strong>
+                Period: <strong><span class="selection">1 week</span></strong>
                 <span class="caret"></span>
               </button>
               <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">one week</a></li>
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">one month</a></li>
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">one year</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 week</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 month</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 year</a></li>
                 <li role="presentation"><a role="menuitem" tabindex="-1" href="#">all moves</a></li>
               </ul>
             </div>
