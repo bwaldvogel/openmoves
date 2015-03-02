@@ -12,6 +12,7 @@ OpenMoves {% if active_page and active_page != 'index' %}– {{active_page|capit
     <link rel="stylesheet" href="{{url_for('.static', filename='css/main.css')}}">
     <link href="{{bootstrap_find_resource('css/bootstrap-theme.css', cdn='bootstrap')}}" rel="stylesheet" media="screen">
     <link rel="stylesheet" href="{{url_for('.static', filename='css/jquery-ui.min.css')}}">
+    <link rel="stylesheet" href="{{url_for('.static', filename='css/bootstrap-editable.css')}}">
 {% endblock %}
 
 {% block navbar %}
@@ -58,6 +59,11 @@ OpenMoves {% if active_page and active_page != 'index' %}– {{active_page|capit
 {% block scripts %}
 {{super()}}
 <script src="{{url_for('.static', filename='js/main.js')}}"></script>
+<script src="{{url_for('.static', filename='js/bootstrap-editable.min.js')}}"></script>
+
+<script>
+$.fn.editable.defaults.mode = 'inline';
+</script>
 {% endblock %}
 
 {% block content %}

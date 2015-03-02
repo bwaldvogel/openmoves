@@ -2,7 +2,8 @@
 
 import openmoves
 from commands import AddUser
-from model import db, User, Move
+from model import db, User, Move, MoveEdit
+from flask import json
 import pytest
 import html5lib
 import re
@@ -24,31 +25,44 @@ class TestOpenMoves(object):
         self.app = app
         self.client = app.test_client()
 
-    def _login(self):
-        data = {'username': 'test_user', 'password': 'test password'}
-        self.client.post('/login', data=data, follow_redirects=True)
+    def _login(self, username='test_user', password='test password'):
+        data = {'username': username, 'password': password}
+        return self.client.post('/login', data=data, follow_redirects=True)
 
     def _validate_response(self, response, tmpdir=None, code=200, check_content=True):
         assert response.status_code == code, "HTTP status: %s" % response.status
         if tmpdir:
             tmpdir.join("response.html").write(response.data, mode='wb')
 
-        if check_content:
-            self._validate_html5(response)
-
         if response.data:
-            return response.data.decode('utf-8')
+            response_data = response.data.decode('utf-8')
 
-    def _validate_html5(self, response):
+        if check_content:
+            if response.mimetype == 'text/html':
+                self._validate_html5(response_data)
+            elif response.mimetype == 'application/json':
+                return json.loads(response_data)
+            else:
+                raise ValueError("illegal mimetype: '%s'" % response.mimetype)
+
+        return response_data
+
+    def _validate_html5(self, response_data):
         parser = html5lib.HTMLParser(strict=True)
-        parser.parse(response.data)
+        parser.parse(response_data)
 
-    def _assert_requires_login(self, url):
+    def _assert_requires_login(self, url, method='GET'):
         expected_url = 'login?next=%s' % url.replace('/', '%2F')
-        return self._assert_redirects(url, expected_url, code=302)
+        return self._assert_redirects(url, expected_url, code=302, method=method)
 
-    def _assert_redirects(self, url, location, code=301, **requestargs):
-        response = self.client.get("%s" % url, **requestargs)
+    def _assert_redirects(self, url, location, code=301, method='GET', **requestargs):
+        if method == 'GET':
+            response = self.client.get(url, **requestargs)
+        elif method == 'POST':
+            response = self.client.post(url, **requestargs)
+        else:
+            raise ValueError("illegal method: %s" % method)
+
         assert response.status_code == code
         if location.startswith("/"):
             location = location[1:]
@@ -127,8 +141,7 @@ class TestOpenMoves(object):
             db.session.add(user)
             db.session.commit()
 
-        data = {'username': username, 'password': password}
-        response = self.client.post('/login', data=data, follow_redirects=True)
+        response = self._login()
         response_data = self._validate_response(response, tmpdir)
         assert u"<title>OpenMoves – Moves</title>" in response_data
 
@@ -190,7 +203,7 @@ class TestOpenMoves(object):
         assert 'Please find' in response_data
         assert '%AppData%/Suunto/Moveslink2' in response_data
 
-    def test_import_move_upload(self, tmpdir):
+    def test_import_move_upload_single(self, tmpdir):
         self._login()
         data = {}
 
@@ -203,7 +216,7 @@ class TestOpenMoves(object):
         response_data = self._validate_response(response, tmpdir)
         assert u'<title>OpenMoves – Move 1</title>' in response_data
         assert u"imported &#39;%s&#39;: move 1" % filename in response_data
-        assert u'<h1>Pool swimming</h1>' in response_data
+        assert u'>Pool swimming</' in response_data
         assert u'<td>2014-11-09 14:55:13</td>' in response_data
         assert u'<td>02:07.80 min / 100 m</td>' in response_data
         assert u'<td>795</td>' in response_data  # strokes
@@ -241,7 +254,7 @@ class TestOpenMoves(object):
         assert u'Trekking <span class="badge">1</span>' in response_data
         assert u'Pool swimming <span class="badge">1</span>' in response_data
 
-        assert u'<td>Pool swimming</td>' in response_data
+        assert u'>Pool swimming</' in response_data
         assert u'<td>00:31:25.00</td>' in response_data
         assert u'<td>1475 m</td>' in response_data
         assert u'<td><span>2.8 km/h</span></td>' in response_data
@@ -255,7 +268,7 @@ class TestOpenMoves(object):
                 response = self.client.get("/moves/%d" % move.id)
                 response_data = self._validate_response(response, tmpdir)
                 assert u"<title>OpenMoves – Move %d</title>" % move.id in response_data
-                assert u"<h1>%s</h1>" % move.activity in response_data
+                assert u">%s</" % move.activity in response_data
 
     def test_csv_export(self, tmpdir):
         self._login()
@@ -288,7 +301,7 @@ class TestOpenMoves(object):
 
         response_data = self._validate_response(response, tmpdir)
         assert u'<title>OpenMoves – Move 4</title>' in response_data
-        assert u'<h1>Kayaking</h1>' in response_data
+        assert u'>Kayaking</' in response_data
         assert u'<th>Avg. Heart Rate</th>' in response_data
         assert u'<td><span>97 bpm</span></td>' in response_data
 
@@ -296,6 +309,69 @@ class TestOpenMoves(object):
         response_data = self._validate_response(response, tmpdir)
         assert re.search(u'<th><a href="/moves.+?">Heart Rate</a></th>', response_data)
         assert u'<td><span>97 bpm</span></td>' in response_data
+
+    def test_activity_types_not_logged_in(self, tmpdir):
+        self._assert_requires_login('/activity_types')
+
+    def test_activity_types(self, tmpdir):
+        self._login()
+
+        response = self.client.get('/activity_types')
+        response_data = self._validate_response(response, tmpdir)
+
+        expected_activities = ('Cycling', 'Kayaking', 'Pool swimming', 'Trekking')
+        expected_data = [{"text": activity, "value": activity} for activity in expected_activities]
+
+        assert response_data == expected_data
+
+    def test_edit_move_not_logged_in(self, tmpdir):
+        self._assert_requires_login("/moves/1", method='POST')
+
+    def test_edit_move_illegal_name(self, tmpdir):
+        self._login()
+
+        data = {'name': 'some illegal name', 'pk': 1}
+        with pytest.raises(ValueError) as e:
+            self.client.post('/moves/1', data=data)
+        assert u"illegal name" in str(e.value)
+
+    def test_edit_move_different_user(self, tmpdir):
+        username = 'some different user'
+        password = 'some other password'
+        with app.test_request_context():
+            user = User(username=username, active=True)
+            user.password = openmoves.app_bcrypt.generate_password_hash(password, 10)
+            db.session.add(user)
+            db.session.commit()
+
+        self._login(username=username, password=password)
+
+        data = {'name': 'activity', 'pk': 1}
+        response = self.client.post('/moves/1', data=data)
+        assert response.status_code == 404
+
+    def test_edit_move_activity_illegal_value(self, tmpdir):
+        self._login()
+
+        data = {'name': 'activity', 'pk': 1, 'value': 'illegal activity'}
+        with pytest.raises(ValueError) as e:
+            self.client.post('/moves/1', data=data)
+        assert u"illegal activity" in str(e.value)
+
+    def test_edit_move_activity_success(self, tmpdir):
+        self._login()
+
+        data = {'name': 'activity', 'pk': 1, 'value': 'Trekking'}
+        response = self.client.post('/moves/1', data=data)
+        response_data = self._validate_response(response, check_content=False)
+        assert response_data == 'OK'
+
+        with app.test_request_context():
+            move_edit = MoveEdit.query.one()
+            assert move_edit.date_time
+            assert move_edit.move_id == 1
+            assert move_edit.old_value == {'activity': 'Pool swimming', 'activity_type': 6}
+            assert move_edit.new_value == {'activity': 'Trekking', 'activity_type': 11}
 
     def test_delete_moves(self, tmpdir):
         self._login()

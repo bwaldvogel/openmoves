@@ -1,3 +1,19 @@
+{% macro editable_activity(move) -%}
+<span id="activity-{{move.id}}"
+      data-name="activity"
+      data-type="select"
+      data-pk="{{move.id}}"
+      data-value="{{move.activity}}"
+      data-showbuttons="false"
+      data-source="{{url_for('activity_types')}}"
+      data-url="{{url_for('edit_move', id=move.id)}}"
+      data-title="Select activity">{{move.activity}}</span>
+
+<button onclick="$('#activity-{{move.id}}').editable()" type="button" class="btn btn-link edit-icon">
+    <span class="glyphicon glyphicon-pencil"></span>
+</button>
+{%- endmacro %}
+
 {% macro location_short(location_raw) -%}
 {%- if location_raw.address.city -%}
     {{location_raw.address.city}}

@@ -52,3 +52,20 @@ table.moves td, table.moves th {
 a.all-moves {
 	font-weight: bold;
 }
+
+button.edit-icon {
+    color: #ccc;
+    padding: 0px;
+    padding-bottom: 2px;
+    margin: 0px;
+    font-size: 80%;
+    line-height: 1;
+}
+
+h1 button.edit-icon {
+    font-size: 60%;
+}
+
+button.edit-icon:hover {
+    color: black;
+}

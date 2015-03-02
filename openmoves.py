@@ -1,10 +1,10 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 
-from flask import Flask, render_template, flash, redirect, request, url_for
+from flask import Flask, render_template, flash, redirect, request, url_for, Response, json
 from flask_bootstrap import Bootstrap
 from flask_login import login_user, current_user, login_required, logout_user
-from model import db, Move, Sample
+from model import db, Move, Sample, MoveEdit
 from datetime import timedelta, date, datetime
 from sqlalchemy.sql import func
 from sqlalchemy import distinct, literal
@@ -274,6 +274,7 @@ def moves():
 def delete_move(id):
     move = _current_user_filtered(Move.query).filter_by(id=id).first_or_404()
     Sample.query.filter_by(move=move).delete(synchronize_session=False)
+    MoveEdit.query.filter_by(move=move).delete(synchronize_session=False)
     db.session.delete(move)
     db.session.commit()
     flash("move %d deleted" % id, 'success')
@@ -310,7 +311,50 @@ def export_move(id):
     return response
 
 
-@app.route("/moves/<int:id>")
+@app.route("/moves/<int:id>", methods=['POST'])
+@login_required
+def edit_move(id):
+    name = request.form.get('name')
+    pk = request.form.get('pk')
+    value = request.form.get('value')
+    assert id == int(pk)
+
+    move = _current_user_filtered(Move.query).filter_by(id=id).first_or_404()
+
+    if name == 'activity':
+        result = db.session.query(Move.activity_type).filter(Move.activity == value).first()
+        if not result:
+            raise ValueError("illegal value: %s" % value)
+
+        activity_type, = result
+
+        move_edit = MoveEdit()
+        move_edit.date_time = datetime.now()
+        move_edit.move = move
+        move_edit.old_value = {'activity': move.activity, 'activity_type': move.activity_type}
+        move_edit.new_value = {'activity': value, 'activity_type': activity_type}
+
+        db.session.add(move_edit)
+
+        move.activity_type = activity_type
+        move.activity = value
+
+        db.session.commit()
+    else:
+        raise ValueError("illegal name: %s" % name)
+
+    return "OK"
+
+
+@app.route("/activity_types")
+@login_required
+def activity_types():
+    activities = db.session.query(Move.activity).group_by(Move.activity).order_by(Move.activity.asc())
+    data = [{'value': activity, 'text': activity} for activity, in activities]
+    return Response(json.dumps(data), mimetype='application/json')
+
+
+@app.route("/moves/<int:id>", methods=['GET'])
 @login_required
 def move(id):
     move = _current_user_filtered(Move.query).filter_by(id=id).first_or_404()

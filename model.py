@@ -174,3 +174,16 @@ class Sample(db.Model):
     events = db.Column(JsonEncodedDict(4096), name='events')
     satellites = db.Column(JsonEncodedDict(4096), name='satellites')
     apps_data = db.Column(JsonEncodedDict(4096), name='apps_data')
+
+
+class MoveEdit(db.Model):
+    __tablename__ = 'move_edit'
+    id = db.Column(db.Integer, name="id", primary_key=True)
+
+    date_time = db.Column(db.DateTime, name="date_time", nullable=False)
+
+    move_id = db.Column(db.Integer, db.ForeignKey(Move.id), name="move_id", nullable=False)
+    move = db.relationship(Move, backref=db.backref('edits', lazy='dynamic'))
+
+    old_value = db.Column(JsonEncodedDict(4096), name='old_value')
+    new_value = db.Column(JsonEncodedDict(4096), name='new_value')

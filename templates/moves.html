@@ -60,7 +60,7 @@
 				{% for move in moves %}
 				<tr>
 					<td><a href="{{url_for('move', id=move.id)}}">{{move.date_time | date_time}}</a></td>
-					<td>{{move.activity}}</td>
+					<td>{{macros.editable_activity(move)}}</td>
 					{% if show_columns.location_address -%}
 					<td>
 						{%- if move.location_address -%}

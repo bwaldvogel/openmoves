@@ -11,7 +11,8 @@
 {% block content %}
 {{super()}}
 <div class="container" role="main">
-    <h1>{{move.activity}}</h1>
+
+    <h1>{{macros.editable_activity(move)}}</h1>
 
     {% if move.location_address -%}
     <h3>{{macros.location_short(move.location_raw)}}</h3>
