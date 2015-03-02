@@ -6,7 +6,7 @@
 {%- elif location_raw.address.village -%}
     {{location_raw.address.village}}
 {%- endif -%}
-, {{location_raw.address.country}}
+, {{location_raw.address.country_code|upper}}
 {%- endmacro %}
 
 {% macro temperature(value) -%}
