@@ -123,9 +123,5 @@ def postprocess_moves():
             location = geolocator.reverse("%f, %f" % (radian_to_degree(latitude), radian_to_degree(longitude)))
             move.location_address = location.address
             move.location_raw = json.dumps(location.raw)
-
-            print(u"  gps center: %.3f, %.3f" % (move.gps_center_latitude, move.gps_center_longitude))
-            print(u"  max_center_distance: %.2f km" % (move.gps_center_max_distance / 1000.0))
-            print(u"  location: %s" % move.location_address)
         else:
             print(u"  got no GPS samples for move %d: %s" % (move.id, move.activity))
