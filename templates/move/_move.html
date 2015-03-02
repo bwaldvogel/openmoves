@@ -13,18 +13,9 @@
 <div class="container" role="main">
     <h1>{{move.activity}}</h1>
 
-    {% if location -%}
-    <h3>
-        {%- if location.raw.address.city -%}
-            {{location.raw.address.city}}
-        {%- elif location.raw.address.town -%}
-            {{location.raw.address.town}}
-        {%- elif location.raw.address.village -%}
-            {{location.raw.address.village}}
-        {%- endif -%}
-        , {{location.raw.address.country}}
-    </h3>
-    <p title="{{location.raw}}">{{location.address}}</p>
+    {% if move.location_address -%}
+    <h3>{{macros.location_short(move.location_raw)}}</h3>
+    <p title="{{move.location_raw}}">{{move.location_address}}</p>
     {%- endif %}
 
     <div class="dropdown">
@@ -261,7 +252,7 @@ var styleFunction = function(feature, resolution) {
         vectorLayer
       ],
       view: new ol.View({
-          center: ol.proj.transform([{{gps_center.longitude | degree}}, {{gps_center.latitude | degree}}], 'EPSG:4326', 'EPSG:3857'),
+          center: ol.proj.transform([{{move.gps_center_longitude | degree}}, {{move.gps_center_latitude | degree}}], 'EPSG:4326', 'EPSG:3857'),
         zoom: {{map_zoom_level}}
       })
     });

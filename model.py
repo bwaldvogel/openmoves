@@ -123,6 +123,12 @@ class Move(db.Model):
     source = db.Column(db.String, name="source")
     import_date_time = db.Column(db.DateTime, name="import_date_time", nullable=False)
 
+    location_address = db.Column('location_address', db.String, nullable=True)
+    location_raw = db.Column('location_raw', JsonEncodedDict(4096), nullable=True)
+    gps_center_max_distance = db.Column('gps_center_max_distance', db.Float, nullable=True)
+    gps_center_latitude = db.Column('gps_center_latitude', db.Float, nullable=True)
+    gps_center_longitude = db.Column('gps_center_longitude', db.Float, nullable=True)
+
 
 class Sample(db.Model):
     __tablename__ = 'sample'

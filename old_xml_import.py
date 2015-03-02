@@ -6,7 +6,7 @@ from model import db
 from model import Move, Device
 from lxml import objectify
 import re
-from _import import add_children, normalize_move, parse_samples
+from _import import add_children, normalize_move, parse_samples, postprocess_move
 
 
 def parse_move(tree):
@@ -51,5 +51,6 @@ def old_xml_import(xmlfile, user):
 
             for sample in parse_samples(tree.Samples.iterchildren(), move):
                 db.session.add(sample)
+            postprocess_move(move)
             db.session.commit()
             return move

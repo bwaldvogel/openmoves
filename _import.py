@@ -3,6 +3,40 @@ import sqlalchemy
 import re
 from datetime import timedelta, datetime
 from model import Sample
+import numpy as np
+from math import atan2
+from filters import radian_to_degree
+from geopy.geocoders import Nominatim
+from geopy.distance import vincenty
+import json
+from flask import flash
+
+
+# http://stackoverflow.com/questions/6671183/calculate-the-center-point-of-multiple-latitude-longitude-coordinate-pairs
+def calculate_gps_center(gps_samples):
+    coordinates = np.ndarray(shape=(len(gps_samples), 2), dtype=float)
+    for idx, sample in enumerate(gps_samples):
+        coordinates[idx][0] = sample.latitude
+        coordinates[idx][1] = sample.longitude
+
+    # Convert lat/lon (must be in radians) to Cartesian coordinates for each location.
+    cos_lat = np.cos(coordinates[:, 0])
+    sin_lat = np.sin(coordinates[:, 0])
+    cos_lon = np.cos(coordinates[:, 1])
+    sin_lon = np.sin(coordinates[:, 1])
+
+    # Compute average x, y and z coordinates.
+    x = np.average(cos_lat * cos_lon)
+    y = np.average(cos_lat * sin_lon)
+    z = np.average(sin_lat)
+
+    # Convert average x, y, z coordinate to latitude and longitude.
+    lon = atan2(y, x)
+    hyp = np.sqrt(x * x + y * y)
+    lat = atan2(z, hyp)
+
+    center = (lat, lon)
+    return center
 
 
 def parse_samples(samples, move):
@@ -24,6 +58,35 @@ def parse_samples(samples, move):
                 set_attr(sample, tag, value)
 
         yield sample
+
+
+def postprocess_move(move):
+    gps_samples = [sample for sample in move.samples if sample.sample_type and sample.sample_type.startswith('gps-')]
+
+    if gps_samples:
+        gps_center = calculate_gps_center(gps_samples)
+        move.gps_center_latitude = gps_center[0]
+        move.gps_center_longitude = gps_center[1]
+
+        gps_center_degrees = [radian_to_degree(x) for x in gps_center]
+
+        gps_center_max_distance = 0
+        for sample in gps_samples:
+            point = (sample.latitude, sample.longitude)
+            point_degrees = [radian_to_degree(x) for x in point]
+            distance = vincenty(gps_center_degrees, point_degrees).meters
+            gps_center_max_distance = max(gps_center_max_distance, distance)
+
+        move.gps_center_max_distance = gps_center_max_distance
+
+        first_sample = gps_samples[0]
+        latitude = first_sample.latitude
+        longitude = first_sample.longitude
+
+        geolocator = Nominatim()
+        location = geolocator.reverse("%f, %f" % (radian_to_degree(latitude), radian_to_degree(longitude)))
+        move.location_address = location.address
+        move.location_raw = location.raw
 
 
 def normalize_move(move):
