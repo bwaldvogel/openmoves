@@ -30,7 +30,6 @@ def changeActivity(old, new):
     class Sample(Base):
         __tablename__ = 'sample'
         id = sa.Column(sa.Integer, name="id", primary_key=True)
-        id = sa.Column(sa.Integer, name="id", primary_key=True)
 
         moveId = sa.Column(sa.Integer, sa.ForeignKey(Move.id), name="move_id", nullable=False)
         move = sa.orm.relationship(Move, backref=sa.orm.backref('samples', lazy='dynamic'))
