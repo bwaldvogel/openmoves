@@ -17,6 +17,8 @@
 {% macro location_short(location_raw) -%}
 {%- if location_raw.address.city -%}
     {{location_raw.address.city}}
+{%- elif location_raw.address.city_district -%}
+    {{location_raw.address.city_district}}
 {%- elif location_raw.address.town -%}
     {{location_raw.address.town}}
 {%- elif location_raw.address.village -%}
