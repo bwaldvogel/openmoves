@@ -23,6 +23,7 @@ from login import login_manager, load_user, LoginForm
 import itertools
 from collections import OrderedDict
 from flask_util_js import FlaskUtilJs
+from _import import postprocess_move
 
 
 app = Flask('openmoves')
@@ -345,6 +346,11 @@ def move(id):
     model['gps_samples'] = gps_samples
 
     if gps_samples:
+        if not move.gps_center_max_distance:
+            postprocess_move(move)
+            flash(u"got %d GPS samples but no center. recalculated" % len(gps_samples), u'warning')
+            db.session.commit()
+
         gps_center_max_distance = move.gps_center_max_distance
 
         # empirically determined values
