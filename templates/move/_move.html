@@ -44,8 +44,6 @@
             <th>Distance</th>
             <th>Avg. Temperature</th>
             {% if move.hr_avg %}<th>Avg. Heart Rate</th>{% endif %}
-            {% if move.ascent %}<th>Ascent</th>{% endif %}
-            {% if move.descent %}<th>Descent</th>{% endif %}
             {% if gps_samples %}<th>First fix</th>{% endif %}
             {% endblock %}
         </tr>
@@ -58,9 +56,30 @@
 			<td>{{macros.format_move_distance(move, move.distance)}}</td>
             <td>{{macros.temperature(move.temperature_avg)}}</td>
             {% if move.hr_avg %}<td>{{macros.hr(move.hr_avg)}}</td>{% endif %}
+            {% if gps_samples %}<td>{{move.time_to_first_fix | duration}}</td>{% endif %}
+            {% endblock %}
+        </tr>
+    </table>
+
+    <table class="table table-condensed">
+        <tr>
+            {% block ascent_descent_table_header %}
+            {% if move.ascent %}<th>Ascent</th>{% endif %}
+            {% if move.descent %}<th>Descent</th>{% endif %}
+            {% if move.ascent_time %}<th>Ascent Time</th>{% endif %}
+            {% if move.descent_time %}<th>Descent Time</th>{% endif %}
+            {% if move.altitude_min_time %}<th>Altitude Max. Time</th>{% endif %}
+            {% if move.altitude_max_time %}<th>Altitude Min. Time</th>{% endif %}
+            {% endblock %}
+        </tr>
+        <tr>
+            {% block ascent_descent_table_entry %}
             {% if move.ascent %}<td>{{macros.format_hm(move.ascent)}}</td>{% endif %}
             {% if move.descent %}<td>{{macros.format_hm(move.descent)}}</td>{% endif %}
-            {% if gps_samples %}<td>{{move.time_to_first_fix | duration}}</td>{% endif %}
+            {% if move.ascent_time %}<td>{{move.ascent_time| duration}}</td>{% endif %}
+            {% if move.descent_time %}<td>{{move.descent_time| duration}}</td>{% endif %}
+            {% if move.altitude_min_time %}<td>{{move.altitude_min_time| duration}}</td>{% endif %}
+            {% if move.altitude_max_time %}<td>{{move.altitude_max_time| duration}}</td>{% endif %}
             {% endblock %}
         </tr>
     </table>
