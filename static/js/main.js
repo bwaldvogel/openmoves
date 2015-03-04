@@ -63,11 +63,17 @@ function moveMean(data, n) {
     for (var i = 0; i < data.length; i++)
     {
         if (data[i][1] == null) {
-            meanData.push(data);
+            meanData.push(data[i]);
         } else {
             var num = 0;
             var mean = 0.0;
-            for (var x=0; x<=n_2; x++) {
+
+			if (data[i][1] != null) {
+				mean += data[i][1];
+				num++;
+			}
+
+            for (var x=1; x<=n_2; x++) {
                 if (i+x >= 0 && i+x < data.length) {
                     if (data[i+x][1] == null) {
                         break;
@@ -76,7 +82,8 @@ function moveMean(data, n) {
                     num++;
                 }
             }
-            for (var x=0; x<=n_2; x++) {
+
+            for (var x=1; x<=n_2; x++) {
                 if (i-x >= 0 && i-x < data.length) {
                     if (data[i-x][1] == null) {
                         break;

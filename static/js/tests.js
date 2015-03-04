@@ -164,4 +164,48 @@ QUnit.test( "pruneLowDeltas tests", function( assert ) {
 
 QUnit.test( "moveMean tests", function( assert ) {
 	assert.deepEqual( moveMean([], 3), [], "Empty" );
+
+	assert.deepEqual( moveMean([
+							['x', 1],
+							['x', 2],
+							['x', 3]
+						], 2),
+						[
+							['x', (1 + 2) / 2],
+							['x', (2 + 1 + 3) / 3],
+							['x', (3 + 2) / 2]
+						], "Simple array without nulls" );
+
+	assert.deepEqual( moveMean([
+							['x', 1],
+							['x', 2],
+							['x', 3],
+							['x', 4],
+							['x', 5],
+						], 3),
+						[
+							['x', (1 + 2) / 2],
+							['x', (1 + 2 + 3) / 3],
+							['x', (2 + 3 + 4) / 3],
+							['x', (3 + 4 + 5) / 3],
+							['x', (4 + 5) / 2]
+						], "Larger array without nulls" );
+
+
+	assert.deepEqual( moveMean([
+							['x', 1],
+							['x', 2],
+							['x', 3],
+							['x', null],
+							['x', 4],
+							['x', 5],
+						], 3),
+						[
+							['x', (1 + 2) / 2],
+							['x', (1 + 2 + 3) / 3],
+							['x', (2 + 3) / 2],
+							['x', null],
+							['x', (4 + 5) / 2],
+							['x', (4 + 5) / 2]
+						], "Larger array with nulls" );
 });
