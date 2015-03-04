@@ -63,6 +63,23 @@ OpenMoves {% if active_page and active_page != 'index' %}– {{active_page|capit
 
 <script>
 $.fn.editable.defaults.mode = 'inline';
+
+$(document).ready(function(){
+    $('button.edit-icon').click(function(e) {
+        $(this).hide();
+        e.stopPropagation();
+        $(this).siblings('span').editable('toggle');
+    });
+
+    $('div.editable-activity').mouseover(function(e) {
+        if (!$(this).children('span').hasClass('editable-open')) {
+            $(this).children('button').show();
+        }
+    });
+    $('div.editable-activity').mouseout(function(e) {
+        $(this).children('button').hide();
+    });
+});
 </script>
 {% endblock %}
 

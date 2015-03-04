@@ -66,6 +66,14 @@ h1 button.edit-icon {
     font-size: 60%;
 }
 
-button.edit-icon:hover {
+button.edit-icon {
+    display: none;
     color: black;
+}
+
+h1 .editable-input select {
+    font-size: 20px;
+    font-weight: bold;
+    line-height: 1.1;
+    height: 36px;
 }
