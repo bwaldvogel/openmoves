@@ -49,13 +49,10 @@ function pruneLowDeltas(data, minDelta) {
             }
             ret.push(data[i]);
             before = data[i];
-        } else if (before == null || Math.abs(data[i][1] - before[1]) >= minDelta) {
+        } else if (before == null || Math.abs(data[i][1] - before[1]) >= minDelta || i == data.length - 1) {
             ret.push(data[i]);
             before = data[i];
         }
-    }
-    if (ret.length == 1) {
-        ret.push(data[data.length - 1]);
     }
     return ret;
 }

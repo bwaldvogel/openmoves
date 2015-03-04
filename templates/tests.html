@@ -1,0 +1,22 @@
+{% extends "_base.html" %}
+
+{% block scripts %}
+{{super()}}
+<script src="{{url_for('.static', filename='js/qunit-1.17.1.js')}}"></script>
+<script src="{{url_for('.static', filename='js/main.js')}}"></script>
+<script src="{{url_for('.static', filename='js/tests.js')}}"></script>
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='css/qunit-1.17.1.css')}}">
+{% endblock %}
+
+{% set active_page = 'tests' -%}
+
+{% block content %}
+{{super()}}
+<div class="container" role="main">
+	<div id="qunit"></div>
+	<div id="qunit-fixture"></div>
+{% endblock %}

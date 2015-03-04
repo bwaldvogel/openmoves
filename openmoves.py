@@ -432,5 +432,11 @@ def move(id):
     activity_name = move.activity.lower().replace(' ', '_')
     return render_template("move/%s.html" % activity_name, **model)
 
+
+@app.route("/_tests", methods=['GET'])
+@login_required
+def tests():
+    return render_template('tests.html')
+
 if __name__ == '__main__':
     manager.run()
