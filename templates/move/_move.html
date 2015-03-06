@@ -62,6 +62,7 @@
         </tr>
     </table>
 
+    {% if move.ascent or move.descent %}
     <table class="table table-condensed">
         <tr>
             {% block ascent_descent_table_header %}
@@ -84,6 +85,7 @@
             {% endblock %}
         </tr>
     </table>
+    {% endif %}
 
     {% if pauses %}
     <h2>Pauses</h2>
