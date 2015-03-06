@@ -102,12 +102,12 @@ def move_import():
     imported_moves = []
 
     for xmlfile in xmlfiles:
-        move = None
         filename = xmlfile.filename
-        app.logger.info("importing '%s'" % filename)
-        move = imports.move_import(xmlfile, filename, current_user)
-        if move:
-            imported_moves.append(move)
+        if filename:
+            app.logger.info("importing '%s'" % filename)
+            move = imports.move_import(xmlfile, filename, current_user)
+            if move:
+                imported_moves.append(move)
 
     if imported_moves:
         if len(imported_moves) == 1:
