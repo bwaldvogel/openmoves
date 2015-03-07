@@ -43,48 +43,56 @@ var strokes_data = [{% for sample in swimming_strokes_and_pauses -%}
 {% block swimming_styles %}
 <h2>Styles</h2>
 <table class="table table-condensed">
-<tr>
-    <th>Timestamp</th>
-    <th>Time</th>
-    <th>Style</th>
-    <th>Classification Vector</th>
-</tr>
-{%- for sample in swimming_style_changes -%}
-{%- if event_before -%}
-<tr>
-    <td>{{macros.date_time_offset(sample.time)}}</td>
-    <td>{{(sample.time - event_before.time) | duration}}</td>
-    <td>{{sample.events['swimming']['prevPoolLengthStyle']}}</td>
-    <td class="json">{{sample.events['swimming']['classificationVector']['item'] | tojson}}</td>
-</tr>
-{%- endif -%}
-{% set event_before = sample %}
-{%- endfor -%}
+<thead>
+    <tr>
+        <th>Timestamp</th>
+        <th>Time</th>
+        <th>Style</th>
+        <th>Classification Vector</th>
+    </tr>
+</thead>
+<tbody>
+    {%- for sample in swimming_style_changes -%}
+    {%- if event_before -%}
+    <tr>
+        <td>{{macros.date_time_offset(sample.time)}}</td>
+        <td>{{(sample.time - event_before.time) | duration}}</td>
+        <td>{{sample.events['swimming']['prevPoolLengthStyle']}}</td>
+        <td class="json">{{sample.events['swimming']['classificationVector']['item'] | tojson}}</td>
+    </tr>
+    {%- endif -%}
+    {% set event_before = sample %}
+    {%- endfor -%}
+</tbody>
 </table>
 {% endblock %}
 
 {% block swimming_turns %}
 <h2>Turns</h2>
 <table class="table table-condensed">
-<tr>
-    <th>Number</th>
-    <th>Timestamp</th>
-    <th>Time</th>
-    <th>Distance</th>
-    <th>Classification Vector</th>
-</tr>
-{%- for sample in swimming_turns -%}
-{%- if event_before -%}
-<tr>
-    <td>{{sample.events['swimming']['totalLengths']}}</td>
-    <td>{{macros.date_time_offset(sample.time)}}</td>
-    <td>{{(sample.time - event_before.time) | duration}}</td>
-    <td>{{macros.format_move_distance(move, (sample.events['swimming']['totalLengths']|int) * move.pool_length)}}</td>
-    <td class="json">{{sample.events['swimming']['classificationVector']['item'] | tojson}}</td>
-</tr>
-{%- endif -%}
-{% set event_before = sample %}
-{%- endfor -%}
+<thead>
+    <tr>
+        <th>Number</th>
+        <th>Timestamp</th>
+        <th>Time</th>
+        <th>Distance</th>
+        <th>Classification Vector</th>
+    </tr>
+</thead>
+<tbody>
+    {%- for sample in swimming_turns -%}
+    {%- if event_before -%}
+    <tr>
+        <td>{{sample.events['swimming']['totalLengths']}}</td>
+        <td>{{macros.date_time_offset(sample.time)}}</td>
+        <td>{{(sample.time - event_before.time) | duration}}</td>
+        <td>{{macros.format_move_distance(move, (sample.events['swimming']['totalLengths']|int) * move.pool_length)}}</td>
+        <td class="json">{{sample.events['swimming']['classificationVector']['item'] | tojson}}</td>
+    </tr>
+    {%- endif -%}
+    {% set event_before = sample %}
+    {%- endfor -%}
+</tbody>
 </table>
 {% endblock %}
 {% endblock %}

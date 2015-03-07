@@ -36,74 +36,86 @@
     <br/>
 
     <table class="table table-condensed">
-        <tr>
-            {% block table_header %}
-            <th>Time</th>
-            <th>Avg. Speed</th>
-            {% if move.speed_max %}<th>Max. Speed</th>{% endif %}
-            <th>Duration</th>
-            <th>Distance</th>
-            <th>Avg. Temperature</th>
-            {% if move.hr_avg %}<th>Avg. Heart Rate</th>{% endif %}
-            {% if gps_samples %}<th>First fix</th>{% endif %}
-            {% endblock %}
-        </tr>
-        <tr>
-            {% block table_entry %}
-            <td>{{move.date_time | date_time}}</td>
-            <td>{{macros.kmh(move.speed_avg)}}</td>
-            {% if move.speed_max %}<td>{{macros.kmh(move.speed_max)}}</td>{% endif %}
-            <td>{{move.duration | duration}}</td>
-			<td>{{macros.format_move_distance(move, move.distance)}}</td>
-            <td>{{macros.temperature(move.temperature_avg)}}</td>
-            {% if move.hr_avg %}<td>{{macros.hr(move.hr_avg)}}</td>{% endif %}
-            {% if gps_samples %}<td>{{move.time_to_first_fix | duration}}</td>{% endif %}
-            {% endblock %}
-        </tr>
+        <thead>
+            <tr>
+                {% block table_header %}
+                <th>Time</th>
+                <th>Avg. Speed</th>
+                {% if move.speed_max %}<th>Max. Speed</th>{% endif %}
+                <th>Duration</th>
+                <th>Distance</th>
+                <th>Avg. Temperature</th>
+                {% if move.hr_avg %}<th>Avg. Heart Rate</th>{% endif %}
+                {% if gps_samples %}<th>First fix</th>{% endif %}
+                {% endblock %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                {% block table_entry %}
+                <td>{{move.date_time | date_time}}</td>
+                <td>{{macros.kmh(move.speed_avg)}}</td>
+                {% if move.speed_max %}<td>{{macros.kmh(move.speed_max)}}</td>{% endif %}
+                <td>{{move.duration | duration}}</td>
+                <td>{{macros.format_move_distance(move, move.distance)}}</td>
+                <td>{{macros.temperature(move.temperature_avg)}}</td>
+                {% if move.hr_avg %}<td>{{macros.hr(move.hr_avg)}}</td>{% endif %}
+                {% if gps_samples %}<td>{{move.time_to_first_fix | duration}}</td>{% endif %}
+                {% endblock %}
+            </tr>
+        </tbody>
     </table>
 
     {% if move.ascent or move.descent %}
     <table class="table table-condensed">
-        <tr>
-            {% block ascent_descent_table_header %}
-            {% if move.ascent %}<th>Ascent</th>{% endif %}
-            {% if move.descent %}<th>Descent</th>{% endif %}
-            {% if move.ascent_time %}<th>Ascent Time</th>{% endif %}
-            {% if move.descent_time %}<th>Descent Time</th>{% endif %}
-            {% if move.altitude_min_time %}<th>Altitude Max. Time</th>{% endif %}
-            {% if move.altitude_max_time %}<th>Altitude Min. Time</th>{% endif %}
-            {% endblock %}
-        </tr>
-        <tr>
+        <thead>
+            <tr>
+                {% block ascent_descent_table_header %}
+                {% if move.ascent %}<th>Ascent</th>{% endif %}
+                {% if move.descent %}<th>Descent</th>{% endif %}
+                {% if move.ascent_time %}<th>Ascent Time</th>{% endif %}
+                {% if move.descent_time %}<th>Descent Time</th>{% endif %}
+                {% if move.altitude_min_time %}<th>Altitude Max. Time</th>{% endif %}
+                {% if move.altitude_max_time %}<th>Altitude Min. Time</th>{% endif %}
+                {% endblock %}
+            </tr>
+        </thead>
+        <tbody>
             {% block ascent_descent_table_entry %}
-            {% if move.ascent %}<td>{{macros.format_hm(move.ascent)}}</td>{% endif %}
-            {% if move.descent %}<td>{{macros.format_hm(move.descent)}}</td>{% endif %}
-            {% if move.ascent_time %}<td>{{move.ascent_time| duration}}</td>{% endif %}
-            {% if move.descent_time %}<td>{{move.descent_time| duration}}</td>{% endif %}
-            {% if move.altitude_min_time %}<td>{{move.altitude_min_time| duration}}</td>{% endif %}
-            {% if move.altitude_max_time %}<td>{{move.altitude_max_time| duration}}</td>{% endif %}
+            <tr>
+                {% if move.ascent %}<td>{{macros.format_hm(move.ascent)}}</td>{% endif %}
+                {% if move.descent %}<td>{{macros.format_hm(move.descent)}}</td>{% endif %}
+                {% if move.ascent_time %}<td>{{move.ascent_time| duration}}</td>{% endif %}
+                {% if move.descent_time %}<td>{{move.descent_time| duration}}</td>{% endif %}
+                {% if move.altitude_min_time %}<td>{{move.altitude_min_time| duration}}</td>{% endif %}
+                {% if move.altitude_max_time %}<td>{{move.altitude_max_time| duration}}</td>{% endif %}
+            </tr>
             {% endblock %}
-        </tr>
+        </tbody>
     </table>
     {% endif %}
 
     {% if pauses %}
     <h2>Pauses</h2>
     <table class="table table-condensed">
-	<tr>
-		<th>Start</th>
-		<th>End</th>
-		<th>Duration</th>
-	</tr>
-    {% for pause in pauses %}
-	<tr>
-		{% set start = pause[0].time %}
-		{% set end = pause[1].time %}
-		<td>{{macros.date_time_offset(start)}}</td>
-		<td>{{macros.date_time_offset(end)}}</td>
-		<td>{{(end - start) | duration}}</td>
-	</tr>
-    {%- endfor %}
+    <thead>
+        <tr>
+            <th>Start</th>
+            <th>End</th>
+            <th>Duration</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for pause in pauses %}
+        <tr>
+            {% set start = pause[0].time %}
+            {% set end = pause[1].time %}
+            <td>{{macros.date_time_offset(start)}}</td>
+            <td>{{macros.date_time_offset(end)}}</td>
+            <td>{{(end - start) | duration}}</td>
+        </tr>
+        {%- endfor %}
+    </tbody>
     </table>
     {% endif %}
 
@@ -111,50 +123,58 @@
     {% if laps %}
     <h2>Laps</h2>
     <table class="table table-condensed">
-	<tr>
-		<th>Lap</th>
-		<th>Timestamp</th>
-		<th>Duration</th>
-		<th>Distance</th>
-		<th>Type</th>
-	</tr>
-    {%- for sample in laps -%}
-	<tr>
-		<td>{{loop.index}}</td>
-		<td>{{macros.date_time_offset(sample.time)}}</td>
-		<td>{{sample.events.lap.duration | duration}}</td>
-		<td>{{macros.format_move_distance(move, sample.events.lap.distance | float)}}</td>
-		<td>{{sample.events.lap.type}}</td>
-	</tr>
-    {%- endfor -%}
-	</table>
+    <thead>
+        <tr>
+            <th>Lap</th>
+            <th>Timestamp</th>
+            <th>Duration</th>
+            <th>Distance</th>
+            <th>Type</th>
+        </tr>
+    </thead>
+    <tbody>
+        {%- for sample in laps -%}
+        <tr>
+            <td>{{loop.index}}</td>
+            <td>{{macros.date_time_offset(sample.time)}}</td>
+            <td>{{sample.events.lap.duration | duration}}</td>
+            <td>{{macros.format_move_distance(move, sample.events.lap.distance | float)}}</td>
+            <td>{{sample.events.lap.type}}</td>
+        </tr>
+        {%- endfor -%}
+    </tbody>
+    </table>
     {% endif %}
-	{% endblock %}
+    {% endblock %}
 
     {% block events %}
     <h2>Events</h2>
     <table class="table table-condensed">
-	<tr>
-		<th>Timestamp</th>
-		<th>Event</th>
-		<th>Data</th>
-	</tr>
-    {%- for sample in events -%}
-    {%- if not sample.events.swimming %}
-	<tr>
-		{% set event = (sample.events.keys()|list)[0] %}
-		<td>{{macros.date_time_offset(sample.time)}}</td>
-		<td>{{event}}</td>
-		<td class="json">{{sample.events[event] | tojson}}</td>
-	</tr>
-    {%- endif -%}
-    {%- endfor -%}
-	</table>
-	{% endblock %}
+    <thead>
+        <tr>
+            <th>Timestamp</th>
+            <th>Event</th>
+            <th>Data</th>
+        </tr>
+    </thead>
+    <tbody>
+        {%- for sample in events -%}
+        {%- if not sample.events.swimming %}
+        <tr>
+            {% set event = (sample.events.keys()|list)[0] %}
+            <td>{{macros.date_time_offset(sample.time)}}</td>
+            <td>{{event}}</td>
+            <td class="json">{{sample.events[event] | tojson}}</td>
+        </tr>
+        {%- endif -%}
+        {%- endfor -%}
+    </tbody>
+    </table>
+    {% endblock %}
 
     {% if gps_samples %}
     <h2>Map</h2>
-	<div id="map" class="map img-thumbnail"></div>
+    <div id="map" class="map img-thumbnail"></div>
     {% endif %}
 
     {% block chart_blocks %}

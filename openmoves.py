@@ -18,12 +18,14 @@ from flask.helpers import make_response
 from flask_script import Manager, Server
 from flask_migrate import Migrate, MigrateCommand
 from commands import AddUser, ImportMove, DeleteMove, ListMoves
-from filters import register_filters, register_globals
+from filters import register_filters, register_globals, radian_to_degree
 from login import login_manager, load_user, LoginForm
 import itertools
 from collections import OrderedDict
 from flask_util_js import FlaskUtilJs
 from _import import postprocess_move
+from geopy.distance import vincenty
+import math
 
 
 app = Flask('openmoves')
@@ -45,6 +47,54 @@ def initialize_config(f):
 
     data = "SECRET_KEY = '%s'\n" % "".join("{:02x}".format(c) for c in random_bytes)
     f.write(data)
+
+
+def _sample_to_point(sample):
+    return (radian_to_degree(sample.latitude), radian_to_degree(sample.longitude))
+
+
+def calculate_distances(model, samples):
+    total_distance_horizontal = 0.0
+    total_distance_real = 0.0
+    total_distance_descent = 0.0
+    total_distance_ascent = 0.0
+    total_distance_flat = 0.0
+    previous_gps_sample = None
+    current_altitude_sample = None
+    previous_altitude_sample = None
+
+    for sample in samples:
+        if sample.altitude:
+            current_altitude_sample = sample
+        if sample.latitude:
+            if previous_gps_sample:
+                distance_horizontal = vincenty(_sample_to_point(previous_gps_sample), _sample_to_point(sample)).meters
+                if previous_altitude_sample:
+                    if current_altitude_sample != previous_altitude_sample and distance_horizontal > 0:
+                        total_distance_horizontal += distance_horizontal
+                        hm = current_altitude_sample.altitude - previous_altitude_sample.altitude
+                        distance_real = math.sqrt(distance_horizontal ** 2 + hm ** 2)
+
+                        if hm > 0:
+                            total_distance_ascent += distance_real
+                        elif hm < 0:
+                            total_distance_descent += distance_real
+                        else:
+                            total_distance_flat += distance_real
+
+                        total_distance_real += distance_real
+                        previous_gps_sample = sample
+                        previous_altitude_sample = current_altitude_sample
+                else:
+                    previous_altitude_sample = current_altitude_sample
+            else:
+                previous_gps_sample = sample
+
+    model['total_distance_horizontal'] = total_distance_horizontal
+    model['total_distance_ascent'] = total_distance_ascent
+    model['total_distance_descent'] = total_distance_descent
+    model['total_distance_flat'] = total_distance_flat
+    model['total_distance_real'] = total_distance_real
 
 
 def init(configfile):
@@ -408,6 +458,8 @@ def move(id):
             map_zoom_level = 11
         else:
             map_zoom_level = 10
+
+        calculate_distances(model, move.samples)
 
         model['map_zoom_level'] = map_zoom_level
 

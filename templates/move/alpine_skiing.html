@@ -1,1 +1,37 @@
 {% extends "move/_move.html" %}
+
+{% block ascent_descent_table_header %}
+<th></th>
+<th>HM</th>
+<th>Duration</th>
+{% if total_distance_ascent or total_distance_descent %}
+<th>Distance</th>
+<th>Avg. Speed</th>
+{% endif %}
+{% endblock %}
+
+{% block ascent_descent_table_entry %}
+{% if move.ascent %}
+<tr>
+    <th>Ascent</th>
+    <td>{{macros.format_hm(move.ascent)}}</td>
+    <td>{{move.ascent_time| duration}}</td>
+    {% if total_distance_ascent %}
+    <td>{{macros.format_move_distance(move, total_distance_ascent)}}</td>
+    <td>{{macros.kmh(total_distance_ascent / move.ascent_time.total_seconds())}}</td>
+    {% endif %}
+</tr>
+{% endif %}
+
+{% if move.descent %}
+<tr>
+    <th>Descent</th>
+    <td>{{macros.format_hm(move.descent)}}</td>
+    <td>{{move.descent_time| duration}}</td>
+    {% if total_distance_descent %}
+    <td>{{macros.format_move_distance(move, total_distance_descent)}}</td>
+    <td>{{macros.kmh(total_distance_descent / move.descent_time.total_seconds())}}</td>
+    {% endif %}
+</tr>
+{% endif %}
+{% endblock %}
