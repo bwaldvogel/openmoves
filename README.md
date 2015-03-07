@@ -6,7 +6,7 @@ An open source alternative to Movescount.
 ## Key features ##
  - Free and open-source software
  - OpenStreetMap integration
- - Plots with curve smoothing and outlier detection
+ - Plots with curve smoothing
 
 ## Requirements ##
  - Python 2.7, 3.3 or 3.4
