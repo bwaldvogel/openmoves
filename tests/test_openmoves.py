@@ -270,7 +270,15 @@ class TestOpenMoves(object):
                 assert u"<title>OpenMoves – Move %d</title>" % move.id in response_data
                 assert u">%s</" % move.activity in response_data
 
-    def test_csv_export(self, tmpdir):
+    def test_csv_export_filename(self, tmpdir):
+        self._login()
+        response = self.client.get('/moves/1/export?format=csv')
+        assert response.headers['Content-Disposition'] == 'attachment; filename=Move_2014-11-09T14_55_13_Pool+swimming.csv'
+
+        response = self.client.get('/moves/2/export?format=csv')
+        assert response.headers['Content-Disposition'] == 'attachment; filename=Move_2014-12-31T12_00_32_DE_Stegen_Trekking.csv'
+
+    def test_csv_exports(self, tmpdir):
         self._login()
         with app.test_request_context():
             for move in Move.query:
@@ -285,6 +293,7 @@ class TestOpenMoves(object):
         self._login()
         response = self.client.get('/moves/3/export?format=gpx')
         response_data = self._validate_response(response, tmpdir, check_content=False)
+        assert response.headers['Content-Disposition'] == 'attachment; filename=Move_2014-07-23T18_56_14_DE_Rheinbach_Cycling.gpx'
         assert u'<gpx ' in response_data
         assert u'lat="50.632' in response_data
         assert u'lon="6.952' in response_data

@@ -53,6 +53,30 @@ def duration(value):
     return '%02d:%02d:%05.2f' % (hours, minutes, seconds)
 
 
+def get_city(address):
+    if 'city' in address:
+        return address['city']
+    elif 'city_district' in address:
+        return address['city_district']
+    elif 'town' in address:
+        return address['town']
+    elif 'village' in address:
+        return address['village']
+    else:
+        return None
+
+
+def short_location(location_raw):
+    address = location_raw['address']
+    city = get_city(address)
+
+    if city:
+        country_code = address['country_code'].upper()
+        return "%s, %s" % (city, country_code)
+    else:
+        return address.country
+
+
 def swim_pace(value):
     assert isinstance(value, timedelta)
     hours, remainder = divmod(100 * value.total_seconds(), 3600)
@@ -89,3 +113,4 @@ def register_filters(app):
     app.jinja_env.filters['degree'] = radian_to_degree
     app.jinja_env.filters['epoch'] = unix_epoch
     app.jinja_env.filters['swim_pace'] = swim_pace
+    app.jinja_env.filters['short_location'] = short_location

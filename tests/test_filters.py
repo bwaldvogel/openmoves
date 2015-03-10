@@ -24,3 +24,24 @@ class TestFilters(object):
     def test_swim_pace_value_too_large(self):
         with pytest.raises(AssertionError):
             filters.swim_pace(timedelta(seconds=999))
+
+    def test_get_city(self):
+        address = {}
+        assert filters.get_city(address) == None
+
+        address['village'] = 'some village'
+        assert filters.get_city(address) == 'some village'
+
+        address['town'] = 'some town'
+        assert filters.get_city(address) == 'some town'
+
+        address['city_district'] = 'some city district'
+        assert filters.get_city(address) == 'some city district'
+
+        address['city'] = 'some city'
+        assert filters.get_city(address) == 'some city'
+
+    def test_short_location(self):
+        address = {}
+        location = {'address': {'city': 'some city', 'country_code': 'de'}}
+        assert filters.short_location(location) == 'some city, DE'

@@ -18,7 +18,7 @@ from flask.helpers import make_response
 from flask_script import Manager, Server
 from flask_migrate import Migrate, MigrateCommand
 from commands import AddUser, ImportMove, DeleteMove, ListMoves
-from filters import register_filters, register_globals, radian_to_degree
+from filters import register_filters, register_globals, radian_to_degree, get_city
 from login import login_manager, load_user, LoginForm
 import itertools
 from collections import OrderedDict
@@ -26,6 +26,10 @@ from flask_util_js import FlaskUtilJs
 from _import import postprocess_move
 from geopy.distance import vincenty
 import math
+try:
+    from urllib.parse import quote_plus
+except ImportError:
+    from urllib import quote_plus
 
 
 app = Flask('openmoves')
@@ -192,21 +196,21 @@ def login():
     return render_template('login.html', form=form)
 
 
-@app.route("/logout")
+@app.route('/logout')
 @login_required
 def logout():
     logout_user()
     return redirect(url_for('index'))
 
 
-@app.route("/")
+@app.route('/')
 def index():
     nr_of_moves = Move.query.count()
 
     return render_template('index.html', nr_of_moves=nr_of_moves)
 
 
-@app.route("/dashboard")
+@app.route('/dashboard')
 @login_required
 def dashboard():
     now = datetime.utcnow()
@@ -265,7 +269,7 @@ def _current_user_filtered(query):
     return query.filter_by(user=current_user)
 
 
-@app.route("/moves")
+@app.route('/moves')
 @login_required
 def moves():
     moves = _current_user_filtered(Move.query)
@@ -319,7 +323,7 @@ def moves():
                            sort_order=sort_order)
 
 
-@app.route("/moves/<int:id>/delete")
+@app.route('/moves/<int:id>/delete')
 @login_required
 def delete_move(id):
     move = _current_user_filtered(Move.query).filter_by(id=id).first_or_404()
@@ -332,7 +336,7 @@ def delete_move(id):
     return redirect(url_for('moves'))
 
 
-@app.route("/moves/<int:id>/export")
+@app.route('/moves/<int:id>/export')
 @login_required
 def export_move(id):
     move = _current_user_filtered(Move.query).filter_by(id=id).first_or_404()
@@ -356,12 +360,20 @@ def export_move(id):
 
     # app.logger.debug("Move export (format %s):\n%s" % (format, export_file))
     response = make_response(export_file)
-    date_time = move.date_time.strftime("%Y-%m-%dT%H:%M:%S")
-    response.headers["Content-Disposition"] = "attachment; filename= Move_%s_%s.%s" % (date_time, move.activity.replace(" ", "_"), format)
+    date_time = move.date_time.strftime('%Y-%m-%dT%H_%M_%S')
+    if move.location_raw:
+        address = move.location_raw['address']
+        city = get_city(address)
+        country_code = address['country_code'].upper()
+        filename = "Move_%s_%s_%s_%s.%s" % (date_time, country_code, city, move.activity, format)
+    else:
+        filename = "Move_%s_%s.%s" % (date_time, move.activity, format)
+
+    response.headers['Content-Disposition'] = "attachment; filename=%s" % (quote_plus(filename))
     return response
 
 
-@app.route("/moves/<int:id>", methods=['POST'])
+@app.route('/moves/<int:id>', methods=['POST'])
 @login_required
 def edit_move(id):
     name = request.form.get('name')
@@ -396,7 +408,7 @@ def edit_move(id):
     return "OK"
 
 
-@app.route("/activity_types")
+@app.route('/activity_types')
 @login_required
 def activity_types():
     activities = db.session.query(Move.activity).group_by(Move.activity).order_by(Move.activity.asc())
@@ -404,7 +416,7 @@ def activity_types():
     return Response(json.dumps(data), mimetype='application/json')
 
 
-@app.route("/moves/<int:id>", methods=['GET'])
+@app.route('/moves/<int:id>', methods=['GET'])
 @login_required
 def move(id):
     move = _current_user_filtered(Move.query).filter_by(id=id).first_or_404()
@@ -485,7 +497,7 @@ def move(id):
     return render_template("move/%s.html" % activity_name, **model)
 
 
-@app.route("/_tests", methods=['GET'])
+@app.route('/_tests', methods=['GET'])
 @login_required
 def tests():
     return render_template('tests.html')

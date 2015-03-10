@@ -62,11 +62,7 @@
                     <td><a href="{{url_for('move', id=move.id)}}">{{move.date_time | date_time}}</a></td>
                     <td class="activity">{{macros.editable_activity(move)}}</td>
                     {% if show_columns.location_address -%}
-                    <td>
-                        {%- if move.location_address -%}
-                        {{macros.location_short(move.location_raw)}}
-                        {%- endif -%}
-                    </td>
+                    <td>{% if move.location_address %}{{move.location_raw|short_location}}{% endif %}</td>
                     {%- endif %}
                     <td>{{move.duration | duration}}</td>
                     <td>{{macros.format_move_distance(move, move.distance)}}</td>

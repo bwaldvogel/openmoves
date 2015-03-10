@@ -15,7 +15,7 @@
     <h1>{{macros.editable_activity(move)}}</h1>
 
     {% if move.location_address -%}
-    <h3>{{macros.location_short(move.location_raw)}}</h3>
+    <h3>{{move.location_raw|short_location}}</h3>
     <p title="{{move.location_raw}}">{{move.location_address}}</p>
     {%- endif %}
 
