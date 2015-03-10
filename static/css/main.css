@@ -3,18 +3,18 @@ body {
 }
 
 pre {
-	font-size: 8px;
-	padding: 5px;
+    font-size: 8px;
+    padding: 5px;
 }
 
 .json {
-	font-family: monospace;
-	white-space: nowrap;
+    font-family: monospace;
+    white-space: nowrap;
 }
 
 .map {
-	height: 500px;
-	width: 100%;
+    height: 500px;
+    width: 100%;
 }
 
 div.alert {
@@ -24,17 +24,17 @@ div.alert {
 }
 
 .btn.btn-black {
-	color: black;
+    color: black;
 }
 
 table.table-auto-width {
-	width: auto;
+    width: auto;
 }
 
 .table.table-auto-width tr > th,
 .table.table-auto-width tr > td
 {
-	padding: 8px 15px;
+    padding: 8px 15px;
 }
 
 span.date-time {
@@ -50,7 +50,7 @@ table.moves td, table.moves th {
 }
 
 a.all-moves {
-	font-weight: bold;
+    font-weight: bold;
 }
 
 button.edit-icon {
@@ -66,8 +66,19 @@ h1 button.edit-icon {
     font-size: 60%;
 }
 
+tbody > tr > td.activity {
+    padding-right: 0px;
+}
+
 button.edit-icon {
-    display: none;
+    border-width: 0px;
+}
+
+button.edit-icon, button.edit-icon:hover {
+    color: transparent;
+}
+
+button.edit-icon.visible {
     color: black;
 }
 
