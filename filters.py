@@ -54,16 +54,11 @@ def duration(value):
 
 
 def get_city(address):
-    if 'city' in address:
-        return address['city']
-    elif 'city_district' in address:
-        return address['city_district']
-    elif 'town' in address:
-        return address['town']
-    elif 'village' in address:
-        return address['village']
-    else:
-        return None
+    attribute_priorities = ('city', 'city_district', 'town', 'village')
+    for attr in attribute_priorities:
+        if attr in address:
+            return address[attr]
+    return None
 
 
 def short_location(location_raw):
