@@ -29,7 +29,8 @@ import math
 try:
     from urllib.parse import quote_plus
 except ImportError:
-    from urllib import quote_plus
+    from urllib import quote_plus as __quote_plus
+    quote_plus = lambda x: __quote_plus(x.encode('utf-8'))
 
 
 app = Flask('openmoves')

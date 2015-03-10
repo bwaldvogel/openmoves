@@ -298,6 +298,16 @@ class TestOpenMoves(object):
         assert u'lat="50.632' in response_data
         assert u'lon="6.952' in response_data
 
+    def test_gpx_export_umlaut_in_filename(self, tmpdir):
+        with app.test_request_context():
+            move = Move.query.filter(Move.id == 3).one()
+            move.location_raw = {'address':{'city_district': u'Galtür', 'country_code': 'at'}}
+            db.session.commit()
+
+        self._login()
+        response = self.client.get('/moves/3/export?format=gpx')
+        assert response.headers['Content-Disposition'] == u'attachment; filename=Move_2014-07-23T18_56_14_AT_Galt%C3%BCr_Cycling.gpx'
+
     def test_move_with_heart_rate(self, tmpdir):
         self._login()
         data = {}
