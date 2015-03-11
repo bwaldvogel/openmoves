@@ -1,13 +1,13 @@
 Flask==0.10.1
 Flask-SQLAlchemy==2.0
-SQLAlchemy==0.9.8
+SQLAlchemy==0.9.9
 psycopg2==2.6
 Flask-Bootstrap==3.3.0.1
 Flask-WTF==0.11
 Flask-Login==0.2.11
 Flask-Bcrypt==0.6.0
 lxml==3.4.2
-python-dateutil==2.4.0
+python-dateutil==2.4.1
 xkcdpass==1.2.5
 pytest==2.6.4
 gpxpy==0.9.8
