@@ -31,7 +31,7 @@ OpenMoves {% if active_page and active_page != 'index' %}– {{active_page|capit
         <div id="navbar" class="navbar-collapse collapse">
             {% if current_user.is_authenticated() %}
             <ul class="nav navbar-nav">
-                <li{% if active_page == 'dashboard' %} class="active"{% endif %}><a href="{{url_for('dashboard')}}">Dashboard</a></li>
+                <li{% if active_page == 'dashboard' %} class="active"{% endif %}><a href="#" onclick="loadDashboard();">Dashboard</a></li>
                 <li{% if active_page == 'moves' %} class="active"{% endif %}><a href="{{url_for('moves')}}">Moves</a></li>
                 <li{% if active_page == 'import' %} class="active"{% endif %}><a href="{{url_for('move_import')}}">Import</a></li>
             </ul>
@@ -60,6 +60,8 @@ OpenMoves {% if active_page and active_page != 'index' %}– {{active_page|capit
 {{super()}}
 <script src="{{url_for('.static', filename='js/main.js')}}"></script>
 <script src="{{url_for('.static', filename='js/bootstrap-editable.min.js')}}"></script>
+<script src="{{url_for('.static', filename='js/moment.min.js')}}"></script>
+{{ flask_util_js.js }}
 
 <script>
 $.fn.editable.defaults.mode = 'inline';
@@ -80,6 +82,12 @@ $(document).ready(function(){
         $(this).children('button').removeClass('visible');
     });
 });
+
+function loadDashboard() {
+    var end_date = moment().endOf('day');
+    var start_date = moment().subtract(1, 'months').startOf('day');
+    window.location.href = flask_util.url_for('dashboard', {start_date: start_date.format(), end_date: end_date.format()});
+}
 </script>
 {% endblock %}
 

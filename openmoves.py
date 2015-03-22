@@ -214,18 +214,12 @@ def index():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    now = datetime.utcnow()
-    # Determine dashboad start_date
-    if 'start_date' in request.args:
-        start_date = dateutil.parser.parse(request.args.get('start_date'))
-    else:
-        start_date = date(now.year, now.month, now.day) - timedelta(days=7)
-    # Determine dashboad end_date
-    if 'end_date' in request.args:
-        end_date = dateutil.parser.parse(request.args.get('end_date'))
-    else:
-        end_date = date(now.year, now.month, now.day)
+    if ('start_date' not in request.args) or ('end_date' not in request.args):
+        raise ValueError("No start_date and/or end_date specified!")
 
+
+    start_date = dateutil.parser.parse(request.args.get('start_date'))
+    end_date = dateutil.parser.parse(request.args.get('end_date'))
     moves = _current_user_filtered(Move.query).filter(Move.date_time >= start_date) \
                                               .filter(Move.date_time <= end_date) \
                                               .order_by(Move.date_time.asc()) \
@@ -250,7 +244,6 @@ def dashboard():
                            nr_of_moves=nr_of_moves,
                            total_distance=total_distance, total_duration=total_duration,
                            total_ascent=total_ascent, total_descent=total_descent)
-
 
 def _parse_move_filter(filter_query):
     if not filter_query:

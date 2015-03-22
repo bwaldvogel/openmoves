@@ -2,14 +2,11 @@
 
 {% block scripts %}
 {{super()}}
-<script src="{{url_for('.static', filename='js/moment.min.js')}}"></script>
 <script src="{{url_for('.static', filename='js/bootstrap-datetimepicker.min.js')}}"></script>
-
-{{ flask_util_js.js }}
 
 <script type="text/javascript">
     function reload_with_date(start_date, end_date) {
-        window.location.href = flask_util.url_for('dashboard', {start_date: start_date, end_date: end_date});
+        window.location.href = flask_util.url_for('dashboard', {start_date: start_date.startOf('day').format(), end_date: end_date.endOf('day').format()});
     }
 
     $( document ).ready(function() {
@@ -17,6 +14,7 @@
         var start_date = moment("{{start_date}}");
         var end_date = moment("{{end_date}}");
 
+        var all_moves_start_date = moment().year(1970).month(0).date(1)
         var dropdown_selection = "custom"
         if(end_date.diff(start_date, 'weeks') == 1) {
           dropdown_selection = "1 week"
@@ -24,7 +22,9 @@
           dropdown_selection = "1 month";
         } else if (end_date.diff(start_date, 'years') == 1) {
           dropdown_selection = "1 year";
-        } else if (start_date.isSame('1970-01-01')) {
+        } else if (start_date.year() == all_moves_start_date.year() &&
+                   start_date.month() == all_moves_start_date.month() &&
+                   start_date.date() == all_moves_start_date.date()) {
           dropdown_selection = "all moves";
         }
 
@@ -58,7 +58,6 @@
 
         $(".dropdown-menu li a").click(function(){
           $(this).parents(".dropdown").find('.btn').find('.selection').text($(this).text());
-
           var start_date = null;
           switch($(this).text()) {
               case "1 week":
@@ -71,15 +70,13 @@
                   start_date = moment().subtract(1, 'years');
                   break;
               case "all moves":
-                  start_date = moment().set({'year': 1970, 'month': 0, 'date': 1});;
+                  start_date = moment().year(1970).month(0).date(1);
                   break;
               default:
-                  start_date = moment().subtract(7, 'days');
+                  start_date = moment().subtract(1, 'months');
                   break;
           }
-          start_date.set({'hour': 0, 'minute': 0, 'second': 0, 'millisecond': 0});
-          var end_date = moment().set({'hour': 0, 'minute': 0, 'second': 0, 'millisecond': 0});
-          reload_with_date(start_date.format(), end_date.format());
+          reload_with_date(start_date, moment());
           ;
         });
     });
