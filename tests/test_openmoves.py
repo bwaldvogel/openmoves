@@ -354,6 +354,17 @@ class TestOpenMoves(object):
             self.client.post('/moves/1', data=data)
         assert u"illegal name" in str(e.value)
 
+    def test_dashboard_some_moves(self, tmpdir):
+        self._login()
+        response = self.client.get('/dashboard?start_date=2014-01-01&end_date=2015-01-01')
+        response_data = self._validate_response(response, tmpdir)
+        assert u'<title>OpenMoves – Dashboard</title>' in response_data
+        assert u'<tr><th>#Moves</th><td>4</td></tr>' in response_data
+        assert u'<tr><th>Total Distance</th><td>33.55 km</td></tr>' in response_data
+        assert u'<tr><th>Total Time</th><td>3:47:09.600000 h</td></tr>' in response_data
+        assert u'<tr><th>Total Ascent</th><td>110 m</td></tr>' in response_data
+        assert u'<tr><th>Total Descent</th><td>218 m</td></tr>' in response_data
+
     def test_edit_move_different_user(self, tmpdir):
         username = 'some different user'
         password = 'some other password'
