@@ -13,22 +13,21 @@
         <!-- Pre-select the date time period dropdown by the selected date range -->
         var start_date = moment("{{start_date}}");
         var end_date = moment("{{end_date}}");
-
-        var all_moves_start_date = moment().year(1970).month(0).date(1)
-        var dropdown_selection = "custom"
-        if(end_date.diff(start_date, 'weeks') == 1) {
-          dropdown_selection = "1 week"
-        } else if (end_date.diff(start_date, 'months') == 1) {
-          dropdown_selection = "1 month";
-        } else if (end_date.diff(start_date, 'years') == 1) {
-          dropdown_selection = "1 year";
-        } else if (start_date.year() == all_moves_start_date.year() &&
-                   start_date.month() == all_moves_start_date.month() &&
-                   start_date.date() == all_moves_start_date.date()) {
-          dropdown_selection = "all moves";
+        <!-- Determine configured time period -->
+        var period = "custom";
+        if(start_date.isSame(moment(end_date).subtract(1, 'weeks').startOf('day'))) {
+          period = "1 week";
         }
-
-        $(".dropdown").find('.btn').find('.selection').text(dropdown_selection);
+        else if(start_date.isSame(moment(end_date).subtract(1, 'months').startOf('day'))) {
+          period = "1 month";
+        }
+        else if(start_date.isSame(moment(end_date).subtract(1, 'years').startOf('day'))) {
+          period = "1 year";
+        }
+        else if(start_date.isSame(moment().year(1970).month(0).date(1).startOf('day'))) {
+          period = "all moves";
+        }
+        $(".dropdown").find('.btn').find('.selection').text(period);
     });
 
     $(function () {

@@ -217,7 +217,6 @@ def dashboard():
     if ('start_date' not in request.args) or ('end_date' not in request.args):
         raise ValueError("No start_date and/or end_date specified!")
 
-
     start_date = dateutil.parser.parse(request.args.get('start_date'))
     end_date = dateutil.parser.parse(request.args.get('end_date'))
     moves = _current_user_filtered(Move.query).filter(Move.date_time >= start_date) \
