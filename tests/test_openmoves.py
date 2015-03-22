@@ -181,7 +181,7 @@ class TestOpenMoves(object):
 
     def test_dashboard_empty(self, tmpdir):
         self._login()
-        response = self.client.get('/dashboard')
+        response = self.client.get('/dashboard?start_date=2014-01-01&end_date=2017-01-01')
         response_data = self._validate_response(response, tmpdir)
         assert u'<title>OpenMoves – Dashboard</title>' in response_data
         assert u'<tr><th>Total Distance</th><td>0.000 km</td></tr>' in response_data
