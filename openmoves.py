@@ -26,6 +26,7 @@ from flask_util_js import FlaskUtilJs
 from _import import postprocess_move
 from geopy.distance import vincenty
 import math
+import operator
 try:
     from urllib.parse import quote_plus
 except ImportError:
@@ -249,10 +250,10 @@ def dashboard():
 
     nr_of_moves = len(moves)
 
-    sorted_distances = OrderedDict(sorted(distance_totals.items()))
-    sorted_durations = OrderedDict(sorted(duration_totals.items()))
-    sorted_ascents = OrderedDict(sorted(ascent_totals.items()))
-    sorted_descents = OrderedDict(sorted(descent_totals.items()))
+    sorted_distances = OrderedDict(sorted(distance_totals.items(), key=operator.itemgetter(1), reverse=True))
+    sorted_durations = OrderedDict(sorted(duration_totals.items(), key=operator.itemgetter(1), reverse=True))
+    sorted_ascents = OrderedDict(sorted(ascent_totals.items(), key=operator.itemgetter(1), reverse=True))
+    sorted_descents = OrderedDict(sorted(descent_totals.items(), key=operator.itemgetter(1), reverse=True))
 
     return render_template('dashboard.html',
                            distance_sums=sorted_distances, duration_sums=sorted_durations,
