@@ -221,28 +221,48 @@ def dashboard():
     end_date = dateutil.parser.parse(request.args.get('end_date'))
     moves = _current_user_filtered(Move.query).filter(Move.date_time >= start_date) \
                                               .filter(Move.date_time <= end_date) \
-                                              .order_by(Move.date_time.asc()) \
                                               .all()
 
-    total_distance = 0
-    total_duration = timedelta(0)
-    total_ascent = 0
-    total_descent = 0
+    distance_totals = {}
+    duration_totals = {}
+    ascent_totals = {}
+    descent_totals = {}
+
     for move in moves:
-        total_distance += move.distance
-        total_duration += move.duration
+        if not (move.activity in distance_totals):
+            distance_totals[move.activity] = 0
+        distance_totals[move.activity] += move.distance
+
+        if not move.activity in duration_totals:
+            duration_totals[move.activity] = timedelta(0)
+        duration_totals[move.activity] += move.duration
+
+        if not move.activity in ascent_totals:
+            ascent_totals[move.activity] = 0
         if move.ascent:
-            total_ascent += move.ascent
-        if move.descent:
-            total_descent += move.descent
+            ascent_totals[move.activity] += move.ascent
+
+        if not move.activity in descent_totals:
+            descent_totals[move.activity] = 0
+        if move.ascent:
+            descent_totals[move.activity] += move.descent
 
     nr_of_moves = len(moves)
 
-    return render_template('dashboard.html', moves=moves,
+    sorted_distances = OrderedDict(sorted(distance_totals.items()))
+    sorted_durations = OrderedDict(sorted(duration_totals.items()))
+    sorted_ascents = OrderedDict(sorted(ascent_totals.items()))
+    sorted_descents = OrderedDict(sorted(descent_totals.items()))
+
+    return render_template('dashboard.html',
+                           distance_sums=sorted_distances, duration_sums=sorted_durations,
+                           ascent_sums=sorted_ascents, descent_sums=sorted_descents,
                            start_date=start_date, end_date=end_date,
                            nr_of_moves=nr_of_moves,
-                           total_distance=total_distance, total_duration=total_duration,
-                           total_ascent=total_ascent, total_descent=total_descent)
+                           total_distance=sum(distance_totals.values()),
+                           total_duration=sum(duration_totals.values(), timedelta(0)),
+                           total_ascent=sum(ascent_totals.values()),
+                           total_descent=sum(descent_totals.values()))
 
 def _parse_move_filter(filter_query):
     if not filter_query:
