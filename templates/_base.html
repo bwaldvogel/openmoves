@@ -2,7 +2,7 @@
 {% extends "bootstrap/base.html" %}
 
 {% block title -%}
-OpenMoves {% if active_page and active_page != 'index' %}– {{active_page|capitalize}}{% endif %}
+OpenMoves{% if active_page and active_page != 'index' %} – {{active_page|capitalize}}{% endif %}
 {%- endblock %}
 
 {% set active_page = active_page|default('index') -%}
