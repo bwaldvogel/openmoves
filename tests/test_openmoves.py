@@ -135,15 +135,33 @@ class TestOpenMoves(object):
         with app.test_request_context():
             User.query.delete(synchronize_session=False)
 
-            user = User(username=username)
+            user = User(username=username, active=True)
             user.password = openmoves.app_bcrypt.generate_password_hash(password, 10)
-            user.active = True
             db.session.add(user)
             db.session.commit()
 
         response = self._login()
         response_data = self._validate_response(response, tmpdir)
         assert u"<title>OpenMoves – Moves</title>" in response_data
+
+    def test_login_logout_other_user(self, tmpdir):
+
+        username = 'other_user'
+        password = u'Paßswörd→✓≈'
+
+        with app.test_request_context():
+            user = User(username=username, active=True)
+            user.password = openmoves.app_bcrypt.generate_password_hash(password, 10)
+            db.session.add(user)
+            db.session.commit()
+
+        response = self._login(username=username, password=password)
+        response_data = self._validate_response(response, tmpdir)
+        assert u"<title>OpenMoves – Moves</title>" in response_data
+
+        response = self.client.get('/logout', follow_redirects=True)
+        response_data = self._validate_response(response, tmpdir)
+        assert u"<title>OpenMoves</title>" in response_data
 
     def test_custom_404(self, tmpdir):
         response = self.client.get('/page-which-does-not-exist')
