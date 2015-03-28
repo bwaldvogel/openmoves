@@ -184,8 +184,6 @@ class TestOpenMoves(object):
         response = self.client.get('/dashboard?start_date=2014-01-01&end_date=2017-01-01')
         response_data = self._validate_response(response, tmpdir)
         assert u'<title>OpenMoves – Dashboard</title>' in response_data
-        assert u'<tr><th>Total Distance</th><td>0.000 km</td></tr>' in response_data
-        assert u'<tr><th>Total Time</th><td>0:00:00 h</td></tr>' in response_data
 
     def test_export_move_not_found(self, tmpdir):
         self._login()
