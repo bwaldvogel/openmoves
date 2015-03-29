@@ -138,7 +138,7 @@
       <tr><th>#Moves</th><td>{{nr_of_moves}}</td></tr>
       {% if nr_of_moves > 0 %}
       <tr><th>Total Distance</th><td>{{macros.format_distance(total_distance)}}</td></tr>
-      <tr><th>Total Time</th><td>{{macros.format_duration(total_duration)}}</td></tr>
+      <tr><th>Total Time</th><td>{{total_duration | duration}}</td></tr>
       <tr><th>Total Ascent</th><td>{{macros.format_hm(total_ascent)}}</td></tr>
       <tr><th>Total Descent</th><td>{{macros.format_hm(total_descent)}}</td></tr>
       {% endif %}
@@ -146,53 +146,69 @@
 
     {% if nr_of_moves > 0 %}
     <h3>Activity Totals</h3>
-    <div class="col-md-3">
-        <table class="table table-hover">
-            <thead>
-                <tr><th>by Distance</th><th></th></tr>
-            </thead>
-            <tbody>
-                {% for activity in descent_sums.keys() %}
-                    <tr><td>{{activity}}</td><td>{{macros.format_distance(distance_sums[activity])}}</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="row">
+        <div class="col-md-3">
+            <table class="table table-hover">
+                <thead>
+                    <tr><th>by Distance</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for activity in distance_sums.keys() %}
+                        <tr><td>{{activity}}</td><td>{{macros.format_distance(distance_sums[activity])}}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-3">
+            <table class="table table-hover">
+                <thead>
+                    <tr><th>by Duration</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for activity in duration_sums.keys() %}
+                        <tr><td>{{activity}}</td><td>{{duration_sums[activity] | duration}}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-3">
+            <table class="table table-hover">
+                <thead>
+                    <tr><th>by Average speed</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for activity in average_sums.keys() %}
+                        <tr><td>{{activity}}</td><td>{{macros.kmh(average_sums[activity])}}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-    <div class="col-md-3">
-        <table class="table table-hover">
-            <thead>
-                <tr><th>by Duration</th><th></th></tr>
-            </thead>
-            <tbody>
-                {% for activity in duration_sums.keys() %}
-                    <tr><td>{{activity}}</td><td>{{macros.format_duration(duration_sums[activity])}}</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <div class="col-md-3">
-        <table class="table table-hover">
-            <thead>
-                <tr><th>by Ascent</th><th></th></tr>
-            </thead>
-            <tbody>
-                {% for activity in ascent_sums.keys() %}
-                    <tr><td>{{activity}}</td><td>{{macros.format_hm(ascent_sums[activity])}}</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    <div class="col-md-3">
-        <table class="table table-hover">
-            <thead>
-                <tr><th>by Descent</th><th></th></tr>
-            </thead>
-            <tbody>
-                {% for activity in descent_sums.keys() %}
-                    <tr><td>{{activity}}</td><td>{{macros.format_hm(descent_sums[activity])}}</td></tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="row">
+        <div class="col-md-3">
+            <table class="table table-hover">
+                <thead>
+                    <tr><th>by Ascent</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for activity in ascent_sums.keys() %}
+                        <tr><td>{{activity}}</td><td>{{macros.format_hm(ascent_sums[activity])}}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-3">
+            <table class="table table-hover">
+                <thead>
+                    <tr><th>by Descent</th><th></th></tr>
+                </thead>
+                <tbody>
+                    {% for activity in descent_sums.keys() %}
+                        <tr><td>{{activity}}</td><td>{{macros.format_hm(descent_sums[activity])}}</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
     {% endif %}
 </div>

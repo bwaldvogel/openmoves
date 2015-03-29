@@ -226,6 +226,7 @@ def dashboard():
 
     distance_totals = {}
     duration_totals = {}
+    average_totals = {}
     ascent_totals = {}
     descent_totals = {}
 
@@ -250,13 +251,35 @@ def dashboard():
 
     nr_of_moves = len(moves)
 
+    # Clean activities without distance or duration
+    for activity in list(distance_totals.keys()):
+        if(distance_totals[activity] == 0):
+            del distance_totals[activity]
+    for activity in list(duration_totals.keys()):
+        if(duration_totals[activity] == timedelta(0)):
+            del duration_totals[activity]
+    for activity in list(ascent_totals.keys()):
+        if(ascent_totals[activity] == 0):
+            del ascent_totals[activity]
+    for activity in list(descent_totals.keys()):
+        if(descent_totals[activity] == 0):
+            del descent_totals[activity]
+
+    # Calculate averages
+    for activity in distance_totals.keys():
+        if activity not in duration_totals:
+            continue
+        average_totals[activity] = distance_totals[activity] / duration_totals[activity].total_seconds()
+
+    # Sort totals
     sorted_distances = OrderedDict(sorted(distance_totals.items(), key=operator.itemgetter(1), reverse=True))
     sorted_durations = OrderedDict(sorted(duration_totals.items(), key=operator.itemgetter(1), reverse=True))
+    sorted_averages = OrderedDict(sorted(average_totals.items(), key=operator.itemgetter(1), reverse=True))
     sorted_ascents = OrderedDict(sorted(ascent_totals.items(), key=operator.itemgetter(1), reverse=True))
     sorted_descents = OrderedDict(sorted(descent_totals.items(), key=operator.itemgetter(1), reverse=True))
 
     return render_template('dashboard.html',
-                           distance_sums=sorted_distances, duration_sums=sorted_durations,
+                           distance_sums=sorted_distances, duration_sums=sorted_durations, average_sums=sorted_averages,
                            ascent_sums=sorted_ascents, descent_sums=sorted_descents,
                            start_date=start_date, end_date=end_date,
                            nr_of_moves=nr_of_moves,
