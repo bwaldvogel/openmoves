@@ -5,6 +5,40 @@
 <div id="{{id}}_chart_slider" style="margin: auto; width: 200px;"></div>
 {%- endmacro %}
 
+{% macro chart_dashboard_block(id) %}
+<div id="{{id}}_chart" style="min-width: 100px; margin: 0 auto"></div>
+{% endmacro %}
+
+{% macro chart_dashboard(attr, datadictionary, format, valuefactor=1) %}
+    var categories = [ {% for category in datadictionary.keys() %}'{{category}}',{% endfor %} ]
+    var values = [ {% for category in datadictionary.keys() %} {{datadictionary[category] * valuefactor}}, {% endfor %} ]
+    {{chart_dashboard_raw(attr, categories, values, format)}}
+{% endmacro %}
+
+{% macro chart_dashboard_duration(attr, datadictionary, format) %}
+    var categories = [ {% for category in datadictionary.keys() %}'{{category}}',{% endfor %} ]
+    var values = [ {% for category in datadictionary.keys() %} moment.duration('{{datadictionary[category]}}').asMilliseconds(), {% endfor %} ]
+    {{chart_dashboard_raw(attr, categories, values, format)}}
+{% endmacro %}
+
+{% macro chart_dashboard_raw(attr, categories, values, format) %}
+    $('#{{attr}}_chart').highcharts({
+        chart: {type:'bar', height: categories.length * 28, borderWidth: 0, spacing:[3,4,3,3]},
+        plotOptions: {bar:{animation: false, pointPadding: 0, groupPadding: 0.05,borderWidth: 0, shadow: false, color: '#5bc0de',
+                           dataLabels: {enabled: true, format: '{{format}}', align: 'left', color: 'contrast', y: 0,
+                                        style: { "fontSize": "14px"}},
+                           states: {hover: {enabled: true}}}},
+        title: {"text": null },
+        xAxis: {categories: categories, title: {text: null}, tickLength: 0, lineColor: 'transparent',
+                labels: {style: { "fontSize": "14px"}} },
+        yAxis: {min: 0, title: { text: null }, labels: { enabled: false }, endOnTick: false, maxPadding: 0, gridLineColor: 'transparent' },
+        series: [{name: '{{attr}}', data: values }],
+        legend: { enabled: false },
+        tooltip: {enabled: false},
+        credits: {enabled: false}
+    });
+{% endmacro %}
+
 {% macro chart_with_slider(data, attr, prune_min_delta=0.0) %}
     var {{attr}}_chart_data = pruneLowDeltas({{data}}, {{prune_min_delta}});
 

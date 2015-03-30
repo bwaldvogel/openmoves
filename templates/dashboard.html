@@ -1,15 +1,26 @@
 {% extends "_base.html" %}
+{% import '_chart.html' as chart with context %}
 
 {% block scripts %}
 {{super()}}
 <script src="{{url_for('.static', filename='js/bootstrap-datetimepicker.min.js')}}"></script>
+<script src="{{url_for('.static', filename='js/highcharts.js')}}"></script>
 
 <script type="text/javascript">
     function reload_with_date(start_date, end_date) {
         window.location.href = flask_util.url_for('dashboard', {start_date: start_date.startOf('day').format(), end_date: end_date.endOf('day').format()});
     }
 
-    $( document ).ready(function() {
+    $(document).ready(function() {
+        <!-- Initialize charts -->
+        {% block chart_scripts %}
+            {{chart.chart_dashboard('Distance', distance_sums, format = '{y:.2f} km', valuefactor = 1/1000)}}
+            {{chart.chart_dashboard_duration('Duration', duration_sums, format = '{y:%H:%M:%S}')}}
+            {{chart.chart_dashboard('AverageSpeed', average_sums, format = '{y:.2f} km/h', valuefactor = 3.6)}}
+            {{chart.chart_dashboard('Ascent', ascent_sums, format = '{y} m')}}
+            {{chart.chart_dashboard('Descent', descent_sums, format = '{y} m')}}
+        {% endblock %}
+
         <!-- Pre-select the date time period dropdown by the selected date range -->
         var start_date = moment("{{start_date}}");
         var end_date = moment("{{end_date}}");
@@ -93,7 +104,6 @@
 {% block content %}
 {{super()}}
 <div class="container" role="main">
-    <h3>Dashboard</h3>
     <div class="container">
         <div class='col-md-3'>
               <div>from:</div>
@@ -132,84 +142,61 @@
             </div>
         </div>
     </div>
-
-    <h3>Totals</h3>
-    <table class="table table-striped table-auto-width">
-      <tr><th>#Moves</th><td>{{nr_of_moves}}</td></tr>
-      {% if nr_of_moves > 0 %}
-      <tr><th>Total Distance</th><td>{{macros.format_distance(total_distance)}}</td></tr>
-      <tr><th>Total Time</th><td>{{total_duration | duration}}</td></tr>
-      <tr><th>Total Ascent</th><td>{{macros.format_hm(total_ascent)}}</td></tr>
-      <tr><th>Total Descent</th><td>{{macros.format_hm(total_descent)}}</td></tr>
-      {% endif %}
-    </table>
-
-    {% if nr_of_moves > 0 %}
-    <h3>Activity Totals</h3>
     <div class="row">
         <div class="col-md-3">
-            <table class="table table-hover">
-                <thead>
-                    <tr><th>by Distance</th><th></th></tr>
-                </thead>
-                <tbody>
-                    {% for activity in distance_sums.keys() %}
-                        <tr><td>{{activity}}</td><td>{{macros.format_distance(distance_sums[activity])}}</td></tr>
-                    {% endfor %}
-                </tbody>
+            <h3>Totals</h3>
+            <table class="table table-hover table-auto-width">
+              <tr><th>#Moves</th><td>{{nr_of_moves}}</td></tr>
+              {% if nr_of_moves > 0 %}
+              <tr><th>Total Distance</th><td>{{macros.format_distance(total_distance)}}</td></tr>
+              <tr><th>Total Time</th><td>{{total_duration | duration}}</td></tr>
+              <tr><th>Total Ascent</th><td>{{macros.format_hm(total_ascent)}}</td></tr>
+              <tr><th>Total Descent</th><td>{{macros.format_hm(total_descent)}}</td></tr>
+              {% endif %}
             </table>
         </div>
-        <div class="col-md-3">
-            <table class="table table-hover">
-                <thead>
-                    <tr><th>by Duration</th><th></th></tr>
-                </thead>
-                <tbody>
-                    {% for activity in duration_sums.keys() %}
-                        <tr><td>{{activity}}</td><td>{{duration_sums[activity] | duration}}</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="col-md-3">
-            <table class="table table-hover">
-                <thead>
-                    <tr><th>by Average speed</th><th></th></tr>
-                </thead>
-                <tbody>
-                    {% for activity in average_sums.keys() %}
-                        <tr><td>{{activity}}</td><td>{{macros.kmh(average_sums[activity])}}</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+        {% if nr_of_moves > 0 %}
+        <div class="col-md-7">
+            <div class="row">
+                <h3>Totals per activity</h3>
+            </div>
+            {% if distance_sums.keys()|length > 0 %}
+                <div class="row">
+                    <h4>Distance</h4>
+                    {{chart.chart_dashboard_block('Distance')}}
+                    <br/>
+                </div>
+            {% endif %}
+            {% if duration_sums.keys()|length > 0 %}
+                <div class="row">
+                    <h4>Duration</h4>
+                    {{chart.chart_dashboard_block('Duration')}}
+                    <br/>
+                </div>
+            {% endif %}
+            {% if average_sums.keys()|length > 0 %}
+                <div class="row">
+                    <h4>Average speed</h4>
+                    {{chart.chart_dashboard_block('AverageSpeed')}}
+                    <br/>
+                </div>
+            {% endif %}
+            {% if ascent_sums.keys()|length > 0 %}
+                <div class="row">
+                    <h4>Ascent</h4>
+                    {{chart.chart_dashboard_block('Ascent')}}
+                    <br/>
+                </div>
+            {% endif %}
+            {% if descent_sums.keys()|length > 0 %}
+                <div class="row">
+                    <h4>Descent</h4>
+                    {{chart.chart_dashboard_block('Descent')}}
+                    <br/>
+                </div>
+            {% endif %}
+            </div>
+        {% endif %}
     </div>
-    <div class="row">
-        <div class="col-md-3">
-            <table class="table table-hover">
-                <thead>
-                    <tr><th>by Ascent</th><th></th></tr>
-                </thead>
-                <tbody>
-                    {% for activity in ascent_sums.keys() %}
-                        <tr><td>{{activity}}</td><td>{{macros.format_hm(ascent_sums[activity])}}</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        <div class="col-md-3">
-            <table class="table table-hover">
-                <thead>
-                    <tr><th>by Descent</th><th></th></tr>
-                </thead>
-                <tbody>
-                    {% for activity in descent_sums.keys() %}
-                        <tr><td>{{activity}}</td><td>{{macros.format_hm(descent_sums[activity])}}</td></tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-    {% endif %}
 </div>
 {% endblock %}

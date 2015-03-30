@@ -265,7 +265,7 @@ def dashboard():
         if(descent_totals[activity] == 0):
             del descent_totals[activity]
 
-    # Calculate averages
+    # Calculate average speeds
     for activity in distance_totals.keys():
         if activity not in duration_totals:
             continue
