@@ -377,7 +377,7 @@ class TestOpenMoves(object):
         assert u'<title>OpenMoves – Dashboard</title>' in response_data
         assert u'<tr><th>#Moves</th><td>4</td></tr>' in response_data
         assert u'<tr><th>Total Distance</th><td>33.55 km</td></tr>' in response_data
-        assert u'<tr><th>Total Time</th><td>3:47:09.600000 h</td></tr>' in response_data
+        assert u'<tr><th>Total Time</th><td>03:47:09.60</td></tr>' in response_data
         assert u'<tr><th>Total Ascent</th><td>110 m</td></tr>' in response_data
         assert u'<tr><th>Total Descent</th><td>218 m</td></tr>' in response_data
 
