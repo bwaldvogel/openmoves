@@ -40,6 +40,8 @@
             <tr>
                 {% block table_header %}
                 <th>Time</th>
+                {% block table_header_after_time %}
+                {% endblock %}
                 <th>Avg. Speed</th>
                 {% if move.speed_max %}<th>Max. Speed</th>{% endif %}
                 <th>Duration</th>
@@ -54,6 +56,8 @@
             <tr>
                 {% block table_entry %}
                 <td>{{move.date_time | date_time}}</td>
+                {% block table_entry_after_time %}
+                {% endblock %}
                 <td>{{macros.kmh(move.speed_avg)}}</td>
                 {% if move.speed_max %}<td>{{macros.kmh(move.speed_max)}}</td>{% endif %}
                 <td>{{move.duration | duration}}</td>

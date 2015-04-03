@@ -26,6 +26,15 @@ def format_speed(speed, unit=True):
     return "%0.1f%s" % (speed * 3.6, " km/h" if unit else "")
 
 
+def format_pace_km(speed, unit=True):
+    value = 3600 / (speed * 3.6)
+    value = timedelta(seconds=value)
+
+    _, remainder = divmod(value.total_seconds(), 3600)
+    minutes, seconds = divmod(remainder, 60)
+    return '%02d:%02.0f%s' % (minutes, seconds, " min/km" if unit else "")
+
+
 def format_altitude(altitude, unit=True):
     return "%d%s" % (altitude, " m" if unit else "")
 
@@ -105,6 +114,7 @@ def register_filters(app):
     app.jinja_env.filters['date_time'] = format_date_time
     app.jinja_env.filters['date_time_millis'] = format_date_time_millis
     app.jinja_env.filters['duration'] = duration
+    app.jinja_env.filters['pace_km'] = format_pace_km
     app.jinja_env.filters['degree'] = radian_to_degree
     app.jinja_env.filters['epoch'] = unix_epoch
     app.jinja_env.filters['swim_pace'] = swim_pace
