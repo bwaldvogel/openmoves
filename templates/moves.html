@@ -49,6 +49,9 @@
                     {% if show_columns.descent -%}
                         <th>{{macros.sortable('descent', 'Descent', 'desc')}}</th>
                     {%- endif %}
+                    {% if show_columns.recovery_time -%}
+                        <th>{{macros.sortable('recovery_time', 'Recovery', 'desc')}}</th>
+                    {%- endif %}
                     {% if show_columns.stroke_count -%}
                         <th>{{macros.sortable('stroke_count', 'Strokes', 'desc')}}</th>
                     {%- endif %}
@@ -81,6 +84,9 @@
                     {%- endif %}
                     {% if show_columns.descent -%}
                         <td>{{macros.format_hm(move.descent)}}</td>
+                    {%- endif %}
+                    {% if show_columns.recovery_time -%}
+                        <td>{{move.recovery_time | duration}}</td>
                     {%- endif %}
                     {% if show_columns.stroke_count -%}
                         <td>{{move.stroke_count | int(default='')}}</td>

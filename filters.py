@@ -52,14 +52,19 @@ def format_energyconsumption(energyconsumption, unit=True):
 
 
 def duration(value):
-    if type(value).__name__ in ('str', 'unicode'):
+    if not value:
+        return ''
+    elif type(value).__name__ in ('str', 'unicode'):
         value = timedelta(seconds=float(value))
     elif isinstance(value, (float, int)):
         value = timedelta(seconds=float(value))
 
     hours, remainder = divmod(value.total_seconds(), 3600)
     minutes, seconds = divmod(remainder, 60)
-    return '%02d:%02d:%05.2f' % (hours, minutes, seconds)
+    if seconds == 0.0:
+        return '%02d:%02d h' % (hours, minutes)
+    else:
+        return '%02d:%02d:%05.2f' % (hours, minutes, seconds)
 
 
 def get_city(address):

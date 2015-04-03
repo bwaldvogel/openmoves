@@ -344,7 +344,7 @@ def moves():
         sort_attr = sort_attr.nullslast()
 
     show_columns = {}
-    for column in ('location_address', 'speed_avg', 'speed_max', 'hr_avg', 'ascent', 'descent', 'stroke_count', 'pool_length'):
+    for column in ('location_address', 'speed_avg', 'speed_max', 'hr_avg', 'ascent', 'descent', 'recovery_time', 'stroke_count', 'pool_length'):
         attr = getattr(Move, column)
         exists = db.session.query(literal(True)).filter(move_filter(_current_user_filtered(db.session.query(attr).filter(attr != None))).exists()).scalar()
         show_columns[column] = exists
