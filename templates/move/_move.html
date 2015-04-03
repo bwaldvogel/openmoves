@@ -48,6 +48,7 @@
                 <th>Distance</th>
                 <th>Avg. Temperature</th>
                 {% if move.hr_avg %}<th>Avg. Heart Rate</th>{% endif %}
+                {% if move.recovery_time %}<th>Recovery</th>{% endif %}
                 {% if gps_samples %}<th>First fix</th>{% endif %}
                 {% endblock %}
             </tr>
@@ -64,6 +65,7 @@
                 <td>{{macros.format_move_distance(move, move.distance)}}</td>
                 <td>{{macros.temperature(move.temperature_avg)}}</td>
                 {% if move.hr_avg %}<td>{{macros.hr(move.hr_avg)}}</td>{% endif %}
+                {% if move.recovery_time %}<td>{{move.recovery_time | duration}}</td>{% endif %}
                 {% if gps_samples %}<td>{{move.time_to_first_fix | duration}}</td>{% endif %}
                 {% endblock %}
             </tr>

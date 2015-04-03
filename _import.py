@@ -101,6 +101,9 @@ def normalize_move(move):
         assert float(move.descent) == 0
         move.descent = None
 
+    if move.recovery_time.total_seconds() == 0:
+        move.recovery_time = None
+
     if move.activity == 'Outdoor swimmin':
         move.activity = 'Outdoor swimming'
 

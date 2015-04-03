@@ -8,6 +8,7 @@ import pytest
 import html5lib
 import re
 import os
+from datetime import timedelta
 
 app = None
 
@@ -241,6 +242,10 @@ class TestOpenMoves(object):
         assert u'<span class="date-time">2014-11-09 15:26:45.314</span>' in response_data
         assert u'<td>00:10:55.32</td>' in response_data
 
+        with app.test_request_context():
+            move = Move.query.one()
+            assert move.recovery_time is None
+
     def test_import_move_upload_multiple(self, tmpdir):
         self._login()
         data = {}
@@ -256,6 +261,13 @@ class TestOpenMoves(object):
 
         assert u'<title>OpenMoves – Moves</title>' in response_data
         assert u'imported 2 moves' in response_data
+
+        with app.test_request_context():
+            move = Move.query.filter(Move.activity == 'Trekking').one()
+            assert move.ascent_time == timedelta(seconds=1181)
+
+            move = Move.query.filter(Move.activity == 'Cycling').one()
+            assert move.distance == 21277
 
     def test_moves(self, tmpdir):
         self._login()
