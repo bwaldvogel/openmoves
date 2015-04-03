@@ -1,1 +1,11 @@
 {% extends "move/_move.html" %}
+
+{% block table_header_after_time %}
+<th>Avg. Pace</th>
+<th>Max. Pace</th>
+{% endblock %}
+
+{% block table_entry_after_time %}
+<td>{{move.speed_avg | pace_km}}</td>
+<td>{{move.speed_max | pace_km}}</td>
+{% endblock %}

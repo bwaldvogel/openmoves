@@ -14,6 +14,11 @@ class TestFilters(object):
         assert filters.duration(127) == "00:02:07.00"
         assert filters.duration(timedelta(seconds=127)) == "00:02:07.00"
 
+    def test_pace_km(self):
+        assert filters.format_pace_km(10.0 / 3.6) == "06:00 min/km"
+        assert filters.format_pace_km(12.0 / 3.6) == "05:00 min/km"
+        assert filters.format_pace_km(14.5 / 3.6) == "04:08 min/km"
+
     def test_swim_pace(self):
         assert filters.swim_pace(timedelta(seconds=12.3456)) == "20:34.56 min / 100 m"
 
