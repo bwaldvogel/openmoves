@@ -266,10 +266,19 @@ def dashboard():
             del descent_totals[activity]
 
     # Calculate average speeds
+    total_duration_with_distance = 0
     for activity in distance_totals.keys():
         if activity not in duration_totals:
             continue
         average_totals[activity] = distance_totals[activity] / duration_totals[activity]
+        total_duration_with_distance += duration_totals[activity]
+
+    # Calculate totals
+    total_distance = sum(distance_totals.values());
+    total_duration = sum(duration_totals.values(), 0);
+    total_average = total_distance / total_duration_with_distance if total_duration_with_distance > 0 else None;
+    total_ascent = sum(ascent_totals.values());
+    total_descent = sum(descent_totals.values());
 
     # Sort totals
     sorted_distances = OrderedDict(sorted(distance_totals.items(), key=operator.itemgetter(1), reverse=True))
@@ -283,10 +292,8 @@ def dashboard():
                            ascent_sums=sorted_ascents, descent_sums=sorted_descents,
                            start_date=start_date, end_date=end_date,
                            nr_of_moves=nr_of_moves,
-                           total_distance=sum(distance_totals.values()),
-                           total_duration=sum(duration_totals.values(), 0),
-                           total_ascent=sum(ascent_totals.values()),
-                           total_descent=sum(descent_totals.values()))
+                           total_distance=total_distance, total_duration=total_duration, total_average=total_average,
+                           total_ascent=total_ascent, total_descent=total_descent)
 
 def _parse_move_filter(filter_query):
     if not filter_query:

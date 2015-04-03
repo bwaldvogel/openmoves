@@ -102,6 +102,9 @@
           reload_with_date(start_date, moment());
           ;
         });
+
+        <!-- Initialize tooltips -->
+        $('[data-toggle="tooltip"]').tooltip()
     });
 </script>
 
@@ -162,7 +165,8 @@
               <tr><th>#Moves</th><td>{{nr_of_moves}}</td></tr>
               {% if nr_of_moves > 0 %}
               <tr><th>Total Distance</th><td>{{macros.format_distance(total_distance)}}</td></tr>
-              <tr><th>Total Time</th><td>{{total_duration | duration}}</td></tr>
+              <tr><th>Total Duration</th><td>{{total_duration | duration}}</td></tr>
+              <tr data-toggle="tooltip" data-original-title="Considered only moves with a distance value" data-placement="right"><th>Total Average</th><td>{{macros.kmh(total_average)}}</td></tr>
               <tr><th>Total Ascent</th><td>{{macros.format_hm(total_ascent)}}</td></tr>
               <tr><th>Total Descent</th><td>{{macros.format_hm(total_descent)}}</td></tr>
               {% endif %}
