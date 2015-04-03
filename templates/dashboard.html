@@ -121,99 +121,89 @@
 {{super()}}
 <div class="container" role="main">
     <div class="container">
-        <div class='col-md-3'>
-              <div>from:</div>
-            <div class="form-group">
-                <div class='input-group date' id='dtp_start'>
-                    <input type='text' class="form-control" />
-                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
-                    </span>
+        <div class="row">
+            <div class="col-sm-2 sidebar">
+                <!-- http://stackoverflow.com/questions/13437446/how-to-display-selected-item-in-bootstrap-button-dropdown-title -->
+                <div class="dropdown" data-toggle="tooltip" data-original-title="Select a predefined date range" data-placement="auto left">
+                  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+                    Period: <strong><span class="selection">1 week</span></strong>
+                    <span class="caret"></span>
+                  </button>
+                  <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 week</a></li>
+                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 month</a></li>
+                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 year</a></li>
+                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">all moves</a></li>
+                  </ul>
+                </div>
+                <br/>
+                <div class="form-group" data-toggle="tooltip" data-original-title="Select start date" data-placement="auto left">
+                    <div class='input-group date' id='dtp_start'>
+                        <input type='text' class="form-control input-sm" />
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
+                </div>
+                <div class="form-group" data-toggle="tooltip" data-original-title="Select end date" data-placement="auto left">
+                    <div class='input-group date' id='dtp_end'>
+                        <input type='text' class="form-control input-sm" />
+                        <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
+                        </span>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class='col-md-3'>
-            <div>to:</div>
-            <div class="form-group">
-                <div class='input-group date' id='dtp_end'>
-                    <input type='text' class="form-control" />
-                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
-                    </span>
-                </div>
+            <div class="col-sm-3">
+                <h3>Totals</h3>
+                <table class="table table-hover table-auto-width">
+                  <tr><th>#Moves</th><td>{{nr_of_moves}}</td></tr>
+                  {% if nr_of_moves > 0 %}
+                  <tr><th>Total Distance</th><td>{{macros.format_distance(total_distance)}}</td></tr>
+                  <tr><th>Total Duration</th><td>{{total_duration | duration}}</td></tr>
+                  <tr data-toggle="tooltip" data-original-title="Considered only moves with a distance value" data-placement="left"><th>Total Average</th><td>{{macros.kmh(total_average)}}</td></tr>
+                  <tr><th>Total Ascent</th><td>{{macros.format_hm(total_ascent)}}</td></tr>
+                  <tr><th>Total Descent</th><td>{{macros.format_hm(total_descent)}}</td></tr>
+                  {% endif %}
+                </table>
             </div>
-        </div>
-        <div class='col-md-1'>
-            <div>&nbsp;</div>
-            <!-- http://stackoverflow.com/questions/13437446/how-to-display-selected-item-in-bootstrap-button-dropdown-title -->
-            <div class="dropdown">
-              <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
-                Period: <strong><span class="selection">1 week</span></strong>
-                <span class="caret"></span>
-              </button>
-              <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 week</a></li>
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 month</a></li>
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 year</a></li>
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">all moves</a></li>
-              </ul>
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-3">
-            <h3>Totals</h3>
-            <table class="table table-hover table-auto-width">
-              <tr><th>#Moves</th><td>{{nr_of_moves}}</td></tr>
-              {% if nr_of_moves > 0 %}
-              <tr><th>Total Distance</th><td>{{macros.format_distance(total_distance)}}</td></tr>
-              <tr><th>Total Duration</th><td>{{total_duration | duration}}</td></tr>
-              <tr data-toggle="tooltip" data-original-title="Considered only moves with a distance value" data-placement="right"><th>Total Average</th><td>{{macros.kmh(total_average)}}</td></tr>
-              <tr><th>Total Ascent</th><td>{{macros.format_hm(total_ascent)}}</td></tr>
-              <tr><th>Total Descent</th><td>{{macros.format_hm(total_descent)}}</td></tr>
-              {% endif %}
-            </table>
-        </div>
-        {% if nr_of_moves > 0 %}
-        <div class="col-md-7">
-            <div class="row">
+            <div class="col-sm-7">
                 <h3>Totals per activity</h3>
+                {% if distance_sums.keys()|length > 0 %}
+                    <div class="row">
+                        <h4>Distance</h4>
+                        {{chart.chart_dashboard_block('Distance')}}
+                        <br/>
+                    </div>
+                {% endif %}
+                {% if duration_sums.keys()|length > 0 %}
+                    <div class="row">
+                        <h4>Duration</h4>
+                        {{chart.chart_dashboard_block('Duration')}}
+                        <br/>
+                    </div>
+                {% endif %}
+                {% if average_sums.keys()|length > 0 %}
+                    <div class="row">
+                        <h4>Average speed</h4>
+                        {{chart.chart_dashboard_block('AverageSpeed')}}
+                        <br/>
+                    </div>
+                {% endif %}
+                {% if ascent_sums.keys()|length > 0 %}
+                    <div class="row">
+                        <h4>Ascent</h4>
+                        {{chart.chart_dashboard_block('Ascent')}}
+                        <br/>
+                    </div>
+                {% endif %}
+                {% if descent_sums.keys()|length > 0 %}
+                    <div class="row">
+                        <h4>Descent</h4>
+                        {{chart.chart_dashboard_block('Descent')}}
+                        <br/>
+                    </div>
+                {% endif %}
             </div>
-            {% if distance_sums.keys()|length > 0 %}
-                <div class="row">
-                    <h4>Distance</h4>
-                    {{chart.chart_dashboard_block('Distance')}}
-                    <br/>
-                </div>
-            {% endif %}
-            {% if duration_sums.keys()|length > 0 %}
-                <div class="row">
-                    <h4>Duration</h4>
-                    {{chart.chart_dashboard_block('Duration')}}
-                    <br/>
-                </div>
-            {% endif %}
-            {% if average_sums.keys()|length > 0 %}
-                <div class="row">
-                    <h4>Average speed</h4>
-                    {{chart.chart_dashboard_block('AverageSpeed')}}
-                    <br/>
-                </div>
-            {% endif %}
-            {% if ascent_sums.keys()|length > 0 %}
-                <div class="row">
-                    <h4>Ascent</h4>
-                    {{chart.chart_dashboard_block('Ascent')}}
-                    <br/>
-                </div>
-            {% endif %}
-            {% if descent_sums.keys()|length > 0 %}
-                <div class="row">
-                    <h4>Descent</h4>
-                    {{chart.chart_dashboard_block('Descent')}}
-                    <br/>
-                </div>
-            {% endif %}
-            </div>
-        {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}
