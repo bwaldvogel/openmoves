@@ -23,8 +23,8 @@
 
 {% macro chart_dashboard_raw(attr, categories, values, formatter) %}
     $('#{{attr}}_chart').highcharts({
-        chart: {type:'bar', height: categories.length * 28, borderWidth: 0, spacing:[3,4,3,3]},
-        plotOptions: {bar:{animation: false, pointPadding: 0, groupPadding: 0.05,borderWidth: 0, shadow: false, color: '#5bc0de',
+        chart: {type:'bar', height: categories.length * 28, borderWidth: 0, spacing:[0,0,0,0]},
+        plotOptions: {bar:{animation: false, pointWidth: 24, borderWidth: 0, shadow: false, color: '#5bc0de',
                            dataLabels: {enabled: true, formatter: {{formatter}}, align: 'left', color: 'contrast', y: 0,
                                         style: { "fontSize": "14px"}},
                            states: {hover: {enabled: true}}}},
