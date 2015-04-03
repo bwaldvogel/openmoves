@@ -236,8 +236,8 @@ def dashboard():
         distance_totals[move.activity] += move.distance
 
         if not move.activity in duration_totals:
-            duration_totals[move.activity] = timedelta(0)
-        duration_totals[move.activity] += move.duration
+            duration_totals[move.activity] = 0
+        duration_totals[move.activity] += move.duration.total_seconds()
 
         if not move.activity in ascent_totals:
             ascent_totals[move.activity] = 0
@@ -269,7 +269,7 @@ def dashboard():
     for activity in distance_totals.keys():
         if activity not in duration_totals:
             continue
-        average_totals[activity] = distance_totals[activity] / duration_totals[activity].total_seconds()
+        average_totals[activity] = distance_totals[activity] / duration_totals[activity]
 
     # Sort totals
     sorted_distances = OrderedDict(sorted(distance_totals.items(), key=operator.itemgetter(1), reverse=True))
@@ -284,7 +284,7 @@ def dashboard():
                            start_date=start_date, end_date=end_date,
                            nr_of_moves=nr_of_moves,
                            total_distance=sum(distance_totals.values()),
-                           total_duration=sum(duration_totals.values(), timedelta(0)),
+                           total_duration=sum(duration_totals.values(), 0),
                            total_ascent=sum(ascent_totals.values()),
                            total_descent=sum(descent_totals.values()))
 

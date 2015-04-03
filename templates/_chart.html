@@ -9,23 +9,23 @@
 <div id="{{id}}_chart" style="min-width: 100px; margin: 0 auto"></div>
 {% endmacro %}
 
-{% macro chart_dashboard(attr, datadictionary, format, valuefactor=1) %}
+{% macro chart_dashboard(attr, datadictionary, formatter, valuefactor=1) %}
     var categories = [ {% for category in datadictionary.keys() %}'{{category}}',{% endfor %} ]
     var values = [ {% for category in datadictionary.keys() %} {{datadictionary[category] * valuefactor}}, {% endfor %} ]
-    {{chart_dashboard_raw(attr, categories, values, format)}}
+    {{chart_dashboard_raw(attr, categories, values, formatter)}}
 {% endmacro %}
 
-{% macro chart_dashboard_duration(attr, datadictionary, format) %}
+{% macro chart_dashboard_duration(attr, datadictionary, formatter) %}
     var categories = [ {% for category in datadictionary.keys() %}'{{category}}',{% endfor %} ]
-    var values = [ {% for category in datadictionary.keys() %} moment.duration('{{datadictionary[category]}}').asMilliseconds(), {% endfor %} ]
-    {{chart_dashboard_raw(attr, categories, values, format)}}
+    var values = [ {% for category in datadictionary.keys() %} moment.duration({{datadictionary[category]}}).asMilliseconds(), {% endfor %} ]
+    {{chart_dashboard_raw(attr, categories, values, formatter)}}
 {% endmacro %}
 
-{% macro chart_dashboard_raw(attr, categories, values, format) %}
+{% macro chart_dashboard_raw(attr, categories, values, formatter) %}
     $('#{{attr}}_chart').highcharts({
         chart: {type:'bar', height: categories.length * 28, borderWidth: 0, spacing:[3,4,3,3]},
         plotOptions: {bar:{animation: false, pointPadding: 0, groupPadding: 0.05,borderWidth: 0, shadow: false, color: '#5bc0de',
-                           dataLabels: {enabled: true, format: '{{format}}', align: 'left', color: 'contrast', y: 0,
+                           dataLabels: {enabled: true, formatter: {{formatter}}, align: 'left', color: 'contrast', y: 0,
                                         style: { "fontSize": "14px"}},
                            states: {hover: {enabled: true}}}},
         title: {"text": null },

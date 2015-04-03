@@ -5,6 +5,7 @@
 {{super()}}
 <script src="{{url_for('.static', filename='js/bootstrap-datetimepicker.min.js')}}"></script>
 <script src="{{url_for('.static', filename='js/highcharts.js')}}"></script>
+<script src="{{url_for('.static', filename='js/underscore.string.min.js')}}"></script>
 
 <script type="text/javascript">
     function reload_with_date(start_date, end_date) {
@@ -14,11 +15,23 @@
     $(document).ready(function() {
         <!-- Initialize charts -->
         {% block chart_scripts %}
-            {{chart.chart_dashboard('Distance', distance_sums, format = '{y:.2f} km', valuefactor = 1/1000)}}
-            {{chart.chart_dashboard_duration('Duration', duration_sums, format = '{y:%H:%M:%S}')}}
-            {{chart.chart_dashboard('AverageSpeed', average_sums, format = '{y:.2f} km/h', valuefactor = 3.6)}}
-            {{chart.chart_dashboard('Ascent', ascent_sums, format = '{y} m')}}
-            {{chart.chart_dashboard('Descent', descent_sums, format = '{y} m')}}
+            var distance_formatter = function distance_formatter() { return s.sprintf("%04.1f km", this.y); }
+            {{chart.chart_dashboard('Distance', distance_sums, formatter = 'distance_formatter', valuefactor = 1/1000)}}
+
+            var duration_formatter = function duration_formatter() {
+              var hour = Math.floor(this.y / 3600);
+              var min = Math.floor((this.y % 3600) / 60);
+              var sec = (this.y % 3600) % 60;
+              return s.sprintf("%02d:%02d:%05.2f", hour, min, sec);
+            }
+            {{chart.chart_dashboard_duration('Duration', duration_sums, formatter = 'duration_formatter')}}
+
+            var speed_formatter = function speed_formatter() { return s.sprintf("%.1f km/h", this.y); }
+            {{chart.chart_dashboard('AverageSpeed', average_sums, formatter = 'speed_formatter', valuefactor = 3.6)}}
+
+            var altitude_formatter = function speed_formatter() { return this.y + " m"; }
+            {{chart.chart_dashboard('Ascent', ascent_sums, formatter = 'altitude_formatter')}}
+            {{chart.chart_dashboard('Descent', descent_sums, formatter = 'altitude_formatter')}}
         {% endblock %}
 
         <!-- Pre-select the date time period dropdown by the selected date range -->
