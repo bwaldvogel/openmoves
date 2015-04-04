@@ -27,6 +27,7 @@ from _import import postprocess_move
 from geopy.distance import vincenty
 import math
 import operator
+from jinja2.exceptions import TemplateNotFound
 try:
     from urllib.parse import quote_plus
 except ImportError:
@@ -534,8 +535,14 @@ def move(id):
 
     # eg. 'Pool swimming' → 'pool_swimming'
     activity_name = move.activity.lower().replace(' ', '_')
-    return render_template("move/%s.html" % activity_name, **model)
-
+    try:
+        return render_template("move/%s.html" % activity_name, **model)
+    except TemplateNotFound:
+        # Fall-back to generic template
+        return render_template("move/_move.html", **model)
+    except:
+        flash("Failed to load move template of activity '%s'." % activity_name)
+        return redirect(url_for('index'))
 
 @app.route('/_tests', methods=['GET'])
 @login_required
