@@ -218,82 +218,78 @@ def dashboard():
     if ('start_date' not in request.args) or ('end_date' not in request.args):
         raise ValueError("No start_date and/or end_date specified!")
 
-    start_date = dateutil.parser.parse(request.args.get('start_date'))
-    end_date = dateutil.parser.parse(request.args.get('end_date'))
-    moves = _current_user_filtered(Move.query).filter(Move.date_time >= start_date) \
-                                              .filter(Move.date_time <= end_date) \
+    model = {}
+    model['start_date'] = dateutil.parser.parse(request.args.get('start_date'))
+    model['end_date'] = dateutil.parser.parse(request.args.get('end_date'))
+
+    moves = _current_user_filtered(Move.query).filter(Move.date_time >= model['start_date']) \
+                                              .filter(Move.date_time <= model['end_date']) \
                                               .all()
 
-    distance_totals = {}
-    duration_totals = {}
-    average_totals = {}
-    ascent_totals = {}
-    descent_totals = {}
+    model['nr_of_moves'] = len(moves)
+
+    total_distance_by_activity = {}
+    total_duration_by_activity = {}
+    total_average_by_activity = {}
+    total_ascent_by_activity = {}
+    total_descent_by_activity = {}
 
     for move in moves:
-        if not (move.activity in distance_totals):
-            distance_totals[move.activity] = 0
-        distance_totals[move.activity] += move.distance
+        if not (move.activity in total_distance_by_activity):
+            total_distance_by_activity[move.activity] = 0
+        total_distance_by_activity[move.activity] += move.distance
 
-        if not move.activity in duration_totals:
-            duration_totals[move.activity] = 0
-        duration_totals[move.activity] += move.duration.total_seconds()
+        if not move.activity in total_duration_by_activity:
+            total_duration_by_activity[move.activity] = 0
+        total_duration_by_activity[move.activity] += move.duration.total_seconds()
 
-        if not move.activity in ascent_totals:
-            ascent_totals[move.activity] = 0
+        if not move.activity in total_ascent_by_activity:
+            total_ascent_by_activity[move.activity] = 0
         if move.ascent:
-            ascent_totals[move.activity] += move.ascent
+            total_ascent_by_activity[move.activity] += move.ascent
 
-        if not move.activity in descent_totals:
-            descent_totals[move.activity] = 0
+        if not move.activity in total_descent_by_activity:
+            total_descent_by_activity[move.activity] = 0
         if move.ascent:
-            descent_totals[move.activity] += move.descent
-
-    nr_of_moves = len(moves)
+            total_descent_by_activity[move.activity] += move.descent
 
     # Clean activities without distance or duration
-    for activity in list(distance_totals.keys()):
-        if(distance_totals[activity] == 0):
-            del distance_totals[activity]
-    for activity in list(duration_totals.keys()):
-        if(duration_totals[activity] == timedelta(0)):
-            del duration_totals[activity]
-    for activity in list(ascent_totals.keys()):
-        if(ascent_totals[activity] == 0):
-            del ascent_totals[activity]
-    for activity in list(descent_totals.keys()):
-        if(descent_totals[activity] == 0):
-            del descent_totals[activity]
+    for activity in list(total_distance_by_activity.keys()):
+        if(total_distance_by_activity[activity] == 0):
+            del total_distance_by_activity[activity]
+    for activity in list(total_duration_by_activity.keys()):
+        if(total_duration_by_activity[activity] == timedelta(0)):
+            del total_duration_by_activity[activity]
+    for activity in list(total_ascent_by_activity.keys()):
+        if(total_ascent_by_activity[activity] == 0):
+            del total_ascent_by_activity[activity]
+    for activity in list(total_descent_by_activity.keys()):
+        if(total_descent_by_activity[activity] == 0):
+            del total_descent_by_activity[activity]
 
     # Calculate average speeds
     total_duration_with_distance = 0
-    for activity in distance_totals.keys():
-        if activity not in duration_totals:
+    for activity in total_distance_by_activity.keys():
+        if activity not in total_duration_by_activity:
             continue
-        average_totals[activity] = distance_totals[activity] / duration_totals[activity]
-        total_duration_with_distance += duration_totals[activity]
+        total_average_by_activity[activity] = total_distance_by_activity[activity] / total_duration_by_activity[activity]
+        total_duration_with_distance += total_duration_by_activity[activity]
+
+    # Sort totals by activity
+    model['total_distance_by_activity'] = OrderedDict(sorted(total_distance_by_activity.items(), key=operator.itemgetter(1), reverse=True))
+    model['total_duration_by_activity'] = OrderedDict(sorted(total_duration_by_activity.items(), key=operator.itemgetter(1), reverse=True))
+    model['total_average_by_activity'] = OrderedDict(sorted(total_average_by_activity.items(), key=operator.itemgetter(1), reverse=True))
+    model['total_ascent_by_activity'] = OrderedDict(sorted(total_ascent_by_activity.items(), key=operator.itemgetter(1), reverse=True))
+    model['total_descent_by_activity'] = OrderedDict(sorted(total_descent_by_activity.items(), key=operator.itemgetter(1), reverse=True))
 
     # Calculate totals
-    total_distance = sum(distance_totals.values());
-    total_duration = sum(duration_totals.values(), 0);
-    total_average = total_distance / total_duration_with_distance if total_duration_with_distance > 0 else None;
-    total_ascent = sum(ascent_totals.values());
-    total_descent = sum(descent_totals.values());
+    model['total_distance'] = sum(total_distance_by_activity.values());
+    model['total_duration'] = sum(total_duration_by_activity.values(), 0);
+    model['total_average'] = model['total_distance'] / total_duration_with_distance if total_duration_with_distance > 0 else None;
+    model['total_ascent'] = sum(total_ascent_by_activity.values());
+    model['total_descent'] = sum(total_descent_by_activity.values());
 
-    # Sort totals
-    sorted_distances = OrderedDict(sorted(distance_totals.items(), key=operator.itemgetter(1), reverse=True))
-    sorted_durations = OrderedDict(sorted(duration_totals.items(), key=operator.itemgetter(1), reverse=True))
-    sorted_averages = OrderedDict(sorted(average_totals.items(), key=operator.itemgetter(1), reverse=True))
-    sorted_ascents = OrderedDict(sorted(ascent_totals.items(), key=operator.itemgetter(1), reverse=True))
-    sorted_descents = OrderedDict(sorted(descent_totals.items(), key=operator.itemgetter(1), reverse=True))
-
-    return render_template('dashboard.html',
-                           distance_sums=sorted_distances, duration_sums=sorted_durations, average_sums=sorted_averages,
-                           ascent_sums=sorted_ascents, descent_sums=sorted_descents,
-                           start_date=start_date, end_date=end_date,
-                           nr_of_moves=nr_of_moves,
-                           total_distance=total_distance, total_duration=total_duration, total_average=total_average,
-                           total_ascent=total_ascent, total_descent=total_descent)
+    return render_template('dashboard.html', **model)
 
 def _parse_move_filter(filter_query):
     if not filter_query:
