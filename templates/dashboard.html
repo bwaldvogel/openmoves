@@ -1,6 +1,11 @@
 {% extends "_base.html" %}
 {% import '_chart.html' as chart with context %}
 
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='css/bootstrap-datetimepicker.css')}}">
+{% endblock %}
+
 {% block scripts %}
 {{super()}}
 <script src="{{url_for('.static', filename='js/bootstrap-datetimepicker.min.js')}}"></script>
@@ -8,11 +13,14 @@
 <script src="{{url_for('.static', filename='js/underscore.string.min.js')}}"></script>
 
 <script type="text/javascript">
-    function reload_with_date(start_date, end_date) {
-        window.location.href = flask_util.url_for('dashboard', {start_date: start_date.startOf('day').format(), end_date: end_date.endOf('day').format()});
-    }
+    $(function () {
+        <!-- Initialize date range dropdown -->
+        init_date_range_dropdown('{{start_date}}', '{{end_date}}');
+        <!-- Initialize date range pickers -->
+        init_date_range_pickers('{{start_date}}', '{{end_date}}', 'dashboard');
+        <!-- Initialize tooltips -->
+        $('[data-toggle="tooltip"]').tooltip()
 
-    $(document).ready(function() {
         <!-- Initialize charts -->
         {% block chart_scripts %}
             var distance_formatter = function distance_formatter() { return s.sprintf("%04.1f km", this.y); }
@@ -33,85 +41,8 @@
             {{chart.chart_dashboard('Ascent', total_ascent_by_activity, formatter = 'altitude_formatter')}}
             {{chart.chart_dashboard('Descent', total_descent_by_activity, formatter = 'altitude_formatter')}}
         {% endblock %}
-
-        <!-- Pre-select the date time period dropdown by the selected date range -->
-        var start_date = moment("{{start_date}}");
-        var end_date = moment("{{end_date}}");
-        <!-- Determine configured time period -->
-        var period = "custom";
-        if(start_date.isSame(moment(end_date).subtract(1, 'weeks').startOf('day'))) {
-          period = "1 week";
-        }
-        else if(start_date.isSame(moment(end_date).subtract(1, 'months').startOf('day'))) {
-          period = "1 month";
-        }
-        else if(start_date.isSame(moment(end_date).subtract(1, 'years').startOf('day'))) {
-          period = "1 year";
-        }
-        else if(start_date.isSame(moment().year(1970).month(0).date(1).startOf('day'))) {
-          period = "all moves";
-        }
-        $(".dropdown").find('.btn').find('.selection').text(period);
-    });
-
-    $(function () {
-        <!-- Date time picker configuration -->
-        $('#dtp_start').datetimepicker({
-            defaultDate: '{{start_date}}',
-            maxDate: '{{end_date}}',
-            format: 'LL',          <!-- http://momentjs.com/docs/#/displaying/format/ -->
-            calendarWeeks: true,
-            showTodayButton: true
-        });
-        $('#dtp_end').datetimepicker({
-            defaultDate: '{{end_date}}',
-            minDate: '{{start_date}}',
-            format: 'LL',          <!-- http://momentjs.com/docs/#/displaying/format/ -->
-            calendarWeeks: true,
-            showTodayButton: true
-        });
-
-        <!-- Linked date time pickers: http://eonasdan.github.io/bootstrap-datetimepicker/#linked-pickers -->
-        $("#dtp_start").on("dp.change",function (e) {
-            reload_with_date($('#dtp_start').data("DateTimePicker").date(), $('#dtp_end').data("DateTimePicker").date());
-        });
-        $("#dtp_end").on("dp.change",function (e) {
-            reload_with_date($('#dtp_start').data("DateTimePicker").date(), $('#dtp_end').data("DateTimePicker").date());
-        });
-
-        $(".dropdown-menu li a").click(function(){
-          $(this).parents(".dropdown").find('.btn').find('.selection').text($(this).text());
-          var start_date = null;
-          switch($(this).text()) {
-              case "1 week":
-                  start_date = moment().subtract(1, 'weeks');
-                  break;
-              case "1 month":
-                  start_date = moment().subtract(1, 'months');
-                  break;
-              case "1 year":
-                  start_date = moment().subtract(1, 'years');
-                  break;
-              case "all moves":
-                  start_date = moment().year(1970).month(0).date(1);
-                  break;
-              default:
-                  start_date = moment().subtract(1, 'months');
-                  break;
-          }
-          reload_with_date(start_date, moment());
-          ;
-        });
-
-        <!-- Initialize tooltips -->
-        $('[data-toggle="tooltip"]').tooltip()
     });
 </script>
-{% endblock %}
-
-{% block styles %}
-{{super()}}
-<link rel="stylesheet" href="{{url_for('.static', filename='css/bootstrap-datetimepicker.css')}}">
 {% endblock %}
 
 {% set active_page = 'dashboard' -%}
@@ -159,7 +90,8 @@
         <div class="col-sm-10">
             <table class="table table-auto-width">
               <tr>
-                  <th>#Moves</th><td>{{nr_of_moves}}</td>
+                  <th><a href="{{url_for('moves', start_date=start_date, end_date=end_date)}}">#Moves</a></th>
+                  <td><a href="{{url_for('moves', start_date=start_date, end_date=end_date)}}">{{nr_of_moves}}</a></td>
                   {% if nr_of_moves > 0 %}
                   <th>Total Distance</th><td>{{macros.format_distance(total_distance)}}</td>
                   {% endif %}

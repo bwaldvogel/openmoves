@@ -1,5 +1,26 @@
 {% extends "_base.html" %}
 
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='css/bootstrap-datetimepicker.css')}}">
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script src="{{url_for('.static', filename='js/bootstrap-datetimepicker.min.js')}}"></script>
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        <!-- Initialize date range dropdown -->
+        init_date_range_dropdown('{{start_date}}', '{{end_date}}');
+        <!-- Initialize date range pickers -->
+        init_date_range_pickers('{{start_date}}', '{{end_date}}', 'moves');
+        <!-- Initialize tooltips -->
+        $('[data-toggle="tooltip"]').tooltip();
+    }); <!-- document.ready -->
+</script>
+{% endblock %}
+
 {% set active_page = 'moves' -%}
 
 {% block content %}
@@ -7,15 +28,42 @@
 <div class="container" role="main">
     <div class="row">
         <div class="col-sm-2 sidebar activity-filter">
+            <div class="dropdown" data-toggle="tooltip" data-original-title="Select a predefined date range" data-placement="top">
+              <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-expanded="true">
+                Period: <strong><span class="selection">1 week</span></strong>
+                <span class="caret"></span>
+              </button>
+              <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 week</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 month</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">1 year</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">all moves</a></li>
+              </ul>
+            </div>
+            <br/>
+            <div class="form-group" data-toggle="tooltip" data-original-title="Select start date" data-placement="left">
+                <div class='input-group date' id='dtp_start'>
+                    <input type='text' class="form-control input-sm" />
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+            <div class="form-group" data-toggle="tooltip" data-original-title="Select end date" data-placement="left">
+                <div class='input-group date' id='dtp_end'>
+                    <input type='text' class="form-control input-sm" />
+                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
             <ul class="nav nav-pills nav-sidebar">
                 <li {% if not request.args.filter %}class="active"{% endif %}>
-                    <a class="all-moves" href="{{url_for('moves', sort=sort, sort_order=sort_order)}}">All moves <span class="badge">{{total_moves_count}}</span></a>
+                    <a class="all-moves" href="{{url_for('moves', start_date=start_date, end_date=end_date, sort=sort, sort_order=sort_order)}}">All moves <span class="badge">{{total_moves_count}}</span></a>
                 </li>
 
                 {% for activity in activity_counts %}
                 {% set filter_query = 'activity:' + activity %}
                 <li {% if request.args.filter == filter_query %}class="active"{% endif %}>
-                    <a href="{{url_for('moves', filter=filter_query, sort=sort, sort_order=sort_order)}}">
+                    <a href="{{url_for('moves', start_date=start_date, end_date=end_date, filter=filter_query, sort=sort, sort_order=sort_order)}}">
                         {{activity}} <span class="badge">{{activity_counts[activity]}}</span>
                     </a>
                 </li>
@@ -97,7 +145,6 @@
                     <td>
                         <a class="btn btn-xs btn-black" type="button" onclick="return confirm('Are you sure you want to delete this move?');" href="{{url_for('delete_move', id=move.id)}}"><span class="glyphicon glyphicon-remove" title="delete" aria-hidden="true"></span></a>
                     </td>
-
                 </tr>
                 {% endfor %}
             </table>

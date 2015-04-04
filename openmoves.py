@@ -313,7 +313,15 @@ def _current_user_filtered(query):
 @app.route('/moves')
 @login_required
 def moves():
-    moves = _current_user_filtered(Move.query)
+    if ('start_date' not in request.args) or ('end_date' not in request.args):
+        raise ValueError("No start_date and/or end_date specified!")
+
+    start_date = dateutil.parser.parse(request.args.get('start_date'))
+    end_date = dateutil.parser.parse(request.args.get('end_date'))
+
+    moves = _current_user_filtered(Move.query).filter(Move.date_time >= start_date) \
+                                              .filter(Move.date_time <= end_date)
+
     total_moves_count = moves.count()
     move_filter = _parse_move_filter(request.args.get('filter'))
     moves = move_filter(moves)
@@ -332,6 +340,8 @@ def moves():
         sort = sort_default
 
     activity_counts = OrderedDict(_current_user_filtered(db.session.query(Move.activity, func.count(Move.id)))
+                                  .filter(Move.date_time >= start_date)
+                                  .filter(Move.date_time <= end_date)
                                   .group_by(Move.activity)
                                   .order_by(func.count(Move.id).desc()))
 
@@ -355,6 +365,8 @@ def moves():
 
     moves = moves.order_by(sort_attr)
     return render_template('moves.html',
+                           start_date=start_date,
+                           end_date=end_date,
                            moves=moves,
                            total_moves_count=total_moves_count,
                            activity_counts=activity_counts,
