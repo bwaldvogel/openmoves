@@ -143,7 +143,7 @@
                         <td>{% if move.pool_length %}{{move.pool_length}} m{% endif %}</td>
                     {%- endif %}
                     <td>
-                        <a class="btn btn-xs btn-black" type="button" onclick="return confirm('Are you sure you want to delete this move?');" href="{{url_for('delete_move', id=move.id)}}"><span class="glyphicon glyphicon-remove" title="delete" aria-hidden="true"></span></a>
+                        <a class="btn btn-xs btn-black" type="button" onclick="return confirm('Are you sure you want to delete this move?');" href="{{url_for('delete_move', id=move.id, start_date=start_date, end_date=end_date)}}"><span class="glyphicon glyphicon-remove" title="delete" aria-hidden="true"></span></a>
                     </td>
                 </tr>
                 {% endfor %}

@@ -7,6 +7,15 @@
     <link rel="stylesheet" href="{{url_for('.static', filename='css/login.css')}}">
 {% endblock %}
 
+{% block scripts %}
+{{super()}}
+    <script type="text/javascript">
+    $(document).ready(function() {
+        init_date_range_parameters("all");
+    });
+    </script>
+{% endblock %}
+
 {% block content %}
 {{super()}}
 <div class="container" role="main">
@@ -17,6 +26,8 @@
         <input name="username" type="text" id="username" class="form-control" placeholder="Username" required autofocus>
         <label for="password" class="sr-only">Password</label>
         <input name="password" type="password" id="password" class="form-control" placeholder="Password" required>
+        <input type="hidden" name="start_date" id="start_date"/>
+        <input type="hidden" name="end_date" id="end_date"/>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
       </form>
 </div>

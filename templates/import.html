@@ -7,6 +7,15 @@
     <link rel="stylesheet" href="{{url_for('.static', filename='css/import.css')}}">
 {% endblock %}
 
+{% block scripts %}
+{{super()}}
+    <script type="text/javascript">
+    $(document).ready(function() {
+        init_date_range_parameters("all");
+    });
+    </script>
+{% endblock %}
+
 {% block content %}
 {{super()}}
 <div class="container" role="main">
@@ -18,6 +27,8 @@
     <form class="form-import" action="{{url_for('move_import')}}" method="POST" enctype="multipart/form-data">
         <h2 class="form-import-heading">Import</h2>
         <input type="file" name="files" multiple="multiple" />
+        <input type="hidden" name="start_date" id="start_date"/>
+        <input type="hidden" name="end_date" id="end_date"/>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Upload</button>
     </form>
 </div>

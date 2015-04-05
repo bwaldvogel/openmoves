@@ -173,7 +173,7 @@ def move_import():
             return redirect(url_for('move', id=move.id))
         else:
             flash("imported %d moves" % len(imported_moves))
-            return redirect(url_for('moves'))
+            return redirect(url_for('moves', start_date=request.form['start_date'], end_date=request.form['end_date']))
     else:
         return render_template('import.html')
 
@@ -181,7 +181,6 @@ def move_import():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-
     if form.validate_on_submit():
         user = load_user(username=form.username.data)
         if not user:
@@ -191,7 +190,7 @@ def login():
         if app_bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user)
 
-            return redirect(request.args.get('next') or url_for('moves'))
+            return redirect(request.args.get('next') or url_for('moves', start_date=request.form['start_date'], end_date=request.form['end_date']))
         else:
             flash("login failed", 'error')
             return render_template('login.html', form=form)
@@ -386,7 +385,7 @@ def delete_move(id):
     db.session.commit()
     flash("move %d deleted" % id, 'success')
 
-    return redirect(url_for('moves'))
+    return redirect(url_for('moves', start_date=request.args.get('start_date'), end_date=request.args.get('end_date')))
 
 
 @app.route('/moves/<int:id>/export')
