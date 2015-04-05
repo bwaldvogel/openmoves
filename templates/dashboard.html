@@ -71,16 +71,14 @@
             {{date_range_filter.end_date_dtp_block()}}
         </div>
         <div class="col-sm-10">
+            {% if nr_of_moves > 0 %}
             <h3>Totals</h3>
             <table class="table table-auto-width">
               <tr>
                   <th><a href="{{url_for('moves', start_date=start_date, end_date=end_date)}}">#Moves</a></th>
                   <td><a href="{{url_for('moves', start_date=start_date, end_date=end_date)}}">{{nr_of_moves}}</a></td>
-                  {% if nr_of_moves > 0 %}
                   <th>Total Distance</th><td>{{macros.format_distance(total_distance)}}</td>
-                  {% endif %}
               </tr>
-              {% if nr_of_moves > 0 %}
               <tr>
                   <th>Total Duration</th><td>{{total_duration | duration}}</td>
                   <th>Total Average</th><td data-toggle="tooltip" data-original-title="Considering only moves with a distance value" data-placement="right">{{macros.kmh(total_average)}}</td>
@@ -89,8 +87,10 @@
                   <th>Total Ascent</th><td>{{macros.format_hm(total_ascent)}}</td>
                   <th>Total Descent</th><td>{{macros.format_hm(total_descent)}}</td>
               </tr>
-              {% endif %}
             </table>
+            {% else %}
+                <div class="well">No moves in selected date range.</div>
+            {% endif %}
         </div>
     </div>
     {% if nr_of_moves > 0 %}
