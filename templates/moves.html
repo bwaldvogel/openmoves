@@ -1,4 +1,5 @@
 {% extends "_base.html" %}
+{% import '_date_range_filter.html' as date_range_filter with context %}
 
 {% block styles %}
 {{super()}}
@@ -41,20 +42,8 @@
               </ul>
             </div>
             <br/>
-            <div class="form-group" data-toggle="tooltip" data-original-title="Select start date" data-placement="left">
-                <div class='input-group date' id='dtp_start'>
-                    <input type='text' class="form-control input-sm" />
-                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
-                    </span>
-                </div>
-            </div>
-            <div class="form-group" data-toggle="tooltip" data-original-title="Select end date" data-placement="left">
-                <div class='input-group date' id='dtp_end'>
-                    <input type='text' class="form-control input-sm" />
-                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
-                    </span>
-                </div>
-            </div>
+            {{date_range_filter.start_date_dtp_block()}}
+            {{date_range_filter.end_date_dtp_block()}}
             <ul class="nav nav-pills nav-sidebar">
                 <li {% if not request.args.filter %}class="active"{% endif %}>
                     <a class="all-moves" href="{{url_for('moves', start_date=start_date, end_date=end_date, sort=sort, sort_order=sort_order)}}">All moves <span class="badge">{{total_moves_count}}</span></a>

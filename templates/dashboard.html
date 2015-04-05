@@ -1,5 +1,6 @@
 {% extends "_base.html" %}
 {% import '_chart.html' as chart with context %}
+{% import '_date_range_filter.html' as date_range_filter with context %}
 
 {% block styles %}
 {{super()}}
@@ -51,12 +52,6 @@
 {{super()}}
 <div class="container" role="main">
     <div class="row">
-        <div class="col-sm-2"></div>
-        <div class="col-sm-5">
-            <h3>Totals</h3>
-        </div>
-    </div>
-    <div class="row">
         <div class="col-sm-2 sidebar">
             <!-- http://stackoverflow.com/questions/13437446/how-to-display-selected-item-in-bootstrap-button-dropdown-title -->
             <div class="dropdown" data-toggle="tooltip" data-original-title="Select a predefined date range" data-placement="top">
@@ -72,22 +67,11 @@
               </ul>
             </div>
             <br/>
-            <div class="form-group" data-toggle="tooltip" data-original-title="Select start date" data-placement="left">
-                <div class='input-group date' id='dtp_start'>
-                    <input type='text' class="form-control input-sm" />
-                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
-                    </span>
-                </div>
-            </div>
-            <div class="form-group" data-toggle="tooltip" data-original-title="Select end date" data-placement="left">
-                <div class='input-group date' id='dtp_end'>
-                    <input type='text' class="form-control input-sm" />
-                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
-                    </span>
-                </div>
-            </div>
+            {{date_range_filter.start_date_dtp_block()}}
+            {{date_range_filter.end_date_dtp_block()}}
         </div>
         <div class="col-sm-10">
+            <h3>Totals</h3>
             <table class="table table-auto-width">
               <tr>
                   <th><a href="{{url_for('moves', start_date=start_date, end_date=end_date)}}">#Moves</a></th>

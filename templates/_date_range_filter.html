@@ -1,0 +1,21 @@
+{% import '_macros.html' as macros with context %}
+
+{% macro start_date_dtp_block() %}
+<div class="form-group" data-toggle="tooltip" data-original-title="Select start date" data-placement="left">
+    <div class='input-group date' id='dtp_start'>
+        <input type='text' class="form-control input-sm" />
+        <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
+        </span>
+    </div>
+</div>
+{% endmacro %}
+
+{% macro end_date_dtp_block() %}
+<div class="form-group" data-toggle="tooltip" data-original-title="Select end date" data-placement="left">
+    <div class='input-group date' id='dtp_end'>
+        <input type='text' class="form-control input-sm" />
+        <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span>
+        </span>
+    </div>
+</div>
+{% endmacro %}
