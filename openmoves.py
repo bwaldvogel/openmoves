@@ -190,7 +190,7 @@ def login():
         if app_bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user)
 
-            return redirect(request.args.get('next') or url_for('moves', start_date=request.form['start_date'], end_date=request.form['end_date']))
+            return redirect(request.args.get('next') or url_for('dashboard', start_date=request.form['start_date'], end_date=request.form['end_date']))
         else:
             flash("login failed", 'error')
             return render_template('login.html', form=form)
