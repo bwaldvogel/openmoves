@@ -44,6 +44,7 @@
             <br/>
             {{date_range_filter.start_date_dtp_block()}}
             {{date_range_filter.end_date_dtp_block()}}
+            {% if total_moves_count > 0 %}
             <ul class="nav nav-pills nav-sidebar">
                 <li {% if not request.args.filter %}class="active"{% endif %}>
                     <a class="all-moves" href="{{url_for('moves', start_date=start_date, end_date=end_date, sort=sort, sort_order=sort_order)}}">All moves <span class="badge">{{total_moves_count}}</span></a>
@@ -58,9 +59,11 @@
                 </li>
                 {% endfor %}
             </ul>
+            {% endif %}
         </div>
 
         <div class="col-sm-9">
+            {% if total_moves_count > 0 %}
             <table class="table table-striped moves">
                 <tr>
                     <th>{{macros.sortable('date_time', 'Time', 'desc')}}</th>
@@ -137,6 +140,9 @@
                 </tr>
                 {% endfor %}
             </table>
+            {% else %}
+            <div class="well">No moves in selected date range.</div>
+            {% endif %}
         </div>
     </div>
 </div>
