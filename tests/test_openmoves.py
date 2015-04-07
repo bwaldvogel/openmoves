@@ -159,11 +159,13 @@ class TestOpenMoves(object):
 
         response = self._login(username=username, password=password)
         response_data = self._validate_response(response, tmpdir)
-        assert u"<title>OpenMoves – Moves</title>" in response_data
+        assert u'<title>OpenMoves – Moves</title>' in response_data
+        assert username in response_data
 
         response = self.client.get('/logout', follow_redirects=True)
         response_data = self._validate_response(response, tmpdir)
-        assert u"<title>OpenMoves</title>" in response_data
+        assert u'<title>OpenMoves</title>' in response_data
+        assert username not in response_data
 
     def test_custom_404(self, tmpdir):
         response = self.client.get('/page-which-does-not-exist')
@@ -178,7 +180,7 @@ class TestOpenMoves(object):
         response = self.client.get('/moves')
         response_data = self._validate_response(response, tmpdir)
         assert u"<title>OpenMoves – Moves</title>" in response_data
-        assert u'All moves <span class="badge">0</span>' in response_data
+        assert u'No moves in selected date range' in response_data
 
     def test_move_not_logged_in(self, tmpdir):
         self._assert_requires_login('/moves/1')
@@ -388,11 +390,13 @@ class TestOpenMoves(object):
         response = self.client.get('/dashboard?start_date=2014-01-01&end_date=2015-01-01')
         response_data = self._validate_response(response, tmpdir)
         assert u'<title>OpenMoves – Dashboard</title>' in response_data
-        assert u'<tr><th>#Moves</th><td>4</td></tr>' in response_data
-        assert u'<tr><th>Total Distance</th><td>33.55 km</td></tr>' in response_data
-        assert u'<tr><th>Total Time</th><td>03:47:09.60</td></tr>' in response_data
-        assert u'<tr><th>Total Ascent</th><td>110 m</td></tr>' in response_data
-        assert u'<tr><th>Total Descent</th><td>218 m</td></tr>' in response_data
+        assert u'>#Moves<' in response_data
+        assert u'>4<' in response_data
+        assert u'<th>Total Distance</th><td>33.55 km</td>' in response_data
+        assert u'<th>Total Duration</th><td>03:47:09.60</td>' in response_data
+        assert u'<th>Total Average</th>' in response_data
+        assert u'<th>Total Ascent</th><td>110 m</td>' in response_data
+        assert u'<th>Total Descent</th><td>218 m</td>' in response_data
 
     def test_edit_move_different_user(self, tmpdir):
         username = 'some different user'
@@ -440,12 +444,15 @@ class TestOpenMoves(object):
 
             for idx, move in enumerate(Move.query):
                 response = self.client.get("/moves/%d/delete" % move.id, follow_redirects=True)
-                response_data = self._validate_response(response)
+                response_data = self._validate_response(response, tmpdir)
                 assert u'<title>OpenMoves – Moves</title>' in response_data
 
                 total_moves = Move.query.count()
                 assert total_moves == total_moves_before - (idx + 1)
-                assert u"All moves <span class=\"badge\">%d</span>" % total_moves in response_data
+                if total_moves > 0:
+                    assert u"All moves <span class=\"badge\">%d</span>" % total_moves in response_data
+                else:
+                    assert u'No moves in selected date range.' in response_data
 
             total_moves = Move.query.count()
             assert total_moves == 0

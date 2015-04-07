@@ -173,7 +173,16 @@ def move_import():
             return redirect(url_for('move', id=move.id))
         else:
             flash("imported %d moves" % len(imported_moves))
-            return redirect(url_for('moves', start_date=request.form['start_date'], end_date=request.form['end_date']))
+
+            # TODO: cleanup
+            if 'start_date' in request.form:
+                start_date = request.form['start_date']
+                end_date = request.form['end_date']
+                redirect_url = url_for('moves', start_date=start_date, end_date=end_date)
+            else:
+                redirect_url = url_for('moves')
+
+            return redirect(redirect_url)
     else:
         return render_template('import.html')
 
@@ -190,7 +199,17 @@ def login():
         if app_bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user)
 
-            return redirect(request.args.get('next') or url_for('dashboard', start_date=request.form['start_date'], end_date=request.form['end_date']))
+            if 'next' in request.args:
+                redirect_url = request.args.get('next')
+            elif 'start_date' in request.form:
+                start_date = request.form['start_date']
+                end_date = request.form['end_date']
+                redirect_url = url_for('dashboard', start_date=start_date, end_date=end_date)
+            else:
+                # TODO: cleanup
+                redirect_url = url_for('moves')
+
+            return redirect(redirect_url)
         else:
             flash("login failed", 'error')
             return render_template('login.html', form=form)
@@ -312,14 +331,17 @@ def _current_user_filtered(query):
 @app.route('/moves')
 @login_required
 def moves():
-    if ('start_date' not in request.args) or ('end_date' not in request.args):
-        raise ValueError("No start_date and/or end_date specified!")
+    moves = _current_user_filtered(Move.query)
 
-    start_date = dateutil.parser.parse(request.args.get('start_date'))
-    end_date = dateutil.parser.parse(request.args.get('end_date'))
-
-    moves = _current_user_filtered(Move.query).filter(Move.date_time >= start_date) \
-                                              .filter(Move.date_time <= end_date)
+    # TODO: cleanup
+    start_date = None
+    end_date = None
+    if 'start_date' in request.args:
+        start_date = dateutil.parser.parse(request.args.get('start_date'))
+        moves = moves.filter(Move.date_time >= start_date)
+    if 'end_date' in request.args:
+        end_date = dateutil.parser.parse(request.args.get('end_date'))
+        moves = moves.filter(Move.date_time <= end_date)
 
     total_moves_count = moves.count()
     move_filter = _parse_move_filter(request.args.get('filter'))
@@ -338,11 +360,14 @@ def moves():
         flash("illegal sort field: %s" % sort, 'error')
         sort = sort_default
 
-    activity_counts = OrderedDict(_current_user_filtered(db.session.query(Move.activity, func.count(Move.id)))
-                                  .filter(Move.date_time >= start_date)
-                                  .filter(Move.date_time <= end_date)
-                                  .group_by(Move.activity)
-                                  .order_by(func.count(Move.id).desc()))
+    activity_counts = _current_user_filtered(db.session.query(Move.activity, func.count(Move.id)))
+    if start_date:
+        activity_counts = activity_counts.filter(Move.date_time >= start_date)
+    if end_date:
+        activity_counts = activity_counts.filter(Move.date_time <= end_date)
+
+    activity_counts = OrderedDict(activity_counts.group_by(Move.activity)
+                                                 .order_by(func.count(Move.id).desc()))
 
     actual_activities_query = move_filter(_current_user_filtered(db.session.query(distinct(Move.activity))))
     actual_activities = set([activity for activity, in actual_activities_query])
@@ -385,7 +410,15 @@ def delete_move(id):
     db.session.commit()
     flash("move %d deleted" % id, 'success')
 
-    return redirect(url_for('moves', start_date=request.args.get('start_date'), end_date=request.args.get('end_date')))
+    # TODO: cleanup
+    if 'start_date' in request.form:
+        start_date = request.form['start_date']
+        end_date = request.form['end_date']
+        redirect_url = url_for('moves', start_date=start_date, end_date=end_date)
+    else:
+        redirect_url = url_for('moves')
+
+    return redirect(redirect_url)
 
 
 @app.route('/moves/<int:id>/export')
