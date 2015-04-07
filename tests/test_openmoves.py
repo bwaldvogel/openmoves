@@ -31,9 +31,10 @@ class TestOpenMoves(object):
         return self.client.post('/login', data=data, follow_redirects=True)
 
     def _validate_response(self, response, tmpdir=None, code=200, check_content=True):
-        assert response.status_code == code, "HTTP status: %s" % response.status
         if tmpdir:
             tmpdir.join("response.html").write(response.data, mode='wb')
+
+        assert response.status_code == code, "HTTP status: %s" % response.status
 
         if response.data:
             response_data = response.data.decode('utf-8')
