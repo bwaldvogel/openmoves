@@ -5,7 +5,7 @@ from flask import Flask, render_template, flash, redirect, request, url_for, Res
 from flask_bootstrap import Bootstrap
 from flask_login import login_user, current_user, login_required, logout_user
 from model import db, Move, Sample, MoveEdit
-from datetime import timedelta, date, datetime
+from datetime import timedelta, datetime
 from sqlalchemy.sql import func
 from sqlalchemy import distinct, literal
 import os
@@ -254,20 +254,20 @@ def dashboard():
     total_descent_by_activity = {}
 
     for move in moves:
-        if not (move.activity in total_distance_by_activity):
+        if move.activity not in total_distance_by_activity:
             total_distance_by_activity[move.activity] = 0
         total_distance_by_activity[move.activity] += move.distance
 
-        if not move.activity in total_duration_by_activity:
+        if move.activity not in total_duration_by_activity:
             total_duration_by_activity[move.activity] = 0
         total_duration_by_activity[move.activity] += move.duration.total_seconds()
 
-        if not move.activity in total_ascent_by_activity:
+        if move.activity not in total_ascent_by_activity:
             total_ascent_by_activity[move.activity] = 0
         if move.ascent:
             total_ascent_by_activity[move.activity] += move.ascent
 
-        if not move.activity in total_descent_by_activity:
+        if move.activity not in total_descent_by_activity:
             total_descent_by_activity[move.activity] = 0
         if move.ascent:
             total_descent_by_activity[move.activity] += move.descent
@@ -302,13 +302,14 @@ def dashboard():
     model['total_descent_by_activity'] = OrderedDict(sorted(total_descent_by_activity.items(), key=operator.itemgetter(1), reverse=True))
 
     # Calculate totals
-    model['total_distance'] = sum(total_distance_by_activity.values());
-    model['total_duration'] = sum(total_duration_by_activity.values(), 0);
-    model['total_average'] = model['total_distance'] / total_duration_with_distance if total_duration_with_distance > 0 else None;
-    model['total_ascent'] = sum(total_ascent_by_activity.values());
-    model['total_descent'] = sum(total_descent_by_activity.values());
+    model['total_distance'] = sum(total_distance_by_activity.values())
+    model['total_duration'] = sum(total_duration_by_activity.values(), 0)
+    model['total_average'] = model['total_distance'] / total_duration_with_distance if total_duration_with_distance > 0 else None
+    model['total_ascent'] = sum(total_ascent_by_activity.values())
+    model['total_descent'] = sum(total_descent_by_activity.values())
 
     return render_template('dashboard.html', **model)
+
 
 def _parse_move_filter(filter_query):
     if not filter_query:
@@ -587,6 +588,7 @@ def move(id):
     except:
         flash("Failed to load move template of activity '%s'." % activity_name)
         return redirect(url_for('index'))
+
 
 @app.route('/_tests', methods=['GET'])
 @login_required
