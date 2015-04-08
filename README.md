@@ -53,7 +53,7 @@ JavaScript unit tests are written with [QUnit][qunit] and are not yet automated 
 
 [`http://127.0.0.1:5000/_tests`](http://127.0.0.1/_tests)
 
-Hints or pull requests how to automate the qunit tests it are welcome.
+Hints or pull requests how to automate the qunit tests are welcome.
 
 
 ## Deployment ##
