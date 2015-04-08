@@ -62,32 +62,28 @@ def _sample_to_point(sample):
     return (radian_to_degree(sample.latitude), radian_to_degree(sample.longitude))
 
 
-def _default_start_date():
-    timezone = pytz.timezone(session['timezone'])
-    now = timezone.localize(datetime.now())
-    return now.date() - monthdelta(months=1)
-
-
-def _default_end_date():
-    timezone = pytz.timezone(session['timezone'])
-    now = timezone.localize(datetime.now())
-    return now.date()
-
-
 def _get_date_range():
+    if 'timezone' not in session:
+        logout_user()
+        flash('Illegal session. Please re-login.', 'error')
+        return redirect(url_for('login'))
+
+    timezone = pytz.timezone(session['timezone'])
+    now = timezone.localize(datetime.now())
+
     if 'start_date' in request.args:
         start_date = request.args.get('start_date')
         start_date = dateutil.parser.parse(start_date)
         start_date = start_date.date()
     else:
-        start_date = _default_start_date()
+        start_date = now.date() - monthdelta(months=1)
 
     if 'end_date' in request.args:
         end_date = request.args.get('end_date')
         end_date = dateutil.parser.parse(end_date)
         end_date = end_date.date()
     else:
-        end_date = _default_end_date()
+        end_date = now.date()
 
     return start_date, end_date
 
@@ -216,7 +212,7 @@ def login():
     if form.validate_on_submit():
         user = load_user(username=form.username.data)
         if not user:
-            flash("no such user", 'error')
+            flash('no such user', 'error')
             return render_template('login.html', form=form)
 
         if app_bcrypt.check_password_hash(user.password, form.password.data):
