@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 
-from flask import Flask, render_template, flash, redirect, request, url_for, Response, json
+from flask import Flask, render_template, flash, redirect, request, url_for, session, Response, json
 from flask_bootstrap import Bootstrap
 from flask_login import login_user, current_user, login_required, logout_user
 from model import db, Move, Sample, MoveEdit
@@ -27,6 +27,8 @@ from _import import postprocess_move
 from geopy.distance import vincenty
 import math
 import operator
+import pytz
+from monthdelta import monthdelta
 from jinja2.exceptions import TemplateNotFound
 try:
     from urllib.parse import quote_plus
@@ -58,6 +60,36 @@ def initialize_config(f):
 
 def _sample_to_point(sample):
     return (radian_to_degree(sample.latitude), radian_to_degree(sample.longitude))
+
+
+def _default_start_date():
+    timezone = pytz.timezone(session['timezone'])
+    now = timezone.localize(datetime.now())
+    return now.date() - monthdelta(months=1)
+
+
+def _default_end_date():
+    timezone = pytz.timezone(session['timezone'])
+    now = timezone.localize(datetime.now())
+    return now.date()
+
+
+def _get_date_range():
+    if 'start_date' in request.args:
+        start_date = request.args.get('start_date')
+        start_date = dateutil.parser.parse(start_date)
+        start_date = start_date.date()
+    else:
+        start_date = _default_start_date()
+
+    if 'end_date' in request.args:
+        end_date = request.args.get('end_date')
+        end_date = dateutil.parser.parse(end_date)
+        end_date = end_date.date()
+    else:
+        end_date = _default_end_date()
+
+    return start_date, end_date
 
 
 def calculate_distances(model, samples):
@@ -173,16 +205,7 @@ def move_import():
             return redirect(url_for('move', id=move.id))
         else:
             flash("imported %d moves" % len(imported_moves))
-
-            # TODO: cleanup
-            if 'start_date' in request.form:
-                start_date = request.form['start_date']
-                end_date = request.form['end_date']
-                redirect_url = url_for('moves', start_date=start_date, end_date=end_date)
-            else:
-                redirect_url = url_for('moves')
-
-            return redirect(redirect_url)
+            return redirect(url_for('moves'))
     else:
         return render_template('import.html')
 
@@ -199,17 +222,14 @@ def login():
         if app_bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user)
 
-            if 'next' in request.args:
-                redirect_url = request.args.get('next')
-            elif 'start_date' in request.form:
-                start_date = request.form['start_date']
-                end_date = request.form['end_date']
-                redirect_url = url_for('dashboard', start_date=start_date, end_date=end_date)
-            else:
-                # TODO: cleanup
-                redirect_url = url_for('moves')
+            assert 'timezone' in request.form
+            pytz.timezone(request.form['timezone'])
+            session['timezone'] = request.form['timezone']
 
-            return redirect(redirect_url)
+            if 'next' in request.args:
+                return redirect(request.args.get('next'))
+
+            return redirect(url_for('dashboard'))
         else:
             flash("login failed", 'error')
             return render_template('login.html', form=form)
@@ -227,24 +247,21 @@ def logout():
 @app.route('/')
 def index():
     nr_of_moves = Move.query.count()
-
     return render_template('index.html', nr_of_moves=nr_of_moves)
 
 
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    if ('start_date' not in request.args) or ('end_date' not in request.args):
-        raise ValueError("No start_date and/or end_date specified!")
+    start_date, end_date = _get_date_range()
 
-    model = {}
-    model['start_date'] = dateutil.parser.parse(request.args.get('start_date'))
-    model['end_date'] = dateutil.parser.parse(request.args.get('end_date'))
-
-    moves = _current_user_filtered(Move.query).filter(Move.date_time >= model['start_date']) \
-                                              .filter(Move.date_time <= model['end_date']) \
+    moves = _current_user_filtered(Move.query).filter(Move.date_time >= start_date) \
+                                              .filter(Move.date_time < end_date + timedelta(days=1)) \
                                               .all()
 
+    model = {}
+    model['start_date'] = start_date
+    model['end_date'] = end_date
     model['nr_of_moves'] = len(moves)
 
     total_distance_by_activity = {}
@@ -332,17 +349,11 @@ def _current_user_filtered(query):
 @app.route('/moves')
 @login_required
 def moves():
-    moves = _current_user_filtered(Move.query)
+    start_date, end_date = _get_date_range()
+    filter_end_date = end_date + timedelta(days=1)
 
-    # TODO: cleanup
-    start_date = None
-    end_date = None
-    if 'start_date' in request.args:
-        start_date = dateutil.parser.parse(request.args.get('start_date'))
-        moves = moves.filter(Move.date_time >= start_date)
-    if 'end_date' in request.args:
-        end_date = dateutil.parser.parse(request.args.get('end_date'))
-        moves = moves.filter(Move.date_time <= end_date)
+    moves = _current_user_filtered(Move.query).filter(Move.date_time >= start_date) \
+                                              .filter(Move.date_time < filter_end_date)
 
     total_moves_count = moves.count()
     move_filter = _parse_move_filter(request.args.get('filter'))
@@ -361,14 +372,11 @@ def moves():
         flash("illegal sort field: %s" % sort, 'error')
         sort = sort_default
 
-    activity_counts = _current_user_filtered(db.session.query(Move.activity, func.count(Move.id)))
-    if start_date:
-        activity_counts = activity_counts.filter(Move.date_time >= start_date)
-    if end_date:
-        activity_counts = activity_counts.filter(Move.date_time <= end_date)
-
-    activity_counts = OrderedDict(activity_counts.group_by(Move.activity)
-                                                 .order_by(func.count(Move.id).desc()))
+    activity_counts = OrderedDict(_current_user_filtered(db.session.query(Move.activity, func.count(Move.id)))
+                                  .filter(Move.date_time >= start_date)
+                                  .filter(Move.date_time < filter_end_date)
+                                  .group_by(Move.activity)
+                                  .order_by(func.count(Move.id).desc()))
 
     actual_activities_query = move_filter(_current_user_filtered(db.session.query(distinct(Move.activity))))
     actual_activities = set([activity for activity, in actual_activities_query])
@@ -410,16 +418,7 @@ def delete_move(id):
     db.session.delete(move)
     db.session.commit()
     flash("move %d deleted" % id, 'success')
-
-    # TODO: cleanup
-    if 'start_date' in request.form:
-        start_date = request.form['start_date']
-        end_date = request.form['end_date']
-        redirect_url = url_for('moves', start_date=start_date, end_date=end_date)
-    else:
-        redirect_url = url_for('moves')
-
-    return redirect(redirect_url)
+    return redirect(url_for('moves'))
 
 
 @app.route('/moves/<int:id>/export')

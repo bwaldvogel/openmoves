@@ -7,15 +7,6 @@
     <link rel="stylesheet" href="{{url_for('.static', filename='css/import.css')}}">
 {% endblock %}
 
-{% block scripts %}
-{{super()}}
-    <script type="text/javascript">
-    $(document).ready(function() {
-        init_date_range_parameters("all");
-    });
-    </script>
-{% endblock %}
-
 {% block content %}
 {{super()}}
 <div class="container" role="main">
