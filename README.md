@@ -42,12 +42,12 @@ We use [`py.test`][pytest] to test server side code. Tests are executed with the
 # py.test
 ```
 
-If a test fails it might help to run py.test in verbose mode and stop on the first failure:
+If a test fails it might help to run in verbose mode and stop on the first failure:
 ```
 # py.test -vsx
 ```
 
-Note that hte majority of unit tests write the latest HTML response to a local tempfile in `/tmp/pytest-<your-username>/response.html` using [py.test's `tmpdir` mechansism][pytest-tmpdir].
+Note that the majority of unit tests write the latest HTML response to a local tempfile in `/tmp/pytest-<your-username>/response.html` using [py.test's `tmpdir` mechansism][pytest-tmpdir].
 
 JavaScript unit tests are written with [QUnit][qunit] and are not yet automated in the build and need to be run in a browser by browsing to:
 
