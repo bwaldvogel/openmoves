@@ -63,11 +63,6 @@ def _sample_to_point(sample):
 
 
 def _get_date_range():
-    if 'timezone' not in session:
-        logout_user()
-        flash('Illegal session. Please re-login.', 'error')
-        return redirect(url_for('login'))
-
     timezone = pytz.timezone(session['timezone'])
     now = timezone.localize(datetime.now())
 
@@ -141,7 +136,10 @@ def init(configfile):
             print("created %s" % configfile)
 
         app.config.from_pyfile(configfile, silent=False)
-        assert app.config["SECRET_KEY"]
+        assert app.config['SECRET_KEY']
+
+        SESSION_VERSION = 1
+        app.config['SECRET_KEY'] = "%s-%d" % (app.config['SECRET_KEY'], SESSION_VERSION)
 
     db.init_app(app)
 
@@ -249,6 +247,7 @@ def index():
 @app.route('/dashboard')
 @login_required
 def dashboard():
+
     start_date, end_date = _get_date_range()
 
     moves = _current_user_filtered(Move.query).filter(Move.date_time >= start_date) \
