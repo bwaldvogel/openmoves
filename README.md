@@ -32,7 +32,7 @@ An open source alternative to Movescount.
 * Running on http://127.0.0.1:5000/
 ```
 
-Open [`http://127.0.0.1:5000/`][localhost5000] in your browser.
+Open [`http://127.0.0.1:5000/`](http://127.0.0.1:5000/) in your browser.
 
 
 ## Testing ##
@@ -51,7 +51,7 @@ Note that the majority of unit tests write the latest HTML response to a local t
 
 JavaScript unit tests are written with [QUnit][qunit] and are not yet automated in the build and need to be run in a browser by browsing to:
 
-    http://localhost:5000/_tests
+[`http://127.0.0.1:5000/_tests`](http://127.0.0.1/_tests)
 
 Hints or pull requests how to automate the qunit tests it are welcome.
 
@@ -85,7 +85,6 @@ Create an initial user:
 
 [pip]: http://en.wikipedia.org/wiki/Pip_%28package_manager%29
 [virtualenv]: https://virtualenv.readthedocs.org/en/latest/
-[localhost5000]: http://127.0.0.1:5000/
 [openmoves.wsgi]: https://github.com/bwaldvogel/openmoves/blob/master/openmoves.wsgi
 [modwsgi]: https://code.google.com/p/modwsgi/
 [pytest]: https://pytest.org/
