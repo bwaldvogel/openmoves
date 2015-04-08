@@ -3,15 +3,18 @@
 # OpenMoves #
 An open source alternative to Movescount.
 
+
 ## Key features ##
  - Free and open-source software
  - OpenStreetMap integration
  - Plots with curve smoothing
 
+
 ## Requirements ##
  - Python 2.7, 3.3 or 3.4
  - [virtualenv][virtualenv]
  - [pip (package manager)][pip]
+
 
 ## Setup ##
 
@@ -22,6 +25,7 @@ An open source alternative to Movescount.
 # ./openmoves.py add-user -u <your_username>
 ```
 
+
 ## Running ##
 ```
 # ./openmoves.py runserver
@@ -29,6 +33,28 @@ An open source alternative to Movescount.
 ```
 
 Open [`http://127.0.0.1:5000/`][localhost5000] in your browser.
+
+
+## Testing ##
+
+We use [`py.test`][pytest] to test server side code. Tests are executed with the following command given that your [virtualenv][virtualenv] is activated:
+```
+# py.test
+```
+
+If a test fails it might help to run py.test in verbose mode and stop on the first failure:
+```
+# py.test -vsx
+```
+
+Note that hte majority of unit tests write the latest HTML response to a local tempfile in `/tmp/pytest-<your-username>/response.html` using [py.test's `tmpdir` mechansism][pytest-tmpdir].
+
+JavaScript unit tests are written with [QUnit][qunit] and are not yet automated in the build and need to be run in a browser by browsing to:
+
+    http://localhost:5000/_tests
+
+Hints or pull requests how to automate the qunit tests it are welcome.
+
 
 ## Deployment ##
 
@@ -62,3 +88,6 @@ Create an initial user:
 [localhost5000]: http://127.0.0.1:5000/
 [openmoves.wsgi]: https://github.com/bwaldvogel/openmoves/blob/master/openmoves.wsgi
 [modwsgi]: https://code.google.com/p/modwsgi/
+[pytest]: https://pytest.org/
+[pytest-tmpdir]: https://pytest.org/latest/tmpdir.html
+[qunit]: https://qunitjs.com/
