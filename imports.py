@@ -11,6 +11,8 @@ from sqlalchemy.sql import func
 
 
 def move_import(xmlfile, filename, user):
+    move = None
+
     if filename.endswith('.gz'):
         xmlfile = gzip.GzipFile(fileobj=xmlfile, mode='rb', filename=filename)
         filename = filename[:-len('.gz')]
