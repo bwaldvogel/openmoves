@@ -12,7 +12,7 @@
 
 <div class="container" role="main">
     <h2 class="form-import-heading">Import</h2>
-    <div class="well" align="left">
+    <div class="well">
         <div class="row">
             <div class="col-md-12"><h3>Supported import formats</h3></div>
         </div>
@@ -35,12 +35,13 @@
         </div>
         <div class="row">
             <div class="col-md-1"></div>
-            <div class="col-md-11"><span class="label label-warning">Warning</span> GPX import has strong experimental state!</div>
+            <div class="col-md-11"><span class="label label-warning">Warning</span> GPX import has experimental state!</div>
         </div>
         <br/>
         Files can also be uploaded when compressed with gzip.
         Note that file type detection is based on filenames and thus files should <em>not</em> be renamed manually before uploading.
     </div>
+    <br/>
     <form class="form-import" action="{{url_for('move_import')}}" method="POST" enctype="multipart/form-data">
         <input type="file" name="files" multiple="multiple" />
         <input type="hidden" name="start_date" id="start_date"/>

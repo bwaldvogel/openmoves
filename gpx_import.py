@@ -10,6 +10,7 @@ from filters import degree_to_radian, radian_to_degree
 from datetime import datetime, timedelta
 from _import import postprocess_move
 from geopy.distance import vincenty
+from numpy import mean
 
 GPX_1_0_NAMESPACE = '{http://www.topografix.com/GPX/1/0}'
 GPX_1_1_NAMESPACE = '{http://www.topografix.com/GPX/1/1}'
@@ -124,11 +125,33 @@ def parse_device(tree):
 def derive_move_infos_from_samples(move, samples):
     if len(samples) > 0:
         move.date_time = samples[0].utc
+        move.log_item_count = len(samples)
 
-        # Duration / Distance / Average speed
+        # Duration / Speed / Distance
         move.duration = samples[-1].time
         move.distance = samples[-1].distance
         move.speed_avg = move.distance / move.duration.total_seconds()
+        move.speed_max = max(sample.speed for sample in samples)
+
+        # Altitude
+        altitudes = [sample.altitude for sample in samples]
+        move.altitude_min = min(altitudes)
+        move.altitude_max = max(altitudes)
+
+        # Temperature
+        temperatures = [sample.temp for sample in samples]
+        move.temperature_min = min(temperatures)
+        move.temperature_max = max(temperatures)
+        move.temperature_avg = mean(temperatures)
+
+        meantest = mean([1, 3])
+
+        # Heart rate
+        hrs = [sample.hr for sample in samples]
+        move.hr_min = min(hrs)
+        move.hr_max = max(hrs)
+        move.hr_avg = mean(hrs)
+
 
 def gpx_import(xmlfile, user):
     filename = xmlfile.filename
