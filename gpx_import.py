@@ -36,7 +36,7 @@ def parse_sample_extensions(sample, track_point):
         for extension in track_point.extensions.iterchildren():
             if extension.tag == GPX_EXTENSION_TRACKPOINTEXTENSION:
                 if hasattr(extension, 'hr'):
-                    sample.hr = float(extension.hr)
+                    sample.hr = float(extension.hr) / 60.0  # BPM
             elif extension.tag == GPX_EXTENSION_GPX_V1_TEMP:
                 sample.temp = float(extension.text)
             elif extension.tag == GPX_EXTENSION_GPX_V1_DISTANCE:
@@ -105,7 +105,6 @@ def parse_samples(tree, move):
         return gpx_samples
 
 def parse_move(tree):
-    gpx_track = tree.trk
     move = Move()
     move.activity = 'Unknown activity'
     move.import_date_time = datetime.now()
@@ -133,7 +132,7 @@ def derive_move_infos_from_samples(move, samples):
         move.speed_avg = move.distance / move.duration.total_seconds()
         move.speed_max = max(sample.speed for sample in samples)
 
-        # Altitude
+        # Altitudes
         altitudes = [sample.altitude for sample in samples]
         move.altitude_min = min(altitudes)
         move.altitude_max = max(altitudes)
@@ -143,8 +142,6 @@ def derive_move_infos_from_samples(move, samples):
         move.temperature_min = min(temperatures)
         move.temperature_max = max(temperatures)
         move.temperature_avg = mean(temperatures)
-
-        meantest = mean([1, 3])
 
         # Heart rate
         hrs = [sample.hr for sample in samples]
