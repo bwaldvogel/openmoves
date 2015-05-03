@@ -35,13 +35,14 @@ def parse_sample_extensions(sample, track_point):
         for extension in track_point.extensions.iterchildren():
             if extension.tag == GPX_EXTENSION_TRACKPOINTEXTENSION:
                 if hasattr(extension, 'hr'):
-                    sample.hr = extension.hr
+                    sample.hr = float(extension.hr)
             elif extension.tag == GPX_EXTENSION_GPX_V1_TEMP:
                 sample.temp = float(extension.text)
             elif extension.tag == GPX_EXTENSION_GPX_V1_DISTANCE:
                 sample.distance = float(extension.text)
             elif extension.tag == GPX_EXTENSION_GPX_V1_ALTITUDE:
-                sample.altitude = extension.text
+                sample.gps_altitude = float(extension.text)
+                sample.altitude = int(round(sample.gps_altitude))
             elif extension.tag == GPX_EXTENSION_GPX_V1_ENERGY:
                 sample.energy_consumption = float(extension.text)
             elif extension.tag == GPX_EXTENSION_GPX_V1_SEALEVELPRESSURE:
@@ -71,7 +72,8 @@ def parse_samples(tree, move):
                 sample.latitude = degree_to_radian(float(track_point.attrib['lat']))
                 sample.longitude = degree_to_radian(float(track_point.attrib['lon']))
                 sample.sample_type = 'gps-base'
-                sample.altitude = sample.gps_altitude = int(round(float(track_point.ele)))
+                sample.gps_altitude = float(track_point.ele)
+                sample.altitude = int(round(sample.gps_altitude))
 
                 # Time / UTC
                 sample.utc = dateutil.parser.parse(str(track_point.time))
