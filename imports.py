@@ -5,22 +5,22 @@ from flask import flash
 
 from old_xml_import import old_xml_import
 from sml_import import sml_import
+from gpx_import import gpx_import
 import gzip
 from model import db, Sample
 from sqlalchemy.sql import func
 
 
 def move_import(xmlfile, filename, user):
-    move = None
-
     if filename.endswith('.gz'):
         xmlfile = gzip.GzipFile(fileobj=xmlfile, mode='rb', filename=filename)
         filename = filename[:-len('.gz')]
-
     if filename.endswith('.xml'):
         move = old_xml_import(xmlfile, user)
     elif filename.endswith('.sml'):
         move = sml_import(xmlfile, user)
+    elif filename.endswith('.gpx'):
+        move = gpx_import(xmlfile, user)
     else:
         flash("unknown fileformat: '%s'" % xmlfile.filename, 'error')
 
@@ -39,5 +39,4 @@ def move_import(xmlfile, filename, user):
             move.stroke_count = stroke_count
 
         db.session.commit()
-
-    return move
+        return move

@@ -163,7 +163,7 @@ class Sample(db.Model):
 
     altitude = db.Column(db.Integer, name='altitude')
 
-    ehpe = db.Column(db.Float, name='ehpe')
+    ehpe = db.Column(db.Float, name='ehpe')  # Expected Horizontal Position Error
 
     cadence = db.Column(db.Float, name='cadence')
 

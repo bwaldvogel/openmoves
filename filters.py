@@ -95,8 +95,10 @@ def swim_pace(value):
 
 
 def radian_to_degree(value):
-    return 180.0 / math.pi * value
+    return math.degrees(value)
 
+def degree_to_radian(value):
+    return math.radians(value)
 
 def unix_epoch(date):
     return 1000 * time.mktime(date.timetuple())
