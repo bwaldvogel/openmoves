@@ -38,7 +38,7 @@ def parse_sample_extensions(sample, track_point):
                 if hasattr(extension, 'hr'):
                     sample.hr = float(extension.hr) / 60.0  # BPM
             elif extension.tag == GPX_EXTENSION_GPX_V1_TEMP:
-                sample.temp = float(extension.text)
+                sample.temperature = float(extension.text) + 273.15  # Kelvin
             elif extension.tag == GPX_EXTENSION_GPX_V1_DISTANCE:
                 sample.distance = float(extension.text)
             elif extension.tag == GPX_EXTENSION_GPX_V1_ALTITUDE:
@@ -138,10 +138,9 @@ def derive_move_infos_from_samples(move, samples):
         move.altitude_max = max(altitudes)
 
         # Temperature
-        temperatures = [sample.temp for sample in samples]
+        temperatures = [sample.temperature for sample in samples]
         move.temperature_min = min(temperatures)
         move.temperature_max = max(temperatures)
-        move.temperature_avg = mean(temperatures)
 
         # Heart rate
         hrs = [sample.hr for sample in samples]
