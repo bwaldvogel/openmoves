@@ -1,6 +1,6 @@
 Flask==0.10.1
 Flask-SQLAlchemy==2.0
-SQLAlchemy==1.0.2
+SQLAlchemy==1.0.3
 psycopg2==2.6
 Flask-Bootstrap==3.3.2.1
 Flask-WTF==0.11
@@ -11,7 +11,7 @@ python-dateutil==2.4.2
 xkcdpass==1.2.5
 pytest==2.7.0
 gpxpy==0.9.8
-html5lib==0.999
+html5lib==0.99999
 Flask-Script==2.0.5
 Flask-Migrate==1.4.0
 flask_util_js==0.2.25
