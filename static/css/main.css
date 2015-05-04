@@ -22,6 +22,11 @@ a.navbar-brand {
 	padding-bottom: 7px;
 }
 
+ul.nav-pills.nav-sidebar li {
+	display: block;
+	float: none;
+}
+
 .dropdown-menu li a {
 	padding-top: 7px;
 	padding-bottom: 7px;
