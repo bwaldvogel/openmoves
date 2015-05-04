@@ -26,7 +26,7 @@
 
 {% block content %}
 {{super()}}
-<div class="container" role="main">
+<div class="container page_{{active_page}}" role="main">
     <div class="row">
         <div class="col-sm-2 sidebar activity-filter">
             <div class="dropdown" data-toggle="tooltip" data-original-title="Select a predefined date range" data-placement="top">

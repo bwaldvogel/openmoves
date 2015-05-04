@@ -9,6 +9,14 @@ a.navbar-brand {
 	margin-right: 30px;
 }
 
+.navbar .container {
+	width: 100%;
+}
+
+.container.page_moves {
+	width: 100%;
+}
+
 .navbar-nav li a {
 	padding-top: 13px;
 	padding-bottom: 7px;
