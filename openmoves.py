@@ -325,16 +325,16 @@ def dashboard():
 
 def _parse_move_filter(filter_query):
     if not filter_query:
-        return lambda query: query
+        return None
 
     filter_parts = [part.strip() for part in filter_query.split(':')]
     if len(filter_parts) != 2 or filter_parts[0] not in ('activity'):
         flash("illegal filter: '%s'" % filter_query, 'error')
-        return lambda query: query
+        return None
     else:
-        filter_attr = getattr(Move, filter_parts[0])
+        filter_attr = filter_parts[0]
         filter_value = filter_parts[1]
-        return lambda query: query.filter(filter_attr == filter_value)
+        return {filter_attr: filter_value}
 
 
 def _current_user_filtered(query):
@@ -352,7 +352,8 @@ def moves():
 
     total_moves_count = moves.count()
     move_filter = _parse_move_filter(request.args.get('filter'))
-    moves = move_filter(moves)
+    if move_filter:
+        moves = moves.filter_by(**move_filter)
 
     sort = request.args.get('sort')
     sort_order = request.args.get('sort_order')
@@ -373,7 +374,9 @@ def moves():
                                   .group_by(Move.activity)
                                   .order_by(func.count(Move.id).desc()))
 
-    actual_activities_query = move_filter(_current_user_filtered(db.session.query(distinct(Move.activity))))
+    actual_activities_query = _current_user_filtered(db.session.query(distinct(Move.activity)))
+    if move_filter:
+        actual_activities_query = actual_activities_query.filter_by(**move_filter)
     actual_activities = set([activity for activity, in actual_activities_query])
 
     sort_attr = getattr(Move, sort)
@@ -388,8 +391,13 @@ def moves():
     show_columns = {}
     for column in ('location_address', 'speed_avg', 'speed_max', 'hr_avg', 'ascent', 'descent', 'recovery_time', 'stroke_count', 'pool_length'):
         attr = getattr(Move, column)
-        exists = db.session.query(literal(True)).filter(move_filter(_current_user_filtered(db.session.query(attr).filter(attr != None))).exists()).scalar()
-        show_columns[column] = exists
+        base_query = _current_user_filtered(db.session.query(attr).filter(attr != None))
+        if move_filter:
+            base_query = base_query.filter_by(**move_filter)
+        exists_query = db.session.query(literal(True)).filter(base_query.exists())
+        show_columns[column] = exists_query.scalar()
+
+    show_columns['activity'] = not move_filter or 'activity' not in move_filter
 
     moves = moves.order_by(sort_attr)
     return render_template('moves.html',

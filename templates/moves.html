@@ -67,7 +67,9 @@
             <table class="table table-striped moves">
                 <tr>
                     <th>{{macros.sortable('date_time', 'Time', 'desc')}}</th>
+                    {% if show_columns.activity -%}
                     <th>{{macros.sortable('activity', 'Activity', 'asc')}}</th>
+                    {%- endif %}
                     {% if show_columns.location_address -%}
                     <th>Location</th>
                     {%- endif %}
@@ -103,7 +105,9 @@
                 {% for move in moves %}
                 <tr>
                     <td><a href="{{url_for('move', id=move.id)}}">{{move.date_time | date_time}}</a></td>
+                    {% if show_columns.activity -%}
                     <td class="activity">{{macros.editable_activity(move)}}</td>
+                    {%- endif %}
                     {% if show_columns.location_address -%}
                     <td>{% if move.location_address %}{{move.location_raw|short_location}}{% endif %}</td>
                     {%- endif %}
