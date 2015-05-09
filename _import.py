@@ -145,10 +145,13 @@ def _convert_attr(column_type, value, attr, message):
         if value == '0':
             return 0
         else:
-            if value.startswith('0x'):
-                return int(value, 16)
-            else:
-                return int(value, 10)
+            try:
+                if value.startswith('0x'):
+                    return int(value, 16)
+                else:
+                    return int(value, 10)
+            except ValueError:
+                raise ValueError("failed to parse %s: %s" % (attr, value))
 
     elif column_type == sqlalchemy.sql.sqltypes.String:
         return value

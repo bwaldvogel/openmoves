@@ -108,8 +108,8 @@ class Move(db.Model):
 
     time_to_first_fix = db.Column(db.Integer, name="time_to_first_fix")
 
-    battery_charge_at_start = db.Column(db.Integer, name="battery_charge_at_start")
-    battery_charge = db.Column(db.Integer, name="battery_charge")
+    battery_charge_at_start = db.Column(db.Float, name="battery_charge_at_start")
+    battery_charge = db.Column(db.Float, name="battery_charge")
 
     distance_before_calibration_change = db.Column(db.Integer, name="distance_before_calibration_change")
 
