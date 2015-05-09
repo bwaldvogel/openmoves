@@ -15,6 +15,7 @@ def move_import(xmlfile, filename, user):
     if filename.endswith('.gz'):
         xmlfile = gzip.GzipFile(fileobj=xmlfile, mode='rb', filename=filename)
         filename = filename[:-len('.gz')]
+
     if filename.endswith('.xml'):
         move = old_xml_import(xmlfile, user)
     elif filename.endswith('.sml'):
@@ -23,6 +24,7 @@ def move_import(xmlfile, filename, user):
         move = gpx_import(xmlfile, user)
     else:
         flash("unknown fileformat: '%s'" % xmlfile.filename, 'error')
+        move = None
 
     if move:
         move.temperature_avg, = db.session.query(func.avg(Sample.temperature)).filter(Sample.move == move, Sample.temperature > 0).one()
