@@ -391,7 +391,9 @@ def moves():
     show_columns = {}
     for column in ('location_address', 'speed_avg', 'speed_max', 'hr_avg', 'ascent', 'descent', 'recovery_time', 'stroke_count', 'pool_length'):
         attr = getattr(Move, column)
-        base_query = _current_user_filtered(db.session.query(attr).filter(attr != None))
+        base_query = _current_user_filtered(db.session.query(attr).filter(attr != None)
+                                                                  .filter(Move.date_time >= start_date)
+                                                                  .filter(Move.date_time < filter_end_date))
         if move_filter:
             base_query = base_query.filter_by(**move_filter)
         exists_query = db.session.query(literal(True)).filter(base_query.exists())
