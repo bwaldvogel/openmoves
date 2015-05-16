@@ -17,5 +17,5 @@ Flask-Migrate==1.4.0
 flask_util_js==0.2.25
 geopy==1.10.0
 numpy==1.9.2
-pytz==2015.2
+pytz==2015.4
 MonthDelta==0.9.1
