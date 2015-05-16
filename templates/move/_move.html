@@ -14,6 +14,8 @@
 
     <h1>{{macros.editable_activity(move)}}</h1>
 
+    {% block subheader -%}{%- endblock %}
+
     {% if move.location_address -%}
     <h3>{{move.location_raw|short_location}}</h3>
     <p title="{{move.location_raw}}">{{move.location_address}}</p>
