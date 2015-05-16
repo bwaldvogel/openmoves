@@ -56,7 +56,7 @@
                 <th>Avg. Temperature</th>
                 {% if move.hr_avg %}<th>Avg. Heart Rate</th>{% endif %}
                 {% if move.recovery_time %}<th>Recovery</th>{% endif %}
-                {% if gps_samples %}<th>First fix</th>{% endif %}
+                {% if move.time_to_first_fix %}<th>First fix</th>{% endif %}
                 {% endblock %}
             </tr>
         </thead>
