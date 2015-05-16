@@ -10,13 +10,15 @@ from filters import degree_to_radian, radian_to_degree
 from datetime import datetime, timedelta
 from _import import postprocess_move
 from geopy.distance import vincenty
-from numpy import mean
+import numpy as np
 
 GPX_DEVICE_NAME = 'GPX import'
 GPX_DEVICE_SERIAL = 'GPX_IMPORT'
 
-GPX_1_0_NAMESPACE = '{http://www.topografix.com/GPX/1/0}'
-GPX_1_1_NAMESPACE = '{http://www.topografix.com/GPX/1/1}'
+GPX_NAMESPACES = {
+    '1.0': '{http://www.topografix.com/GPX/1/0}',
+    '1.1': '{http://www.topografix.com/GPX/1/1}'
+}
 
 GPX_TRK = 'trk'
 GPX_TRKSEG = 'trkseg'
@@ -38,27 +40,34 @@ GPX_EXTENSION_GPX_V1_SPEED = 'speed'
 GPX_EXTENSION_GPX_V1_VSPEED = 'verticalSpeed'
 
 
-def parse_sample_extensions(sample, track_point, gpx_namespace):
+def parse_sample_extensions(sample, track_point):
     if hasattr(track_point, 'extensions'):
         for extension in track_point.extensions.iterchildren():
             if extension.tag == GPX_NAMESPACE_TRACKPOINTEXTENSION_V1 + GPX_EXTENSION_TRACKPOINTEXTENSION:
                 if hasattr(extension, GPX_EXTENSION_TRACKPOINTEXTENSION_HEARTRATE):
                     sample.hr = float(extension.hr) / 60.0  # BPM
-            elif extension.tag == gpx_namespace + GPX_EXTENSION_GPX_V1_TEMP:
-                sample.temperature = float(extension.text) + 273.15  # Kelvin
-            elif extension.tag == gpx_namespace + GPX_EXTENSION_GPX_V1_DISTANCE:
-                sample.distance = float(extension.text)
-            elif extension.tag == gpx_namespace + GPX_EXTENSION_GPX_V1_ALTITUDE:
-                sample.gps_altitude = float(extension.text)
-                sample.altitude = int(round(sample.gps_altitude))
-            elif extension.tag == gpx_namespace + GPX_EXTENSION_GPX_V1_ENERGY:
-                sample.energy_consumption = float(extension.text)
-            elif extension.tag == gpx_namespace + GPX_EXTENSION_GPX_V1_SEALEVELPRESSURE:
-                sample.sea_level_pressure = float(extension.text)
-            elif extension.tag == gpx_namespace + GPX_EXTENSION_GPX_V1_SPEED:
-                sample.speed = float(extension.text)
-            elif extension.tag == gpx_namespace + GPX_EXTENSION_GPX_V1_VSPEED:
-                sample.vertical_speed = float(extension.text)
+
+            for version, namespace in GPX_NAMESPACES.items():
+                if extension.tag.startswith(namespace):
+                    tag = extension.tag.replace(namespace, '')
+                    text = extension.text
+                    if tag == GPX_EXTENSION_GPX_V1_TEMP:
+                        sample.temperature = float(text) + 273.15  # Kelvin
+                    elif tag == GPX_EXTENSION_GPX_V1_DISTANCE:
+                        sample.distance = float(text)
+                    elif tag == GPX_EXTENSION_GPX_V1_ALTITUDE:
+                        sample.gps_altitude = float(text)
+                        sample.altitude = int(round(sample.gps_altitude))
+                    elif tag == GPX_EXTENSION_GPX_V1_ENERGY:
+                        sample.energy_consumption = float(text)
+                    elif tag == GPX_EXTENSION_GPX_V1_SEALEVELPRESSURE:
+                        sample.sea_level_pressure = float(text)
+                    elif tag == GPX_EXTENSION_GPX_V1_SPEED:
+                        sample.speed = float(text)
+                    elif tag == GPX_EXTENSION_GPX_V1_VSPEED:
+                        sample.vertical_speed = float(text)
+
+                    break
 
 
 def parse_samples(tree, move, gpx_namespace):
@@ -111,7 +120,7 @@ def parse_samples(tree, move, gpx_namespace):
                     sample.distance = 0
                     sample.speed = 0
 
-                parse_sample_extensions(sample, track_point, gpx_namespace)
+                parse_sample_extensions(sample, track_point)
                 segment_samples.append(sample)
 
             # Insert an pause event between every tracksegment
@@ -156,36 +165,42 @@ def derive_move_infos_from_samples(move, samples):
         move.duration = samples[-1].time
         move.distance = samples[-1].distance
         move.speed_avg = move.distance / move.duration.total_seconds()
-        move.speed_max = max(sample.speed for sample in samples)
+
+        speeds = np.asarray([sample.speed for sample in samples if sample.speed], dtype=float)
+        move.speed_max = np.max(speeds)
 
         # Altitudes
-        altitudes = [sample.altitude for sample in samples if sample.altitude]  # hasattr(sample, 'altitude')]
+        altitudes = np.asarray([sample.altitude for sample in samples if sample.altitude], dtype=float)
         if len(altitudes) > 0:
-            move.altitude_min = min(altitudes)
-            move.altitude_max = max(altitudes)
+            move.altitude_min = np.min(altitudes)
+            move.altitude_max = np.max(altitudes)
+
+            deriv_altitudes = np.gradient(altitudes)
+            move.ascent = np.sum(deriv_altitudes[deriv_altitudes > 0])
+            move.descent = np.sum(-deriv_altitudes[deriv_altitudes < 0])
 
         # Temperature
-        temperatures = [sample.temperature for sample in samples if sample.temperature]
+        temperatures = np.asarray([sample.temperature for sample in samples if sample.temperature], dtype=float)
         if len(temperatures) > 0:
-            move.temperature_min = min(temperatures)
-            move.temperature_max = max(temperatures)
+            move.temperature_min = np.min(temperatures)
+            move.temperature_max = np.max(temperatures)
 
         # Heart rate
-        hrs = [sample.hr for sample in samples if sample.hr]
+        hrs = np.asarray([sample.hr for sample in samples if sample.hr], dtype=float)
         if len(hrs) > 0:
-            move.hr_min = min(hrs)
-            move.hr_max = max(hrs)
-            move.hr_avg = mean(hrs)
+            move.hr_min = np.min(hrs)
+            move.hr_max = np.max(hrs)
+            move.hr_avg = np.mean(hrs)
 
 
 def gpx_import(xmlfile, user):
     filename = xmlfile.filename
     tree = objectify.parse(xmlfile).getroot()
 
-    if(tree.tag.startswith(GPX_1_0_NAMESPACE)):
-        gpx_namespace = GPX_1_0_NAMESPACE
-    elif(tree.tag.startswith(GPX_1_1_NAMESPACE)):
-        gpx_namespace = GPX_1_1_NAMESPACE
+    for version, namespace in GPX_NAMESPACES.items():
+        if tree.tag.startswith(namespace):
+            gpx_namespace = namespace
+            break
     else:
         flash("Unsupported GPX format version: %s" % tree.tag)
 

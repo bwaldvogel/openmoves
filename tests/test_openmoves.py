@@ -296,12 +296,40 @@ class TestOpenMoves(object):
             last_sample_time = datetime(2013, 7, 21, 15, 41, 9, 70000)
             assert move.date_time == first_sample_time
             assert move.duration == last_sample_time - first_sample_time
-            assert int(move.distance) == 20989
+            assert int(move.distance) == 20902
             assert move.log_item_count == 1299
             assert move.log_item_count == move.samples.count()
-            # TODO: assert move.ascent == 615 (according to movescount.com)
-            # TODO: assert move.descent == 606 (according to movescount.com)
+            assert move.ascent == 674
+            assert move.descent == 658
+            assert round(move.temperature_min - 273.15, 1) == 27.2
+            assert round(move.temperature_max - 273.15, 1) == 31.7
             assert round(move.speed_avg, 1) == round(9.5 / 3.6, 1)
+
+            assert round(move.hr_avg, 2) == round(122 / 60.0, 2)
+            assert round(move.hr_max, 2) == round(161 / 60.0, 2)
+            assert round(move.hr_min, 2) == round(56 / 60.0, 2)
+
+            previous_sample = None
+            for sample in move.samples:
+                assert sample.time >= timedelta(seconds=0)
+                assert sample.time <= move.duration
+                assert sample.utc == move.date_time + sample.time
+                assert sample.distance >= 0
+                assert sample.sea_level_pressure > 1010
+                assert sample.sea_level_pressure < 1030
+                assert sample.temperature >= move.temperature_min
+                assert sample.temperature <= move.temperature_max
+                assert sample.energy_consumption > 1.0
+                assert sample.energy_consumption <= 20.0
+                assert sample.speed >= 0.0
+                assert sample.speed < 15.0 / 3.6
+
+                if previous_sample:
+                    assert sample.time > previous_sample.time
+                    assert sample.utc > previous_sample.utc
+                    assert sample.distance >= previous_sample.distance
+
+                previous_sample = sample
 
     def test_moves(self, tmpdir):
         self._login()
