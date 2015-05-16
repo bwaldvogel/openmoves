@@ -8,7 +8,7 @@ import pytest
 import html5lib
 import re
 import os
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 app = None
 
@@ -272,6 +272,37 @@ class TestOpenMoves(object):
             move = Move.query.filter(Move.activity == 'Cycling').one()
             assert move.distance == 21277
 
+    def test_import_move_upload_gpx(self, tmpdir):
+        self._login()
+        data = {}
+
+        filename = 'Move_2013_07_21_15_26_53_Trail+running.gpx.gz'
+        dn = os.path.dirname(os.path.realpath(__file__))
+        with open(os.path.join(dn, filename), 'rb') as f:
+            data['files'] = [(f, filename)]
+            response = self.client.post('/import', data=data, follow_redirects=True)
+
+        with app.test_request_context():
+            count = Move.query.count()
+
+        response_data = self._validate_response(response, tmpdir)
+        assert u"<title>OpenMoves – Move %d</title>" % count in response_data
+        assert u'imported' in response_data
+        assert filename in response_data
+
+        with app.test_request_context():
+            move = Move.query.filter(Move.activity == 'Unknown activity').one()
+            first_sample_time = datetime(2013, 7, 21, 13, 26, 53, 0)
+            last_sample_time = datetime(2013, 7, 21, 15, 41, 9, 70000)
+            assert move.date_time == first_sample_time
+            assert move.duration == last_sample_time - first_sample_time
+            assert int(move.distance) == 20989
+            assert move.log_item_count == 1299
+            assert move.log_item_count == move.samples.count()
+            # TODO: assert move.ascent == 615 (according to movescount.com)
+            # TODO: assert move.descent == 606 (according to movescount.com)
+            assert round(move.speed_avg, 1) == round(9.5 / 3.6, 1)
+
     def test_moves(self, tmpdir):
         self._login()
         response = self.client.get('/moves?start_date=2014-01-01&end_date=2015-01-01')
@@ -354,7 +385,7 @@ class TestOpenMoves(object):
     def test_gpx_export_umlaut_in_filename(self, tmpdir):
         with app.test_request_context():
             move = Move.query.filter(Move.id == 3).one()
-            move.location_raw = {'address':{'city_district': u'Galtür', 'country_code': 'at'}}
+            move.location_raw = {'address': {'city_district': u'Galtür', 'country_code': 'at'}}
             db.session.commit()
 
         self._login()
@@ -371,8 +402,11 @@ class TestOpenMoves(object):
             data['files'] = [(f, filename)]
             response = self.client.post('/import', data=data, follow_redirects=True)
 
+        with app.test_request_context():
+            count = Move.query.count()
+
         response_data = self._validate_response(response, tmpdir)
-        assert u'<title>OpenMoves – Move 4</title>' in response_data
+        assert u"<title>OpenMoves – Move %d</title>" % count in response_data
         assert u'>Kayaking</' in response_data
         assert u'<th>Avg. Heart Rate</th>' in response_data
         assert u'<td><span>97 bpm</span></td>' in response_data
@@ -391,7 +425,7 @@ class TestOpenMoves(object):
         response = self.client.get('/activity_types')
         response_data = self._validate_response(response, tmpdir)
 
-        expected_activities = ('Cycling', 'Kayaking', 'Pool swimming', 'Trekking')
+        expected_activities = ('Cycling', 'Kayaking', 'Pool swimming', 'Trekking', 'Unknown activity')
         expected_data = [{"text": activity, "value": activity} for activity in expected_activities]
 
         assert response_data == expected_data
@@ -477,7 +511,7 @@ class TestOpenMoves(object):
             for idx, move in enumerate(Move.query):
                 self.client.get("/moves/%d/delete" % move.id, follow_redirects=False)
 
-                response = self.client.get('/moves?start_date=2014-01-01&end_date=2015-01-01')
+                response = self.client.get('/moves?start_date=2013-01-01&end_date=2015-01-01')
                 response_data = self._validate_response(response, tmpdir)
                 assert u'<title>OpenMoves – Moves</title>' in response_data
 
