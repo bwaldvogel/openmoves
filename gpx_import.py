@@ -37,6 +37,7 @@ GPX_EXTENSION_GPX_V1_SEALEVELPRESSURE = 'seaLevelPressure'
 GPX_EXTENSION_GPX_V1_SPEED = 'speed'
 GPX_EXTENSION_GPX_V1_VSPEED = 'verticalSpeed'
 
+
 def parse_sample_extensions(sample, track_point, gpx_namespace):
     if hasattr(track_point, 'extensions'):
         for extension in track_point.extensions.iterchildren():
@@ -58,6 +59,7 @@ def parse_sample_extensions(sample, track_point, gpx_namespace):
                 sample.speed = float(extension.text)
             elif extension.tag == gpx_namespace + GPX_EXTENSION_GPX_V1_VSPEED:
                 sample.vertical_speed = float(extension.text)
+
 
 def parse_samples(tree, move, gpx_namespace):
     all_samples = []
@@ -92,7 +94,7 @@ def parse_samples(tree, move, gpx_namespace):
 
                     # Accumulate distance to previous sample
                     distance_delta = vincenty((radian_to_degree(sample.latitude), radian_to_degree(sample.longitude)),
-                                                 (radian_to_degree(segment_samples[-1].latitude), radian_to_degree(segment_samples[-1].longitude))).meters
+                                              (radian_to_degree(segment_samples[-1].latitude), radian_to_degree(segment_samples[-1].longitude))).meters
                     sample.distance = segment_samples[-1].distance + distance_delta
                     sample.speed = distance_delta / time_delta.total_seconds()
 
@@ -121,12 +123,14 @@ def parse_samples(tree, move, gpx_namespace):
         all_samples.extend(track_samples)
     return all_samples
 
+
 def insert_pause(start_pause_samples, end_pause_samples):
     if (len(start_pause_samples) > 0 and len(end_pause_samples) > 0):
         # {"pause": {"state": "True", "duration": "724.1", "distance": "2576", "type": "30"}}
         start_pause_samples[-1].events = {"pause": {"state": "True"}}
         # {"pause": {"state": "False", "duration": "0", "distance": "0", "type": "31"}}
         end_pause_samples[0].events = {"pause": {"state": "False"}}
+
 
 def parse_move(tree):
     move = Move()
@@ -135,11 +139,13 @@ def parse_move(tree):
 
     return move
 
+
 def parse_device(tree):
     device = Device()
     device.name = GPX_DEVICE_NAME
     device.serial_number = GPX_DEVICE_SERIAL
     return device
+
 
 def derive_move_infos_from_samples(move, samples):
     if len(samples) > 0:
