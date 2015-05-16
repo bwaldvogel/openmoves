@@ -21,8 +21,7 @@
 
     <div class="dropdown">
       <button class="btn btn-default dropdown-toggle" type="button" id="dropdownExport" data-toggle="dropdown" aria-expanded="true">
-        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Export Move
-      <span class="caret"></span>
+        <span class="glyphicon glyphicon-download-alt" aria-hidden="true"></span> Export Move <span class="caret"></span>
       </button>
       <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownExport">
         <li {% if not gps_samples %}class="disabled"{% endif %} role="presentation">
@@ -32,7 +31,13 @@
           <a role="menuitem" tabindex="-1" href="{{url_for('export_move', id=move.id, format='csv')}}">as CSV</a>
         </li>
       </ul>
+      <a class="btn btn-default" type="button" id="deleteMove"
+              onclick="return confirm('Are you sure you want to delete this move?');"
+              href="{{url_for('delete_move', id=move.id, start_date=start_date, end_date=end_date)}}">
+        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> Delete Move
+      </a>
     </div>
+
     <br/>
 
     <table class="table table-condensed">
