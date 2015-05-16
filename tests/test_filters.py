@@ -47,6 +47,11 @@ class TestFilters(object):
         assert filters.get_city(address) == 'some city'
 
     def test_short_location(self):
-        address = {}
         location = {'address': {'city': 'some city', 'country_code': 'de'}}
         assert filters.short_location(location) == 'some city, DE'
+
+        location = {'address': {'country': 'Germany'}}
+        assert filters.short_location(location) == 'Germany'
+
+        location = {}
+        assert filters.short_location(location) == None

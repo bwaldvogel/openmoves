@@ -76,14 +76,17 @@ def get_city(address):
 
 
 def short_location(location_raw):
-    address = location_raw['address']
-    city = get_city(address)
+    if 'address' in location_raw:
+        address = location_raw['address']
+        city = get_city(address)
 
-    if city:
-        country_code = address['country_code'].upper()
-        return "%s, %s" % (city, country_code)
-    else:
-        return address.country
+        if city:
+            country_code = address['country_code'].upper()
+            return "%s, %s" % (city, country_code)
+        elif 'country' in address:
+            return address['country']
+
+    return None
 
 
 def swim_pace(value):
@@ -97,8 +100,10 @@ def swim_pace(value):
 def radian_to_degree(value):
     return math.degrees(value)
 
+
 def degree_to_radian(value):
     return math.radians(value)
+
 
 def unix_epoch(date):
     return 1000 * time.mktime(date.timetuple())
