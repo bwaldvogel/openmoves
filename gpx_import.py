@@ -105,7 +105,7 @@ def parse_samples(tree, move, gpx_namespace):
                     distance_delta = vincenty((radian_to_degree(sample.latitude), radian_to_degree(sample.longitude)),
                                               (radian_to_degree(segment_samples[-1].latitude), radian_to_degree(segment_samples[-1].longitude))).meters
                     sample.distance = segment_samples[-1].distance + distance_delta
-                    if(time_delta > timedelta(0)):
+                    if time_delta > timedelta(0):
                         sample.speed = distance_delta / time_delta.total_seconds()
                     else:
                         sample.speed = 0
@@ -167,10 +167,12 @@ def derive_move_infos_from_samples(move, samples):
         # Duration / Speed / Distance
         move.duration = samples[-1].time
         move.distance = samples[-1].distance
-        move.speed_avg = move.distance / move.duration.total_seconds()
+        if move.duration and move.duration > timedelta(0):
+            move.speed_avg = move.distance / move.duration.total_seconds()
 
         speeds = np.asarray([sample.speed for sample in samples if sample.speed], dtype=float)
-        move.speed_max = np.max(speeds)
+        if len(speeds) > 0:
+            move.speed_max = np.max(speeds)
 
         # Altitudes
         altitudes = np.asarray([sample.altitude for sample in samples if sample.altitude], dtype=float)
