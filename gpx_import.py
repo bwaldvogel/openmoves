@@ -178,9 +178,24 @@ def derive_move_infos_from_samples(move, samples):
             move.altitude_min = np.min(altitudes)
             move.altitude_max = np.max(altitudes)
 
-            deriv_altitudes = np.gradient(altitudes)
-            move.ascent = np.sum(deriv_altitudes[deriv_altitudes > 0])
-            move.descent = np.sum(-deriv_altitudes[deriv_altitudes < 0])
+            # Total ascent / descent
+            move.ascent = 0;
+            move.ascent_time = timedelta(0)
+            move.descent = 0;
+            move.descent_time = timedelta(0)
+            previous_sample = None
+            for sample in samples:
+                if sample.altitude:
+                    if previous_sample:
+                        altitude_diff = sample.altitude - previous_sample.altitude
+                        time_diff = sample.time - previous_sample.time
+                        if altitude_diff > 0:
+                            move.ascent += altitude_diff
+                            move.ascent_time += time_diff
+                        elif altitude_diff < 0:
+                            move.descent += -altitude_diff
+                            move.descent_time += time_diff
+                    previous_sample = sample
 
         # Temperature
         temperatures = np.asarray([sample.temperature for sample in samples if sample.temperature], dtype=float)
