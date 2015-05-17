@@ -47,7 +47,7 @@ def parse_sample_extensions(sample, track_point):
                 if hasattr(extension, GPX_EXTENSION_TRACKPOINTEXTENSION_HEARTRATE):
                     sample.hr = float(extension.hr) / 60.0  # BPM
 
-            for version, namespace in GPX_NAMESPACES.items():
+            for namespace in GPX_NAMESPACES.values():
                 if extension.tag.startswith(namespace):
                     tag = extension.tag.replace(namespace, '')
                     text = extension.text
@@ -105,7 +105,10 @@ def parse_samples(tree, move, gpx_namespace):
                     distance_delta = vincenty((radian_to_degree(sample.latitude), radian_to_degree(sample.longitude)),
                                               (radian_to_degree(segment_samples[-1].latitude), radian_to_degree(segment_samples[-1].longitude))).meters
                     sample.distance = segment_samples[-1].distance + distance_delta
-                    sample.speed = distance_delta / time_delta.total_seconds()
+                    if(time_delta > timedelta(0)):
+                        sample.speed = distance_delta / time_delta.total_seconds()
+                    else:
+                        sample.speed = 0
 
                 elif len(track_samples) > 0:
                     sample.time = track_samples[-1].time
