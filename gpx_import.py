@@ -217,7 +217,7 @@ def gpx_import(xmlfile, user):
     filename = xmlfile.filename
     tree = objectify.parse(xmlfile).getroot()
 
-    for version, namespace in GPX_NAMESPACES.items():
+    for namespace in GPX_NAMESPACES.values():
         if tree.tag.startswith(namespace):
             gpx_namespace = namespace
             break
