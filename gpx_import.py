@@ -170,7 +170,8 @@ def derive_move_infos_from_samples(move, samples):
         move.speed_avg = move.distance / move.duration.total_seconds()
 
         speeds = np.asarray([sample.speed for sample in samples if sample.speed], dtype=float)
-        move.speed_max = np.max(speeds)
+        if len(speeds) > 0:
+            move.speed_max = np.max(speeds)
 
         # Altitudes
         altitudes = np.asarray([sample.altitude for sample in samples if sample.altitude], dtype=float)
