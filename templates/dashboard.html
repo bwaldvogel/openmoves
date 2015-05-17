@@ -24,7 +24,7 @@
 
         <!-- Initialize charts -->
         {% block chart_scripts %}
-            var distance_formatter = function distance_formatter() { return s.sprintf("%04.1f km", this.y); }
+            var distance_formatter = function distance_formatter() { return s.sprintf("%4.1f km", this.y); }
             {{chart.chart_dashboard('Distance', total_distance_by_activity, formatter = 'distance_formatter', valuefactor = 1/1000)}}
 
             var duration_formatter = function duration_formatter() {
