@@ -28,18 +28,19 @@ def move_import(xmlfile, filename, user):
     else:
         import_function = import_functions[extension]
         move = import_function(xmlfile, user)
-        move.temperature_avg, = db.session.query(func.avg(Sample.temperature)).filter(Sample.move == move, Sample.temperature > 0).one()
+        if move:
+            move.temperature_avg, = db.session.query(func.avg(Sample.temperature)).filter(Sample.move == move, Sample.temperature > 0).one()
 
-        stroke_count = 0
-        for events, in db.session.query(Sample.events).filter(Sample.move == move, Sample.events != None):
-            if 'swimming' in events and events['swimming']['type'] == 'Stroke':
-                stroke_count += 1
+            stroke_count = 0
+            for events, in db.session.query(Sample.events).filter(Sample.move == move, Sample.events != None):
+                if 'swimming' in events and events['swimming']['type'] == 'Stroke':
+                    stroke_count += 1
 
-        if 'swimming' in move.activity:
-            assert stroke_count > 0
+            if 'swimming' in move.activity:
+                assert stroke_count > 0
 
-        if stroke_count > 0:
-            move.stroke_count = stroke_count
+            if stroke_count > 0:
+                move.stroke_count = stroke_count
 
-        db.session.commit()
-        return move
+            db.session.commit()
+            return move

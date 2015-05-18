@@ -331,6 +331,28 @@ class TestOpenMoves(object):
 
                 previous_sample = sample
 
+    def test_import_move_already_exists(self, tmpdir):
+        self._login()
+        data = {}
+
+        with app.test_request_context():
+            count_before = Move.query.count()
+
+        filename = 'Move_2013_07_21_15_26_53_Trail+running.gpx.gz'
+        dn = os.path.dirname(os.path.realpath(__file__))
+        with open(os.path.join(dn, filename), 'rb') as f:
+            data['files'] = [(f, filename)]
+            response = self.client.post('/import', data=data, follow_redirects=True)
+
+        with app.test_request_context():
+            count_after = Move.query.count()
+
+        assert count_after == count_before
+
+        response_data = self._validate_response(response, tmpdir)
+        assert u'<title>OpenMoves – Import</title>' in response_data
+        assert u'already exists' in response_data
+
     def test_moves(self, tmpdir):
         self._login()
         response = self.client.get('/moves?start_date=2014-01-01&end_date=2015-01-01')
