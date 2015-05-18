@@ -73,7 +73,7 @@
                 <td>{{macros.temperature(move.temperature_avg)}}</td>
                 {% if move.hr_avg %}<td>{{macros.hr(move.hr_avg)}}</td>{% endif %}
                 {% if move.recovery_time %}<td>{{move.recovery_time | duration}}</td>{% endif %}
-                {% if gps_samples %}<td>{{move.time_to_first_fix | duration}}</td>{% endif %}
+                {% if move.time_to_first_fix %}<td>{{move.time_to_first_fix | duration}}</td>{% endif %}
                 {% endblock %}
             </tr>
         </tbody>
