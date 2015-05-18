@@ -4,11 +4,12 @@
 from flask import Flask, render_template, flash, redirect, request, url_for, session, Response, json
 from flask_bootstrap import Bootstrap
 from flask_login import login_user, current_user, login_required, logout_user
-from model import db, Move, Sample, MoveEdit
+from model import db, Move, Sample, MoveEdit, AlembicVersion
 from datetime import timedelta, datetime
 from sqlalchemy.sql import func
 from sqlalchemy import distinct, literal
 import os
+import re
 from flask_bcrypt import Bcrypt
 import imports
 import gpx_export
@@ -45,6 +46,17 @@ migrate = Migrate(app, db)
 
 register_filters(app)
 register_globals(app)
+
+
+def _parse_revision(filename):
+    pattern = re.compile(r"revision = '(\d+)'")
+    with open(filename, 'r') as f:
+        for line in f:
+            match = pattern.match(line)
+            if match:
+                return int(match.group(1))
+
+    raise RuntimeError("Failed to parse revision from %s" % filename)
 
 
 def initialize_config(f):
@@ -154,6 +166,19 @@ def init(configfile):
     login_manager.login_view = "login"
 
     return app
+
+
+@app.before_first_request
+def check_db_schema():
+    if db.engine.name != 'sqlite':
+        version = AlembicVersion.query.scalar()
+        assert version, "no schema revision found. please run '%s db upgrade'" % __file__
+        migrations = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'migrations', 'versions')
+
+        revisions = [_parse_revision(os.path.join(migrations, filename)) for filename in os.listdir(migrations) if filename.endswith('.py')]
+        max_revision = max(revisions)
+        db_version = int(version.version_num)
+        assert db_version == max_revision, "old database schema found: revision %d. please run '%s db upgrade' to upgrade to revision %d" % (db_version, __file__, max_revision)
 
 
 def command_app_context():

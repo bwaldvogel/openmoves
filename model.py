@@ -187,3 +187,8 @@ class MoveEdit(db.Model):
 
     old_value = db.Column(JsonEncodedDict(4096), name='old_value')
     new_value = db.Column(JsonEncodedDict(4096), name='new_value')
+
+
+class AlembicVersion(db.Model):
+    __tablename__ = 'alembic_version'
+    version_num = db.Column(db.String, name="version_num", primary_key=True)
