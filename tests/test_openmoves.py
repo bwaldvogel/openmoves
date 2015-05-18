@@ -299,8 +299,8 @@ class TestOpenMoves(object):
             assert int(move.distance) == 20902
             assert move.log_item_count == 1299
             assert move.log_item_count == move.samples.count()
-            assert move.ascent == 674
-            assert move.descent == 658
+            assert move.ascent == 690
+            assert move.descent == 674
             assert round(move.temperature_min - 273.15, 1) == 27.2
             assert round(move.temperature_max - 273.15, 1) == 31.7
             assert round(move.speed_avg, 1) == round(9.5 / 3.6, 1)
