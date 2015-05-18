@@ -32,32 +32,32 @@ def parse_device(tree):
 
 
 def sml_import(xmlfile, user):
-        filename = xmlfile.filename
-        tree = objectify.parse(xmlfile).getroot()
-        move = parse_move(tree)
-        move.source = os.path.abspath(filename)
-        device = parse_device(tree)
-        persistent_device = Device.query.filter_by(serial_number=device.serial_number).scalar()
-        if persistent_device:
-            if not persistent_device.name:
-                flash("update device name to '%s'" % device.name)
-                persistent_device.name = device.name
-            else:
-                assert device.name == persistent_device.name
-            device = persistent_device
+    filename = xmlfile.filename
+    tree = objectify.parse(xmlfile).getroot()
+    move = parse_move(tree)
+    move.source = os.path.abspath(filename)
+    device = parse_device(tree)
+    persistent_device = Device.query.filter_by(serial_number=device.serial_number).scalar()
+    if persistent_device:
+        if not persistent_device.name:
+            flash("update device name to '%s'" % device.name)
+            persistent_device.name = device.name
         else:
-            db.session.add(device)
+            assert device.name == persistent_device.name
+        device = persistent_device
+    else:
+        db.session.add(device)
 
-        if Move.query.filter_by(user=user, date_time=move.date_time, device=device).scalar():
-            flash("%s at %s already exists" % (move.activity, move.date_time), 'warning')
-        else:
-            move.user = user
-            move.device = device
-            db.session.add(move)
+    if Move.query.filter_by(user=user, date_time=move.date_time, device=device).scalar():
+        flash("%s at %s already exists" % (move.activity, move.date_time), 'warning')
+    else:
+        move.user = user
+        move.device = device
+        db.session.add(move)
 
-            samples = tree.DeviceLog.Samples.iterchildren()
-            for sample in parse_samples(samples, move):
-                db.session.add(sample)
-            postprocess_move(move)
-            db.session.commit()
-            return move
+        samples = tree.DeviceLog.Samples.iterchildren()
+        for sample in parse_samples(samples, move):
+            db.session.add(sample)
+        postprocess_move(move)
+        db.session.commit()
+        return move
