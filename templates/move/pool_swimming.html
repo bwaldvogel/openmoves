@@ -3,31 +3,38 @@
 {% block table_header %}
 {{ super() }}
 <th>Pace</th>
+{% if move.stroke_count %}
 <th>Strokes</th>
 <th>m/stroke</th>
 <th>strokes/min</th>
+{% endif %}
 {% if move.pool_length %}<th>Pool Length</th>{% endif %}
 {% endblock %}
 
 {% block table_entry %}
 {{ super() }}
 <td>{{swim_pace | swim_pace}}</td>
+{% if move.stroke_count %}
 <td>{{move.stroke_count | int}}</td>
 <td>{{"%.2f" | format(move.distance / move.stroke_count)}}</td>
 <td>{{"%.1f" | format(60 * move.stroke_count / move.duration.total_seconds())}}</td>
+{% endif %}
 {% if move.pool_length %}<td>{{move.pool_length}}</td>{% endif %}
 {% endblock %}
 
 {% block chart_blocks %}
 {{chart.chart_block('temperature')}}
 {{chart.chart_block('speed')}}
+{% if move.stroke_count %}
 {{chart.chart_block('strokes')}}
+{% endif %}
 {% endblock %}
 
 {% block chart_scripts %}
 {{chart.chart_by_time('temperature', samples, 0.1, 'celcius')}}
 {{chart.speed_chart_by_time_equidistance('speed', samples, move.pool_length|int(default=50), 'kmh')}}
 
+{% if move.stroke_count %}
 var strokes_data = [{% for sample in swimming_strokes_and_pauses -%}
     {%- if sample.time and sample.events['pause'] -%}
         [{{macros.datetime_to_date_utc(move.date_time + sample.time)}}, null],
@@ -37,6 +44,7 @@ var strokes_data = [{% for sample in swimming_strokes_and_pauses -%}
 {%- endfor %}
 ];
 {{ chart.chart_with_slider_interval_sampling('strokes_data', 'strokes', 10, 'strokes', 'per_min') }}
+{% endif %}
 {% endblock %}
 
 {% block additional_information %}

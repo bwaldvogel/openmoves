@@ -580,7 +580,8 @@ def move(id):
 
         model['swim_pace'] = timedelta(seconds=move.duration.total_seconds() / move.distance)
 
-        assert len(model['swimming_strokes']) == move.stroke_count
+        if move.stroke_count:
+            assert len(model['swimming_strokes']) == move.stroke_count
 
     # eg. 'Pool swimming' → 'pool_swimming'
     activity_name = move.activity.lower().replace(' ', '_')
