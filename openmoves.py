@@ -589,9 +589,12 @@ def move(id):
     except TemplateNotFound:
         # Fall-back to generic template
         return render_template("move/_move.html", **model)
-    except:
-        flash("Failed to load move template of activity '%s'." % activity_name)
-        return redirect(url_for('index'))
+    except Exception as e:
+        if app.debug or app.testing:
+            raise e
+        else:
+            flash("Failed to load move template of activity '%s'." % activity_name)
+            return redirect(url_for('index'))
 
 
 @app.route('/_tests', methods=['GET'])
