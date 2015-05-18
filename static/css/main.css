@@ -57,10 +57,6 @@ div.alert {
     margin: 10px auto;
 }
 
-.btn.btn-black {
-    color: black;
-}
-
 table.table-auto-width {
     width: auto;
 }
@@ -121,4 +117,8 @@ h1 .editable-input select {
     font-weight: bold;
     line-height: 1.1;
     height: 36px;
+}
+
+tr.highlight > td {
+	background-color: #dff0d8;
 }

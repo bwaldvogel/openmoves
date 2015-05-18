@@ -442,12 +442,27 @@ def moves():
 @app.route('/moves/<int:id>/delete')
 @login_required
 def delete_move(id):
-    move = _current_user_filtered(Move.query).filter_by(id=id).first_or_404()
-    Sample.query.filter_by(move=move).delete(synchronize_session=False)
-    MoveEdit.query.filter_by(move=move).delete(synchronize_session=False)
-    db.session.delete(move)
-    db.session.commit()
-    flash("move %d deleted" % id, 'success')
+    return delete_moves("%s" % id)
+
+
+@app.route('/moves/<string:ids>/delete')
+@login_required
+def delete_moves(ids):
+    parsed_ids = [int(id) for id in ids.split(',')]
+    if parsed_ids:
+        for id in parsed_ids:
+            move = _current_user_filtered(Move.query).filter_by(id=id).first_or_404()
+            Sample.query.filter_by(move=move).delete(synchronize_session=False)
+            MoveEdit.query.filter_by(move=move).delete(synchronize_session=False)
+            db.session.delete(move)
+        db.session.commit()
+
+        if len(parsed_ids) == 1:
+            flash("move %d deleted" % parsed_ids[0], 'success')
+        else:
+            flash("%d moves deleted" % len(parsed_ids), 'success')
+    else:
+        flash('no moves deleted', 'warning')
     return redirect(url_for('moves'))
 
 

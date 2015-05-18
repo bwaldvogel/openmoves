@@ -552,6 +552,23 @@ class TestOpenMoves(object):
             assert move_edit.old_value == {'activity': 'Pool swimming', 'activity_type': 6}
             assert move_edit.new_value == {'activity': 'Trekking', 'activity_type': 11}
 
+    def test_delete_moves_batch(self, tmpdir):
+        self._login()
+        with app.test_request_context():
+            total_moves_before = Move.query.count()
+            assert total_moves_before > 2
+
+            ids = [str(move.id) for move in Move.query[:2]]
+            self.client.get("/moves/%s/delete" % ','.join(ids), follow_redirects=False)
+
+            response = self.client.get('/moves?start_date=2013-01-01&end_date=2015-01-01')
+            response_data = self._validate_response(response, tmpdir)
+            assert u'<title>OpenMoves – Moves</title>' in response_data
+
+            total_moves = Move.query.count()
+            assert total_moves == total_moves_before - len(ids)
+            assert u"All moves <span class=\"badge\">%d</span>" % total_moves in response_data
+
     def test_delete_moves(self, tmpdir):
         self._login()
         with app.test_request_context():
