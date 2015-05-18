@@ -36,6 +36,7 @@ def sml_import(xmlfile, user):
     tree = objectify.parse(xmlfile).getroot()
     move = parse_move(tree)
     move.source = os.path.abspath(filename)
+    move.import_module = __name__
     device = parse_device(tree)
     persistent_device = Device.query.filter_by(serial_number=device.serial_number).scalar()
     if persistent_device:

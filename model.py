@@ -122,6 +122,7 @@ class Move(db.Model):
 
     source = db.Column(db.String, name="source")
     import_date_time = db.Column(db.DateTime, name="import_date_time", nullable=False)
+    import_module = db.Column(db.String, name="import_module", nullable=False)
 
     location_address = db.Column('location_address', db.String, nullable=True)
     location_raw = db.Column('location_raw', JsonEncodedDict(4096), nullable=True)

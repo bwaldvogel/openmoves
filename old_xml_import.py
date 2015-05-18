@@ -26,7 +26,7 @@ def old_xml_import(xmlfile, user):
         data[0] = data[0] + "<sml>"
         data.append("</sml>")
 
-        filematch = re.match(r"log-([A-F0-9]{16})-\d{4}-\d{2}-\d{2}T\d{2}_\d{2}_\d{2}-\d+\.xml", filename)
+        filematch = re.match(r'log-([A-F0-9]{16})-\d{4}-\d{2}-\d{2}T\d{2}_\d{2}_\d{2}-\d+\.xml', filename)
         if not filematch:
             flash("illegal filename: '%s'" % filename, 'error')
             return
@@ -36,6 +36,8 @@ def old_xml_import(xmlfile, user):
         tree = objectify.fromstring("\n".join(data).encode('utf-8'))
         move = parse_move(tree)
         move.source = filename
+        move.import_module = __name__
+
         device = Device.query.filter_by(serial_number=serial_number).scalar()
         if not device:
             device = Device()

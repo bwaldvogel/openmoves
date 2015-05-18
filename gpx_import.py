@@ -237,6 +237,7 @@ def gpx_import(xmlfile, user):
         db.session.add(device)
     move = parse_move(tree)
     move.source = os.path.abspath(filename)
+    move.import_module = __name__
 
     # Parse samples
     all_samples = parse_samples(tree, move, gpx_namespace)

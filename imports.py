@@ -16,17 +16,18 @@ def move_import(xmlfile, filename, user):
         xmlfile = gzip.GzipFile(fileobj=xmlfile, mode='rb', filename=filename)
         filename = filename[:-len('.gz')]
 
-    if filename.endswith('.xml'):
-        move = old_xml_import(xmlfile, user)
-    elif filename.endswith('.sml'):
-        move = sml_import(xmlfile, user)
-    elif filename.endswith('.gpx'):
-        move = gpx_import(xmlfile, user)
-    else:
-        flash("unknown fileformat: '%s'" % xmlfile.filename, 'error')
-        move = None
+    extension = filename[-4:]
+    import_functions = {
+        '.xml': old_xml_import,
+        '.sml': sml_import,
+        '.gpx': gpx_import,
+    }
 
-    if move:
+    if extension not in import_functions:
+        flash("unknown fileformat: '%s'" % xmlfile.filename, 'error')
+    else:
+        import_function = import_functions[extension]
+        move = import_function(xmlfile, user)
         move.temperature_avg, = db.session.query(func.avg(Sample.temperature)).filter(Sample.move == move, Sample.temperature > 0).one()
 
         stroke_count = 0
