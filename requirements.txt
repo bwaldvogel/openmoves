@@ -9,7 +9,7 @@ Flask-Bcrypt==0.6.2
 lxml==3.4.4
 python-dateutil==2.4.2
 xkcdpass==1.2.5
-pytest==2.7.0
+pytest==2.7.1
 gpxpy==0.9.8
 html5lib==0.99999
 Flask-Script==2.0.5
