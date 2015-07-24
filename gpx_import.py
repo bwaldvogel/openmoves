@@ -66,7 +66,6 @@ def parse_sample_extensions(sample, track_point):
                         sample.speed = float(text)
                     elif tag == GPX_EXTENSION_GPX_V1_VSPEED:
                         sample.vertical_speed = float(text)
-
                     break
 
 
@@ -96,6 +95,8 @@ def parse_samples(tree, move, gpx_namespace):
 
                 # Time / UTC
                 sample.utc = dateutil.parser.parse(str(track_point.time))
+
+                # Track segment samples
                 if len(segment_samples) > 0:
                     # Accumulate time delta to previous sample to get the total duration
                     time_delta = sample.utc - segment_samples[-1].utc
@@ -104,20 +105,24 @@ def parse_samples(tree, move, gpx_namespace):
                     # Accumulate distance to previous sample
                     distance_delta = vincenty((radian_to_degree(sample.latitude), radian_to_degree(sample.longitude)),
                                               (radian_to_degree(segment_samples[-1].latitude), radian_to_degree(segment_samples[-1].longitude))).meters
+
                     sample.distance = segment_samples[-1].distance + distance_delta
                     if time_delta > timedelta(0):
                         sample.speed = distance_delta / time_delta.total_seconds()
                     else:
                         sample.speed = 0
 
+                # Track segment -> Track (multiple track segments contained)
                 elif len(track_samples) > 0:
-                    sample.time = track_samples[-1].time
+                    sample.time = track_samples[-1].time + (sample.utc - track_samples[-1].utc)  # Time diff to last sample of the previous track segment
                     sample.distance = track_samples[-1].distance
                     sample.speed = track_samples[-1].speed
+                # Track -> Full GPX (multiple tracks contained)
                 elif len(all_samples) > 0:
-                    sample.time = all_samples[-1].time
+                    sample.time = all_samples[-1].time + (sample.utc - all_samples[-1].utc)  # Time diff to last sample of the previous track
                     sample.distance = all_samples[-1].distance
                     sample.speed = all_samples[-1].speed
+                # First sample
                 else:
                     sample.time = timedelta(0)
                     sample.distance = 0
@@ -126,23 +131,50 @@ def parse_samples(tree, move, gpx_namespace):
                 parse_sample_extensions(sample, track_point)
                 segment_samples.append(sample)
 
-            # Insert an pause event between every tracksegment
-            insert_pause(track_samples, segment_samples)
+            # Insert an pause event between every track segment
+            insert_pause(track_samples, segment_samples, move)
             track_samples.extend(segment_samples)
 
         # Insert an pause event between every track
-        insert_pause(all_samples, track_samples)
+        insert_pause(all_samples, track_samples, move)
         all_samples.extend(track_samples)
     return all_samples
 
 
-def insert_pause(start_pause_samples, end_pause_samples):
-    if (len(start_pause_samples) > 0 and len(end_pause_samples) > 0):
-        # {"pause": {"state": "True", "duration": "724.1", "distance": "2576", "type": "30"}}
-        start_pause_samples[-1].events = {"pause": {"state": "True"}}
-        # {"pause": {"state": "False", "duration": "0", "distance": "0", "type": "31"}}
-        end_pause_samples[0].events = {"pause": {"state": "False"}}
+def insert_pause(samples_before_pause, samples_after_pause, move):
+    if (len(samples_before_pause) <= 0 or len(samples_after_pause) <= 0):
+        return
 
+    stop_sample = samples_before_pause[-1]
+    start_sample = samples_after_pause[0]
+
+    pause_duration = start_sample.time - stop_sample.time
+    pause_distance = vincenty((radian_to_degree(stop_sample.latitude), radian_to_degree(stop_sample.longitude)),
+                              (radian_to_degree(start_sample.latitude), radian_to_degree(start_sample.longitude))).meters
+
+    # Introduce start of pause sample
+    pause_sample = Sample()
+    pause_sample.move = move
+    pause_sample.utc = stop_sample.utc
+    pause_sample.time = stop_sample.time
+    stop_sample.utc -= timedelta(microseconds=1)  # Cut off 1ms from last recorded sample in order to introduce the new pause sample and keep time order
+    stop_sample.time -= timedelta(microseconds=1)
+
+    pause_sample.events = {"pause": {"state": "True", "type": "30", "duration": str(pause_duration), "distance": str(pause_distance)}}
+    samples_before_pause.append(pause_sample)  # Duplicate last element
+
+    # Introduce end of pause sample
+    pause_sample = Sample()
+    pause_sample.move = move
+    pause_sample.utc = start_sample.utc
+    pause_sample.time = start_sample.time
+    start_sample.utc += timedelta(microseconds=1)  # Add 1ms to the first recorded sample in order to introduce the new pause sample and keep time order
+    start_sample.time += timedelta(microseconds=1)
+    pause_sample.events = {"pause": {"state": "False", "type": "31", "duration": "0", "distance": "0"}}
+    samples_after_pause.insert(0, pause_sample)
+
+def is_start_pause_sample(sample):
+    return sample.events and "pause" in sample.events and sample.events["pause"]["state"].lower() == "true"
 
 def parse_move(tree):
     move = Move()
@@ -160,57 +192,70 @@ def parse_device(tree):
 
 
 def derive_move_infos_from_samples(move, samples):
-    if len(samples) > 0:
-        move.date_time = samples[0].utc
-        move.log_item_count = len(samples)
+    if len(samples) <= 0:
+        return
 
-        # Duration / Speed / Distance
-        move.duration = samples[-1].time
-        move.distance = samples[-1].distance
-        if move.duration and move.duration > timedelta(0):
-            move.speed_avg = move.distance / move.duration.total_seconds()
+    move.date_time = samples[0].utc
+    move.log_item_count = len(samples)
 
-        speeds = np.asarray([sample.speed for sample in samples if sample.speed], dtype=float)
-        if len(speeds) > 0:
-            move.speed_max = np.max(speeds)
+    move.duration = timedelta(0)  # Accumulated later without pauses
 
-        # Altitudes
-        altitudes = np.asarray([sample.altitude for sample in samples if sample.altitude], dtype=float)
-        if len(altitudes) > 0:
-            move.altitude_min = np.min(altitudes)
-            move.altitude_max = np.max(altitudes)
+    speeds = np.asarray([sample.speed for sample in samples if sample.speed], dtype=float)
+    if len(speeds) > 0:
+        move.speed_max = np.max(speeds)
 
-            # Total ascent / descent
-            move.ascent = 0;
-            move.ascent_time = timedelta(0)
-            move.descent = 0;
-            move.descent_time = timedelta(0)
-            previous_sample = None
-            for sample in samples:
-                if sample.altitude:
-                    if previous_sample:
-                        altitude_diff = sample.altitude - previous_sample.altitude
-                        time_diff = sample.time - previous_sample.time
-                        if altitude_diff > 0:
-                            move.ascent += altitude_diff
-                            move.ascent_time += time_diff
-                        elif altitude_diff < 0:
-                            move.descent += -altitude_diff
-                            move.descent_time += time_diff
-                    previous_sample = sample
+    # Altitudes
+    altitudes = np.asarray([sample.altitude for sample in samples if sample.altitude], dtype=float)
+    if len(altitudes) > 0:
+        move.altitude_min = np.min(altitudes)
+        move.altitude_max = np.max(altitudes)
 
-        # Temperature
-        temperatures = np.asarray([sample.temperature for sample in samples if sample.temperature], dtype=float)
-        if len(temperatures) > 0:
-            move.temperature_min = np.min(temperatures)
-            move.temperature_max = np.max(temperatures)
+        # Total ascent / descent
+        move.ascent = 0;
+        move.ascent_time = timedelta(0)
+        move.descent = 0;
+        move.descent_time = timedelta(0)
+        previous_sample = None
 
-        # Heart rate
-        hrs = np.asarray([sample.hr for sample in samples if sample.hr], dtype=float)
-        if len(hrs) > 0:
-            move.hr_min = np.min(hrs)
-            move.hr_max = np.max(hrs)
-            move.hr_avg = np.mean(hrs)
+    # Accumulate values from samples
+    for sample in samples:
+        # Skip calculation on first sample, sample without altitude info, pause event
+        if previous_sample and not is_start_pause_sample(previous_sample):
+
+            # Calculate altitude and time sums
+            if sample.altitude != None and previous_sample.altitude != None:
+                altitude_diff = sample.altitude - previous_sample.altitude
+                time_diff = sample.time - previous_sample.time
+                if altitude_diff > 0:
+                    move.ascent += altitude_diff
+                    move.ascent_time += time_diff
+                elif altitude_diff < 0:
+                    move.descent += -altitude_diff
+                    move.descent_time += time_diff
+
+            # Total duration
+            move.duration += sample.utc - previous_sample.utc
+
+        # Store sample for next cycle
+        previous_sample = sample
+
+    # Total Speed / Distance
+    move.distance = samples[-1].distance
+    if move.duration and move.duration > timedelta(0):
+        move.speed_avg = move.distance / move.duration.total_seconds()
+
+    # Temperature
+    temperatures = np.asarray([sample.temperature for sample in samples if sample.temperature], dtype=float)
+    if len(temperatures) > 0:
+        move.temperature_min = np.min(temperatures)
+        move.temperature_max = np.max(temperatures)
+
+    # Heart rate
+    hrs = np.asarray([sample.hr for sample in samples if sample.hr], dtype=float)
+    if len(hrs) > 0:
+        move.hr_min = np.min(hrs)
+        move.hr_max = np.max(hrs)
+        move.hr_avg = np.mean(hrs)
 
 
 def gpx_import(xmlfile, user):
