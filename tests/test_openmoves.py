@@ -276,7 +276,8 @@ class TestOpenMoves(object):
         self._login()
         data = {}
 
-        filename = 'Move_2013_07_21_15_26_53_Trail+running.gpx.gz'
+        filename = 'baerensee_testtrack.gpx'
+        # filename = 'Move_2013_07_21_15_26_53_Trail+running.gpx.gz'
         dn = os.path.dirname(os.path.realpath(__file__))
         with open(os.path.join(dn, filename), 'rb') as f:
             data['files'] = [(f, filename)]
@@ -292,37 +293,65 @@ class TestOpenMoves(object):
 
         with app.test_request_context():
             move = Move.query.filter(Move.activity == 'Unknown activity').one()
-            first_sample_time = datetime(2013, 7, 21, 13, 26, 53, 0)
-            last_sample_time = datetime(2013, 7, 21, 15, 41, 9, 70000)
-            assert move.date_time == first_sample_time
-            assert move.duration == last_sample_time - first_sample_time
-            assert int(move.distance) == 20902
-            assert move.log_item_count == 1299
+            assert move.date_time == datetime(2015, 1, 1, 10, 0, 0 , 0)
+            assert move.duration == timedelta(minutes=18)
+            assert int(move.distance) == 1800
+            assert move.log_item_count == 8 + 2  # 2 entries for the pause events
             assert move.log_item_count == move.samples.count()
-            assert move.ascent == 690
-            assert move.descent == 674
-            assert round(move.temperature_min - 273.15, 1) == 27.2
-            assert round(move.temperature_max - 273.15, 1) == 31.7
-            assert round(move.speed_avg, 1) == round(9.5 / 3.6, 1)
 
-            assert round(move.hr_avg, 2) == round(122 / 60.0, 2)
-            assert round(move.hr_max, 2) == round(161 / 60.0, 2)
-            assert round(move.hr_min, 2) == round(56 / 60.0, 2)
+            # Altitudes
+            assert move.altitude_max == move.samples[4].altitude
+            assert move.altitude_max == move.samples[4].gps_altitude
+            assert move.altitude_min == move.samples[0].altitude
+            assert move.altitude_min == move.samples[7].altitude
+            assert move.ascent == 600
+            assert move.descent == 1200
+            assert move.ascent_time == timedelta(minutes=6) - timedelta(microseconds=1)
+            assert move.descent_time == timedelta(minutes=12) - timedelta(microseconds=1)
+
+            # Speed
+            assert round(move.speed_avg, 1) == round(6 / 3.6, 1)
+            assert round(move.speed_max, 1) == round(30 / 3.6, 1)
+            assert move.speed_max == move.samples[5].speed
+
+            # Pause events
+            events = [sample for sample in move.samples if sample.events]
+            assert len(events) == 2
+            start_pause_sample = events[0].events['pause']
+            assert start_pause_sample['state'].lower() == 'true'
+            assert start_pause_sample['duration'] == str(timedelta(minutes=54))
+            assert int(float(start_pause_sample['distance'])) == 142
+
+            end_pause_sample = events[1].events['pause']
+            assert end_pause_sample['state'].lower() == 'false'
+            assert end_pause_sample['duration'] == str(0)
+            assert int(float(end_pause_sample['distance'])) == 0
+
+            # Temperatures
+            assert round(move.temperature_min - 273.15, 1) == 17.0
+            assert round(move.temperature_max - 273.15, 1) == 29.0
+            # HR
+            assert round(move.hr_max, 2) == round(210 / 60.0, 2)
+            assert round(move.hr_min, 2) == round(50 / 60.0, 2)
+            assert round(move.hr_avg, 2) == round(127 / 60.0, 2)
 
             previous_sample = None
             for sample in move.samples:
+                if sample.sample_type is not 'gps-base':
+                    continue
                 assert sample.time >= timedelta(seconds=0)
-                assert sample.time <= move.duration
                 assert sample.utc == move.date_time + sample.time
                 assert sample.distance >= 0
-                assert sample.sea_level_pressure > 1010
-                assert sample.sea_level_pressure < 1030
+                assert sample.sea_level_pressure >= 100
+                assert sample.sea_level_pressure <= 1035
                 assert sample.temperature >= move.temperature_min
                 assert sample.temperature <= move.temperature_max
-                assert sample.energy_consumption > 1.0
-                assert sample.energy_consumption <= 20.0
+                assert sample.energy_consumption >= 1.0
+                assert sample.energy_consumption <= 2.0
                 assert sample.speed >= 0.0
-                assert sample.speed < 15.0 / 3.6
+                assert round(sample.speed, 1) <= 30.0 / 3.6
+                assert sample.vertical_speed >= 0.1
+                assert sample.vertical_speed <= 0.6
 
                 if previous_sample:
                     assert sample.time > previous_sample.time
@@ -338,7 +367,7 @@ class TestOpenMoves(object):
         with app.test_request_context():
             count_before = Move.query.count()
 
-        filename = 'Move_2013_07_21_15_26_53_Trail+running.gpx.gz'
+        filename = 'baerensee_testtrack.gpx'
         dn = os.path.dirname(os.path.realpath(__file__))
         with open(os.path.join(dn, filename), 'rb') as f:
             data['files'] = [(f, filename)]
@@ -355,7 +384,7 @@ class TestOpenMoves(object):
 
     def test_moves(self, tmpdir):
         self._login()
-        response = self.client.get('/moves?start_date=2014-01-01&end_date=2015-01-01')
+        response = self.client.get('/moves?start_date=2014-01-01&end_date=2014-12-31')
         response_data = self._validate_response(response, tmpdir)
 
         assert u'<title>OpenMoves – Moves</title>' in response_data
@@ -493,7 +522,7 @@ class TestOpenMoves(object):
 
     def test_dashboard_all_moves(self, tmpdir):
         self._login()
-        response = self.client.get('/dashboard?start_date=2014-01-01&end_date=2015-01-01')
+        response = self.client.get('/dashboard?start_date=2014-01-01&end_date=2014-12-31')
         response_data = self._validate_response(response, tmpdir)
         assert u'<title>OpenMoves – Dashboard</title>' in response_data
         assert u'>#Moves<' in response_data
