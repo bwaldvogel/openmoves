@@ -200,12 +200,12 @@ def derive_move_infos_from_samples(move, samples):
 
     move.duration = timedelta(0)  # Accumulated later without pauses
 
-    speeds = np.asarray([sample.speed for sample in samples if sample.speed], dtype=float)
+    speeds = np.asarray([sample.speed for sample in samples if sample.speed is not None], dtype=float)
     if len(speeds) > 0:
         move.speed_max = np.max(speeds)
 
     # Altitudes
-    altitudes = np.asarray([sample.altitude for sample in samples if sample.altitude], dtype=float)
+    altitudes = np.asarray([sample.altitude for sample in samples if sample.altitude is not None], dtype=float)
     if len(altitudes) > 0:
         move.altitude_min = np.min(altitudes)
         move.altitude_max = np.max(altitudes)
@@ -223,7 +223,7 @@ def derive_move_infos_from_samples(move, samples):
         if previous_sample and not is_start_pause_sample(previous_sample):
 
             # Calculate altitude and time sums
-            if sample.altitude != None and previous_sample.altitude != None:
+            if sample.altitude is not None and previous_sample.altitude is not None:
                 altitude_diff = sample.altitude - previous_sample.altitude
                 time_diff = sample.time - previous_sample.time
                 if altitude_diff > 0:
