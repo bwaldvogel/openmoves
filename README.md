@@ -22,7 +22,7 @@ An open source alternative to Movescount.
 # virtualenv virtualenv
 # source virtualenv/bin/activate
 # pip install -r requirements.txt
-# ./openmoves.py add-user -u <your_username>
+# ./openmoves.py add-user -u <your_username> [-p <your_password]
 ```
 
 
