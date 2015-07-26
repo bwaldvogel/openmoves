@@ -148,6 +148,7 @@ class Sample(db.Model):
 
     hr = db.Column(db.Float, name='hr')
     energy_consumption = db.Column(db.Float, name='energy_consumption')
+    relative_performance_level = db.Column(db.Float, name='relative_performance_level')
 
     vertical_speed = db.Column(db.Float, name='vertical_speed')
     sea_level_pressure = db.Column(db.Float, name='sea_level_pressure')

@@ -490,10 +490,28 @@ class TestOpenMoves(object):
         assert u'<th>Avg. Heart Rate</th>' in response_data
         assert u'<td><span>97 bpm</span></td>' in response_data
 
-        response = self.client.get('/moves?start_date=2014-01-01&end_date=2015-01-01')
+        response = self.client.get('/moves?start_date=2014-01-01&end_date=2020-01-01')
         response_data = self._validate_response(response, tmpdir)
         assert re.search(u'<th><a href="/moves.+?">Heart Rate</a></th>', response_data)
         assert u'<td><span>97 bpm</span></td>' in response_data
+
+    def test_import_move_with_relative_performance_level(self, tmpdir):
+        self._login()
+        data = {}
+
+        filename = 'BABECAFEBABECAFE-2015-06-25T18_45_58-0.sml.gz'
+        dn = os.path.dirname(os.path.realpath(__file__))
+        with open(os.path.join(dn, filename), 'rb') as f:
+            data['files'] = [(f, filename)]
+            response = self.client.post('/import', data=data, follow_redirects=True)
+
+        with app.test_request_context():
+            count = Move.query.count()
+
+        response_data = self._validate_response(response, tmpdir)
+        assert u"<title>OpenMoves – Move %d</title>" % count in response_data
+        assert u'>Running</' in response_data
+        assert filename in response_data
 
     def test_activity_types_not_logged_in(self, tmpdir):
         self._assert_requires_login('/activity_types')
@@ -504,7 +522,7 @@ class TestOpenMoves(object):
         response = self.client.get('/activity_types')
         response_data = self._validate_response(response, tmpdir)
 
-        expected_activities = ('Cycling', 'Kayaking', 'Pool swimming', 'Trekking', 'Unknown activity')
+        expected_activities = ('Cycling', 'Kayaking', 'Pool swimming', 'Running', 'Trekking', 'Unknown activity')
         expected_data = [{"text": activity, "value": activity} for activity in expected_activities]
 
         assert response_data == expected_data
@@ -590,7 +608,7 @@ class TestOpenMoves(object):
             ids = [str(move.id) for move in Move.query[:2]]
             self.client.get("/moves/%s/delete" % ','.join(ids), follow_redirects=False)
 
-            response = self.client.get('/moves?start_date=2013-01-01&end_date=2015-01-01')
+            response = self.client.get('/moves?start_date=2013-01-01&end_date=2020-01-01')
             response_data = self._validate_response(response, tmpdir)
             assert u'<title>OpenMoves – Moves</title>' in response_data
 
@@ -607,7 +625,7 @@ class TestOpenMoves(object):
             for idx, move in enumerate(Move.query):
                 self.client.get("/moves/%d/delete" % move.id, follow_redirects=False)
 
-                response = self.client.get('/moves?start_date=2013-01-01&end_date=2015-01-01')
+                response = self.client.get('/moves?start_date=2013-01-01&end_date=2020-01-01')
                 response_data = self._validate_response(response, tmpdir)
                 assert u'<title>OpenMoves – Moves</title>' in response_data
 
