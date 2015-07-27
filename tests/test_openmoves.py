@@ -331,9 +331,9 @@ class TestOpenMoves(object):
             assert round(move.temperature_min - 273.15, 1) == 17.0
             assert round(move.temperature_max - 273.15, 1) == 29.0
             # HR
-            assert round(move.hr_max, 2) == round(210 / 60.0, 2)
-            assert round(move.hr_min, 2) == round(50 / 60.0, 2)
-            assert round(move.hr_avg, 2) == round(127.5 / 60.0, 2)
+            assert round(move.hr_max * 60.0, 1) == 210.0
+            assert round(move.hr_min * 60.0, 1) == 50.0
+            assert round(move.hr_avg * 60.0, 1) == 127.5
 
             previous_sample = None
             for sample in move.samples:
