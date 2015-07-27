@@ -333,7 +333,7 @@ class TestOpenMoves(object):
             # HR
             assert round(move.hr_max, 2) == round(210 / 60.0, 2)
             assert round(move.hr_min, 2) == round(50 / 60.0, 2)
-            assert round(move.hr_avg, 2) == round(127 / 60.0, 2)
+            assert round(move.hr_avg, 2) == round(127.5 / 60.0, 2)
 
             previous_sample = None
             for sample in move.samples:
