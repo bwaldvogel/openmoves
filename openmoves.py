@@ -213,7 +213,7 @@ def move_import():
         filename = xmlfile.filename
         if filename:
             app.logger.info("importing '%s'" % filename)
-            move = imports.move_import(xmlfile, filename, current_user)
+            move = imports.move_import(xmlfile, filename, current_user, request.form)
             if move:
                 imported_moves.append(move)
 

@@ -9,6 +9,9 @@ import html5lib
 import re
 import os
 from datetime import timedelta, datetime
+from gpx_import import GPX_IMPORT_OPTION_PAUSE_DETECTION, GPX_IMPORT_OPTION_PAUSE_DETECTION_THRESHOLD, GPX_DEVICE_NAME, \
+    GPX_ACTIVITY_TYPE, GPX_DEVICE_SERIAL, GPX_SAMPLE_TYPE
+
 
 app = None
 
@@ -292,7 +295,10 @@ class TestOpenMoves(object):
         assert filename in response_data
 
         with app.test_request_context():
-            move = Move.query.filter(Move.activity == 'Unknown activity').one()
+            move = Move.query.filter(Move.activity == GPX_ACTIVITY_TYPE).one()
+            assert move.device.name == GPX_DEVICE_NAME
+            assert move.device.serial_number == GPX_DEVICE_SERIAL
+            assert move.activity == GPX_ACTIVITY_TYPE
             assert move.date_time == datetime(2015, 1, 1, 10, 0, 0 , 0)
             assert move.duration == timedelta(minutes=18)
             assert int(move.distance) == 1800
@@ -337,7 +343,7 @@ class TestOpenMoves(object):
 
             previous_sample = None
             for sample in move.samples:
-                if sample.sample_type is not 'gps-base':
+                if sample.sample_type != GPX_SAMPLE_TYPE:
                     continue
                 assert sample.time >= timedelta(seconds=0)
                 assert sample.utc == move.date_time + sample.time
@@ -359,6 +365,82 @@ class TestOpenMoves(object):
                     assert sample.distance >= previous_sample.distance
 
                 previous_sample = sample
+
+        # Finally delete the GPX import for next GPX import test with pause detection
+        response_delete = self.client.get('/moves/%d/delete' % count, follow_redirects=True)
+        response_delete_data = self._validate_response(response_delete, tmpdir)
+        assert u"move %d deleted" % count in response_delete_data
+
+
+    def test_import_move_upload_gpx_with_pause_detection(self, tmpdir):
+        """GPX import with pause detection option"""
+        self._login()
+        data = {}
+
+        filename = 'baerensee_testtrack.gpx'
+        # filename = 'Move_2013_07_21_15_26_53_Trail+running.gpx.gz'
+        dn = os.path.dirname(os.path.realpath(__file__))
+        with open(os.path.join(dn, filename), 'rb') as f:
+            data['files'] = [(f, filename)]
+            data[GPX_IMPORT_OPTION_PAUSE_DETECTION] = 'on'
+            data[GPX_IMPORT_OPTION_PAUSE_DETECTION_THRESHOLD] = '479'
+            response = self.client.post('/import', data=data, follow_redirects=True)
+
+        with app.test_request_context():
+            count = Move.query.count()
+
+        response_data = self._validate_response(response, tmpdir)
+        assert u"<title>OpenMoves – Move %d</title>" % count in response_data
+        assert u'imported' in response_data
+        assert filename in response_data
+
+        with app.test_request_context():
+            move = Move.query.filter(Move.activity == GPX_ACTIVITY_TYPE).one()
+            assert move.device.name == GPX_DEVICE_NAME
+            assert move.device.serial_number == GPX_DEVICE_SERIAL
+            assert move.date_time == datetime(2015, 1, 1, 10, 0, 0 , 0)
+            assert move.duration == timedelta(minutes=18 - 8)  # 8min by pause detection
+            assert int(move.distance) == 1800 - 400  # 400m by pause detection
+            assert move.log_item_count == 8 + 4  # 4 entries for the pause events
+            assert move.log_item_count == move.samples.count()
+
+            # Attention: samples are not sorted by UTC
+            assert move.altitude_max == move.samples[4].altitude
+            assert move.altitude_max == move.samples[4].gps_altitude
+            assert move.altitude_min == move.samples[0].altitude
+            assert move.altitude_min == move.samples[9].altitude
+            assert move.ascent == 600
+            assert move.descent == 1200 - 400  # 400m by pause_detection
+            assert move.ascent_time == timedelta(minutes=6) - timedelta(microseconds=1)
+            assert move.descent_time == timedelta(minutes=(12 - 8)) - timedelta(microseconds=1 + 2)  # 8min by pause detection
+
+            # Speed
+            assert round(move.speed_avg, 1) == round(8.4 / 3.6, 1)
+            assert round(move.speed_max, 1) == round(30 / 3.6, 1)
+            assert move.speed_max == move.samples[5].speed
+
+            # Pause events
+            events = [sample for sample in move.samples if sample.events]
+            assert len(events) == 2 + 2  # 2 pauses by pause_detection
+            start_pause_sample = events[2].events['pause']
+            assert start_pause_sample['state'].lower() == 'true'
+            assert start_pause_sample['duration'] == str(timedelta(minutes=54))
+            assert int(float(start_pause_sample['distance'])) == 142
+
+            end_pause_sample = events[3].events['pause']
+            assert end_pause_sample['state'].lower() == 'false'
+            assert end_pause_sample['duration'] == str(0)
+            assert int(float(end_pause_sample['distance'])) == 0
+
+            start_pause_sample = events[0].events['pause']
+            assert start_pause_sample['state'].lower() == 'true'
+            assert start_pause_sample['duration'] == str(timedelta(minutes=8))  # 8min by pause detection
+            assert int(float(start_pause_sample['distance'])) == 400
+
+            end_pause_sample = events[1].events['pause']
+            assert end_pause_sample['state'].lower() == 'false'
+            assert end_pause_sample['duration'] == str(0)
+            assert int(float(end_pause_sample['distance'])) == 0
 
     def test_import_move_already_exists(self, tmpdir):
         self._login()

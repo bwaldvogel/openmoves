@@ -16,7 +16,7 @@ def parse_move(tree):
     return move
 
 
-def old_xml_import(xmlfile, user):
+def old_xml_import(xmlfile, user, request_form):
         filename = xmlfile.filename
         data = xmlfile.readlines()
 

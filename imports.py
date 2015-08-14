@@ -11,7 +11,7 @@ from model import db, Sample
 from sqlalchemy.sql import func
 
 
-def move_import(xmlfile, filename, user):
+def move_import(xmlfile, filename, user, request_form):
     if filename.endswith('.gz'):
         xmlfile = gzip.GzipFile(fileobj=xmlfile, mode='rb', filename=filename)
         filename = filename[:-len('.gz')]
@@ -27,7 +27,7 @@ def move_import(xmlfile, filename, user):
         flash("unknown fileformat: '%s'" % xmlfile.filename, 'error')
     else:
         import_function = import_functions[extension]
-        move = import_function(xmlfile, user)
+        move = import_function(xmlfile, user, request_form)
         if move:
             move.temperature_avg, = db.session.query(func.avg(Sample.temperature)).filter(Sample.move == move, Sample.temperature > 0).one()
 

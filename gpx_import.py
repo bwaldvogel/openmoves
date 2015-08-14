@@ -12,9 +12,17 @@ from _import import postprocess_move
 from geopy.distance import vincenty
 import numpy as np
 
+# Import options
+GPX_IMPORT_OPTION_PAUSE_DETECTION = 'gpx_option_pause_detection'
+GPX_IMPORT_OPTION_PAUSE_DETECTION_THRESHOLD = 'gpx_option_pause_detection_threshold'
+
+# General constants
 GPX_DEVICE_NAME = 'GPX import'
 GPX_DEVICE_SERIAL = 'GPX_IMPORT'
+GPX_SAMPLE_TYPE = 'gps-base'
+GPX_ACTIVITY_TYPE = 'Unknown activity'
 
+# GPX XML attributes, names
 GPX_NAMESPACES = {
     '1.0': '{http://www.topografix.com/GPX/1/0}',
     '1.1': '{http://www.topografix.com/GPX/1/1}'
@@ -69,7 +77,7 @@ def parse_sample_extensions(sample, track_point):
                     break
 
 
-def parse_samples(tree, move, gpx_namespace):
+def parse_samples(tree, move, gpx_namespace, import_options):
     all_samples = []
 
     tracks = tree.iterchildren(tag=gpx_namespace + GPX_TRK)
@@ -81,20 +89,23 @@ def parse_samples(tree, move, gpx_namespace):
             segment_samples = []
 
             track_points = track_segment.iterchildren(tag=gpx_namespace + GPX_TRKPT)
-            for track_point in track_points:
+            for track_point_idx, track_point in enumerate(track_points):
                 sample = Sample()
                 sample.move = move
 
                 # GPS position / altitude
                 sample.latitude = degree_to_radian(float(track_point.attrib[GPX_TRKPT_ATTRIB_LATITUDE]))
                 sample.longitude = degree_to_radian(float(track_point.attrib[GPX_TRKPT_ATTRIB_LONGITUDE]))
-                sample.sample_type = 'gps-base'
+                sample.sample_type = GPX_SAMPLE_TYPE
                 if hasattr(track_point, GPX_TRKPT_ATTRIB_ELEVATION):
                     sample.gps_altitude = float(track_point.ele)
                     sample.altitude = int(round(sample.gps_altitude))
 
                 # Time / UTC
                 sample.utc = dateutil.parser.parse(str(track_point.time))
+
+                # Option flags
+                pause_detected = False
 
                 # Track segment samples
                 if len(segment_samples) > 0:
@@ -112,16 +123,22 @@ def parse_samples(tree, move, gpx_namespace):
                     else:
                         sample.speed = 0
 
+                    # Option: Pause detection based on time delta threshold
+                    if GPX_IMPORT_OPTION_PAUSE_DETECTION in import_options and time_delta > import_options[GPX_IMPORT_OPTION_PAUSE_DETECTION]:
+                        pause_detected = True
+                        sample.distance = segment_samples[-1].distance
+                        sample.speed = 0
+
                 # Track segment -> Track (multiple track segments contained)
                 elif len(track_samples) > 0:
                     sample.time = track_samples[-1].time + (sample.utc - track_samples[-1].utc)  # Time diff to last sample of the previous track segment
                     sample.distance = track_samples[-1].distance
-                    sample.speed = track_samples[-1].speed
+                    sample.speed = 0
                 # Track -> Full GPX (multiple tracks contained)
                 elif len(all_samples) > 0:
                     sample.time = all_samples[-1].time + (sample.utc - all_samples[-1].utc)  # Time diff to last sample of the previous track
                     sample.distance = all_samples[-1].distance
-                    sample.speed = all_samples[-1].speed
+                    sample.speed = 0
                 # First sample
                 else:
                     sample.time = timedelta(0)
@@ -131,22 +148,31 @@ def parse_samples(tree, move, gpx_namespace):
                 parse_sample_extensions(sample, track_point)
                 segment_samples.append(sample)
 
+                # Finally insert a found pause based on time delta threshold
+                if pause_detected:
+                    insert_pause(segment_samples, track_point_idx, move)
+            # end for track_points
+
             # Insert an pause event between every track segment
-            insert_pause(track_samples, segment_samples, move)
+            insert_pause_idx = len(track_samples)
             track_samples.extend(segment_samples)
+            insert_pause(track_samples, insert_pause_idx, move)
+        # end for track_segments
 
         # Insert an pause event between every track
-        insert_pause(all_samples, track_samples, move)
+        insert_pause_idx = len(all_samples)
         all_samples.extend(track_samples)
+        insert_pause(all_samples, insert_pause_idx, move)
+    # end for tracks
     return all_samples
 
 
-def insert_pause(samples_before_pause, samples_after_pause, move):
-    if (len(samples_before_pause) <= 0 or len(samples_after_pause) <= 0):
+def insert_pause(samples, insert_pause_idx, move):
+    if (insert_pause_idx <= 0):
         return
 
-    stop_sample = samples_before_pause[-1]
-    start_sample = samples_after_pause[0]
+    stop_sample = samples[insert_pause_idx - 1]
+    start_sample = samples[insert_pause_idx]
 
     pause_duration = start_sample.time - stop_sample.time
     pause_distance = vincenty((radian_to_degree(stop_sample.latitude), radian_to_degree(stop_sample.longitude)),
@@ -161,7 +187,7 @@ def insert_pause(samples_before_pause, samples_after_pause, move):
     stop_sample.time -= timedelta(microseconds=1)
 
     pause_sample.events = {"pause": {"state": "True", "type": "30", "duration": str(pause_duration), "distance": str(pause_distance)}}
-    samples_before_pause.append(pause_sample)  # Duplicate last element
+    samples.insert(insert_pause_idx, pause_sample)  # Duplicate last element
 
     # Introduce end of pause sample
     pause_sample = Sample()
@@ -171,14 +197,14 @@ def insert_pause(samples_before_pause, samples_after_pause, move):
     start_sample.utc += timedelta(microseconds=1)  # Add 1ms to the first recorded sample in order to introduce the new pause sample and keep time order
     start_sample.time += timedelta(microseconds=1)
     pause_sample.events = {"pause": {"state": "False", "type": "31", "duration": "0", "distance": "0"}}
-    samples_after_pause.insert(0, pause_sample)
+    samples.insert(insert_pause_idx + 1, pause_sample)
 
 def is_start_pause_sample(sample):
     return sample.events and "pause" in sample.events and sample.events["pause"]["state"].lower() == "true"
 
 def parse_move(tree):
     move = Move()
-    move.activity = 'Unknown activity'
+    move.activity = GPX_ACTIVITY_TYPE
     move.import_date_time = datetime.now()
 
     return move
@@ -258,9 +284,29 @@ def derive_move_infos_from_samples(move, samples):
         move.hr_avg = np.mean(hrs)
 
 
-def gpx_import(xmlfile, user):
+def get_gpx_import_options(request_form):
+    import_options = { }
+    if GPX_IMPORT_OPTION_PAUSE_DETECTION  in request_form:
+        if request_form[GPX_IMPORT_OPTION_PAUSE_DETECTION] == 'on' and GPX_IMPORT_OPTION_PAUSE_DETECTION_THRESHOLD in request_form:
+            try:
+                import_options[GPX_IMPORT_OPTION_PAUSE_DETECTION] = timedelta(seconds=int(request_form[GPX_IMPORT_OPTION_PAUSE_DETECTION_THRESHOLD]))
+            except:
+                flash("Unsupported GPX import option 'pause detection' threshold value: '%s'" % request_form['gpx_option_pause_detection_threshold'])
+                return None
+    return import_options
+
+def gpx_import(xmlfile, user, request_form):
+    # Get users options
+    import_options = get_gpx_import_options(request_form)
+    if import_options == None:
+        return
+
     filename = xmlfile.filename
-    tree = objectify.parse(xmlfile).getroot()
+    try:
+        tree = objectify.parse(xmlfile).getroot()
+    except Exception as e:
+        flash("Failed to parse the GPX file! %s" % e.msg)
+        return
 
     for namespace in GPX_NAMESPACES.values():
         if tree.tag.startswith(namespace):
@@ -280,12 +326,13 @@ def gpx_import(xmlfile, user):
         device = persistent_device
     else:
         db.session.add(device)
+
     move = parse_move(tree)
     move.source = os.path.abspath(filename)
     move.import_module = __name__
 
     # Parse samples
-    all_samples = parse_samples(tree, move, gpx_namespace)
+    all_samples = parse_samples(tree, move, gpx_namespace, import_options)
 
     derive_move_infos_from_samples(move, all_samples)
 
