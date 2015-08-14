@@ -89,7 +89,7 @@ def parse_samples(tree, move, gpx_namespace, import_options):
             segment_samples = []
 
             track_points = track_segment.iterchildren(tag=gpx_namespace + GPX_TRKPT)
-            for track_point_idx, track_point in enumerate(track_points):
+            for track_point in track_points:
                 sample = Sample()
                 sample.move = move
 
@@ -150,7 +150,7 @@ def parse_samples(tree, move, gpx_namespace, import_options):
 
                 # Finally insert a found pause based on time delta threshold
                 if pause_detected:
-                    insert_pause(segment_samples, track_point_idx, move)
+                    insert_pause(segment_samples, len(segment_samples) - 1, move)
             # end for track_points
 
             # Insert an pause event between every track segment
