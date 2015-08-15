@@ -13,7 +13,7 @@ pytest==2.7.2
 gpxpy==0.9.8
 html5lib==0.999999
 Flask-Script==2.0.5
-Flask-Migrate==1.4.0
+Flask-Migrate==1.5.0
 flask_util_js==0.2.25
 geopy==1.10.0
 numpy==1.9.2
