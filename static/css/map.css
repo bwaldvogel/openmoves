@@ -1,0 +1,12 @@
+.layer-switcher {
+    top: 2.5em;
+    right: 0.3em;
+}
+
+.layer-switcher button {
+    width: 26px;
+    height: 26px;
+    background: rgba(255,255,255,0.5);
+    background-image: url('images/layer_24.png');
+    background-position: 1px;
+}
