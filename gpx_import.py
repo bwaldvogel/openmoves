@@ -15,6 +15,7 @@ import numpy as np
 # Import options
 GPX_IMPORT_OPTION_PAUSE_DETECTION = 'gpx_option_pause_detection'
 GPX_IMPORT_OPTION_PAUSE_DETECTION_THRESHOLD = 'gpx_option_pause_detection_threshold'
+GPX_IMPORT_PAUSE_TYPE_PAUSE_DETECTION = 'pause_detection'
 
 # General constants
 GPX_DEVICE_NAME = 'GPX import'
@@ -150,24 +151,24 @@ def parse_samples(tree, move, gpx_namespace, import_options):
 
                 # Finally insert a found pause based on time delta threshold
                 if pause_detected:
-                    insert_pause(segment_samples, len(segment_samples) - 1, move)
+                    insert_pause(segment_samples, len(segment_samples) - 1, move, pause_type=GPX_IMPORT_PAUSE_TYPE_PAUSE_DETECTION)
             # end for track_points
 
             # Insert an pause event between every track segment
             insert_pause_idx = len(track_samples)
             track_samples.extend(segment_samples)
-            insert_pause(track_samples, insert_pause_idx, move)
+            insert_pause(track_samples, insert_pause_idx, move, pause_type=GPX_TRKSEG)
         # end for track_segments
 
         # Insert an pause event between every track
         insert_pause_idx = len(all_samples)
         all_samples.extend(track_samples)
-        insert_pause(all_samples, insert_pause_idx, move)
+        insert_pause(all_samples, insert_pause_idx, move, pause_type=GPX_TRK)
     # end for tracks
     return all_samples
 
 
-def insert_pause(samples, insert_pause_idx, move):
+def insert_pause(samples, insert_pause_idx, move, pause_type):
     if (insert_pause_idx <= 0):
         return
 
@@ -186,7 +187,11 @@ def insert_pause(samples, insert_pause_idx, move):
     stop_sample.utc -= timedelta(microseconds=1)  # Cut off 1ms from last recorded sample in order to introduce the new pause sample and keep time order
     stop_sample.time -= timedelta(microseconds=1)
 
-    pause_sample.events = {"pause": {"state": "True", "type": "30", "duration": str(pause_duration), "distance": str(pause_distance)}}
+    pause_sample.events = {"pause": {"state": "True",
+                                     "type": str(pause_type),
+                                     "duration": str(pause_duration),
+                                     "distance": str(pause_distance),
+                                    }}
     samples.insert(insert_pause_idx, pause_sample)  # Duplicate last element
 
     # Introduce end of pause sample
@@ -196,7 +201,11 @@ def insert_pause(samples, insert_pause_idx, move):
     pause_sample.time = start_sample.time
     start_sample.utc += timedelta(microseconds=1)  # Add 1ms to the first recorded sample in order to introduce the new pause sample and keep time order
     start_sample.time += timedelta(microseconds=1)
-    pause_sample.events = {"pause": {"state": "False", "type": "31", "duration": "0", "distance": "0"}}
+    pause_sample.events = {"pause": {"state": "False",
+                                     "duration": "0",
+                                     "distance": "0",
+                                     "type": str(pause_type)
+                                    }}
     samples.insert(insert_pause_idx + 1, pause_sample)
 
 def is_start_pause_sample(sample):

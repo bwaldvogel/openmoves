@@ -10,7 +10,7 @@ import re
 import os
 from datetime import timedelta, datetime
 from gpx_import import GPX_IMPORT_OPTION_PAUSE_DETECTION, GPX_IMPORT_OPTION_PAUSE_DETECTION_THRESHOLD, GPX_DEVICE_NAME, \
-    GPX_ACTIVITY_TYPE, GPX_DEVICE_SERIAL, GPX_SAMPLE_TYPE
+    GPX_ACTIVITY_TYPE, GPX_DEVICE_SERIAL, GPX_SAMPLE_TYPE, GPX_TRK, GPX_IMPORT_PAUSE_TYPE_PAUSE_DETECTION
 
 
 app = None
@@ -327,11 +327,13 @@ class TestOpenMoves(object):
             assert start_pause_sample['state'].lower() == 'true'
             assert start_pause_sample['duration'] == str(timedelta(minutes=54))
             assert int(float(start_pause_sample['distance'])) == 142
+            assert start_pause_sample['type'] == GPX_TRK
 
             end_pause_sample = events[1].events['pause']
             assert end_pause_sample['state'].lower() == 'false'
             assert end_pause_sample['duration'] == str(0)
             assert int(float(end_pause_sample['distance'])) == 0
+            assert end_pause_sample['type'] == GPX_TRK
 
             # Temperatures
             assert round(move.temperature_min - 273.15, 1) == 17.0
@@ -426,21 +428,25 @@ class TestOpenMoves(object):
             assert start_pause_sample['state'].lower() == 'true'
             assert start_pause_sample['duration'] == str(timedelta(minutes=54))
             assert int(float(start_pause_sample['distance'])) == 142
+            assert start_pause_sample['type'] == GPX_TRK
 
             end_pause_sample = events[3].events['pause']
             assert end_pause_sample['state'].lower() == 'false'
             assert end_pause_sample['duration'] == str(0)
             assert int(float(end_pause_sample['distance'])) == 0
+            assert end_pause_sample['type'] == GPX_TRK
 
             start_pause_sample = events[0].events['pause']
             assert start_pause_sample['state'].lower() == 'true'
             assert start_pause_sample['duration'] == str(timedelta(minutes=8))  # 8min by pause detection
             assert int(float(start_pause_sample['distance'])) == 400
+            assert start_pause_sample['type'] == GPX_IMPORT_PAUSE_TYPE_PAUSE_DETECTION
 
             end_pause_sample = events[1].events['pause']
             assert end_pause_sample['state'].lower() == 'false'
             assert end_pause_sample['duration'] == str(0)
             assert int(float(end_pause_sample['distance'])) == 0
+            assert end_pause_sample['type'] == GPX_IMPORT_PAUSE_TYPE_PAUSE_DETECTION
 
     def test_import_move_already_exists(self, tmpdir):
         self._login()
