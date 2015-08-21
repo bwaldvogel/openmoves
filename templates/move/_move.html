@@ -187,7 +187,7 @@
 
     {% if gps_samples %}
     <h2>Map</h2>
-    <div id="map" class="map img-thumbnail"></div>
+    <div id="map" class="map thumbnail"></div>
     {% endif %}
 
     {% block chart_blocks %}
@@ -267,31 +267,30 @@ var styleFunction = function(feature, resolution) {
   return styles[feature.getGeometry().getType()];
 };
 
-    var geoJson = {
-  "type": "FeatureCollection",
-  "features": [
-    {
-      "type": "Feature",
-      "properties": {},
-      "geometry": {
-        "type": "LineString",
-        "coordinates": [
-          {%- for sample in gps_samples -%}
-          ol.proj.transform([
-              {{sample.longitude | degree}},
-              {{sample.latitude | degree}}
-            ], 'EPSG:4326', 'EPSG:3857'),
-          {% endfor %}
-        ]
-      }
+    var geoJsonObject = {
+      "type": "FeatureCollection",
+      "features": [
+        {
+          "type": "Feature",
+          "properties": {},
+          "geometry": {
+            "type": "LineString",
+            "coordinates": [
+              {%- for sample in gps_samples -%}
+              ol.proj.transform([
+                  {{sample.longitude | degree}},
+                  {{sample.latitude | degree}}
+                ], 'EPSG:4326', 'EPSG:3857'),
+              {% endfor %}
+            ]
+          }
+        }
+      ]
     }
-  ]
-}
 
-    var vectorSource = new ol.source.GeoJSON(
-        /** @type {olx.source.GeoJSONOptions} */ ({
-          object: geoJson
-        }));
+    var vectorSource = new ol.source.Vector({
+      features: (new ol.format.GeoJSON()).readFeatures(geoJsonObject)
+    });
 
     var vectorLayer = new ol.layer.Vector({
       source: vectorSource,
@@ -309,7 +308,10 @@ var styleFunction = function(feature, resolution) {
       view: new ol.View({
           center: ol.proj.transform([{{move.gps_center_longitude | degree}}, {{move.gps_center_latitude | degree}}], 'EPSG:4326', 'EPSG:3857'),
         zoom: {{map_zoom_level}}
-      })
+      }),
+      controls: ol.control.defaults().extend([
+        new ol.control.FullScreen({label: '\u2922'}) /* icon: North east and south west arrow http://unicode-table.com/de/2922/ */
+      ])
     });
 {% endif %}
 

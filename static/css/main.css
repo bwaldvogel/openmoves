@@ -51,6 +51,26 @@ pre {
     width: 100%;
 }
 
+.map:-moz-full-screen {
+  height: 100%;
+  width: 100%;
+}
+
+.map:-webkit-full-screen {
+  height: 100%;
+  width: 100%;
+}
+
+.map:-ms-fullscreen {
+  height: 100%;
+  width: 100%;
+}
+
+.map:fullscreen {
+  height: 100%;
+  width: 100%;
+}
+
 div.alert {
     max-width: 800px;
     padding: 4px 10px;

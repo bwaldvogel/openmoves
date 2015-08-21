@@ -43,7 +43,7 @@
     var {{attr}}_chart_data = pruneLowDeltas({{data}}, {{prune_min_delta}});
 
     $('#{{attr}}_chart').highcharts({
-        chart: {type:'spline',zoomType: 'xy'},
+        chart: {type:'spline', zoomType: 'xy'},
         plotOptions: {spline:{marker:{enabled:false}}},
         title: {"text": '{{attr}}'},
         xAxis: {"title": {"text": 'time'}, "type": "datetime"},
