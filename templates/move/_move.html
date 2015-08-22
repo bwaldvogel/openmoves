@@ -302,6 +302,11 @@ var vectorLayer = new ol.layer.Vector({
 
 var bingMapKey = 'Ak-dzM4wZjSqTlzveKz5u0d4IQ4bRzVI309GxmkgSVr1ewS6iPSrOvOKhA-CJlm3';
 
+var resize_full_glyphicon = document.createElement("span");
+resize_full_glyphicon.setAttribute('class','glyphicon glyphicon-resize-full');
+var resize_small_glyphicon = document.createElement("span");
+resize_small_glyphicon.setAttribute('class','glyphicon glyphicon-resize-small');
+
 var map = new ol.Map({
   target: 'map',
   layers: [
@@ -351,18 +356,18 @@ var map = new ol.Map({
     zoom: {{map_zoom_level}}
   }),
   controls: ol.control.defaults().extend([
-    new ol.control.FullScreen({label: '\u2922'}), /* icon: North east and south west arrow http://unicode-table.com/de/2922/ */
+    new ol.control.FullScreen({label: resize_full_glyphicon, labelActive: resize_small_glyphicon}),
     new ol.control.OverviewMap()
   ])
 });
 
 var layerSwitcher = new ol.control.LayerSwitcher({
-  tipLabel: "Map layers"
+  tipLabel: 'Map layers',
+  buttonLabel: '<span class="glyphicon glyphicon-menu-hamburger"/>'
 });
 map.addControl(layerSwitcher);
     
 {% endif %}
-
 });
 </script>
 
