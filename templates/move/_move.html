@@ -189,7 +189,7 @@
 
     {% if gps_samples %}
     <h2>Map</h2>
-    <div id="map" class="map thumbnail"></div>
+    <div id="map" class="map thumbnail" tabindex="0"></div>
     {% endif %}
 
     {% block chart_blocks %}
@@ -351,7 +351,8 @@ var map = new ol.Map({
     zoom: {{map_zoom_level}}
   }),
   controls: ol.control.defaults().extend([
-    new ol.control.FullScreen({label: '\u2922'}) /* icon: North east and south west arrow http://unicode-table.com/de/2922/ */
+    new ol.control.FullScreen({label: '\u2922'}), /* icon: North east and south west arrow http://unicode-table.com/de/2922/ */
+    new ol.control.OverviewMap()
   ])
 });
 
