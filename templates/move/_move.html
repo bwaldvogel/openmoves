@@ -315,12 +315,12 @@ var map_layers = [
 /* Load Bing maps if an API key is configured */
 {% if BING_MAPS_API_KEY -%}
 map_layers.splice(0, 0,
-    new ol.layer.Tile({title: 'Bing Aerial', type: 'base', visible: false,
-        source: new ol.source.BingMaps({ key: '{{BING_MAPS_API_KEY}}', imagerySet: 'Aerial', maxZoom: 19})}),
     new ol.layer.Tile({title: 'Bing Road', type: 'base', visible: false,
         source: new ol.source.BingMaps({ key: '{{BING_MAPS_API_KEY}}', imagerySet: 'Road'})}),
     new ol.layer.Tile({title: 'Bing AerialWithLabels', type: 'base', visible: false,
-          source: new ol.source.BingMaps({ key: '{{BING_MAPS_API_KEY}}', imagerySet: 'AerialWithLabels', maxZoom: 19})})
+          source: new ol.source.BingMaps({ key: '{{BING_MAPS_API_KEY}}', imagerySet: 'AerialWithLabels', maxZoom: 19})}),
+    new ol.layer.Tile({title: 'Bing Aerial', type: 'base', visible: false,
+        source: new ol.source.BingMaps({ key: '{{BING_MAPS_API_KEY}}', imagerySet: 'Aerial', maxZoom: 19})})
     )
 {% endif %}
 
