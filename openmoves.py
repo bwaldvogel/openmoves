@@ -572,6 +572,7 @@ def move(id):
             filtered_events.append(sample)
 
     model = {}
+    model['BING_MAPS_API_KEY'] = app.config['BING_MAPS_API_KEY'] if 'BING_MAPS_API_KEY' in app.config else None
     model['move'] = move
     model['samples'] = samples
     model['events'] = filtered_events

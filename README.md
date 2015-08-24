@@ -19,12 +19,18 @@ An open source alternative to Movescount.
 ## Setup ##
 
 ```
+# cp openmoves.cfg.default openmoves.cfg
 # virtualenv virtualenv
 # source virtualenv/bin/activate
 # pip install -r requirements.txt
 # ./openmoves.py add-user -u <your_username> [-p <your_password]
 ```
 
+## Configuration
+
+Options and parameters of `openmoves.cfg`:
+* __BING_MAPS_API_KEY__ Bing maps API key. If not configured the Bing maps layers are disabled. Get your own key at https://www.bingmapsportal.com
+* __SQLALCHEMY_DATABASE_URI__ Database URL to be used
 
 ## Running ##
 ```
