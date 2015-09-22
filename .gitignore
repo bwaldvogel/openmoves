@@ -13,3 +13,4 @@ virtualenv*/
 *.sqlite*
 
 .coverage
+.cache

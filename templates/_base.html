@@ -29,7 +29,7 @@ OpenMoves{% if active_page and active_page != 'index' %} – {{active_page|capit
             <a class="navbar-brand" href="{{url_for('index')}}"><img alt="OpenMoves" src="{{url_for('.static', filename='img/logo.png')}}" /></a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
-            {% if current_user.is_authenticated() %}
+            {% if current_user.is_authenticated %}
             <ul class="nav navbar-nav">
                 <li{% if active_page == 'dashboard' %} class="active"{% endif %}><a href="{{url_for('dashboard')}}">Dashboard</a></li>
                 <li{% if active_page == 'moves' %} class="active"{% endif %}><a href="{{url_for('moves')}}">Moves</a></li>
@@ -37,7 +37,7 @@ OpenMoves{% if active_page and active_page != 'index' %} – {{active_page|capit
             </ul>
             {% endif %}
             <ul class="nav navbar-nav navbar-right">
-                {% if current_user.is_authenticated() %}
+                {% if current_user.is_authenticated %}
                 <li class="dropdown">
 <a class="dropdown-toggle" aria-expanded="false" role="button" data-toggle="dropdown" href="#">
     {{current_user.username}}
@@ -89,7 +89,7 @@ $(document).ready(function(){
 {% endblock %}
 
 {% block content %}
-{% if not current_user.is_authenticated() %}
+{% if not current_user.is_authenticated %}
 <a href="http://github.com/bwaldvogel/openmoves"><img style="position: fixed; top: 0; right: 0; border: 0; z-index: 2000;"
     src="http://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub" /></a>
 {% endif %}
