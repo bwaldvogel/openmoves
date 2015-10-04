@@ -4,7 +4,7 @@
 from flask import Flask, render_template, flash, redirect, request, url_for, session, Response, json
 from flask_bootstrap import Bootstrap
 from flask_login import login_user, current_user, login_required, logout_user
-from model import db, Move, Sample, MoveEdit, AlembicVersion
+from model import db, Move, Sample, MoveEdit, User, UserPreference, AlembicVersion
 from datetime import timedelta, datetime
 from sqlalchemy.sql import func
 from sqlalchemy import distinct, literal
@@ -382,16 +382,28 @@ def moves():
 
     sort = request.args.get('sort')
     sort_order = request.args.get('sort_order')
+
     sort_default = 'date_time'
+
+    if 'sort' not in current_user.preferences:
+        default_sort_value = {'column': sort_default, 'order': 'desc'}
+        current_user.preferences['sort'] = UserPreference('sort', default_sort_value)
+        db.session.commit()
+
     if not sort:
-        sort = sort_default
-        sort_order = 'desc'
+        sort = current_user.preferences['sort'].value['column']
     if not sort_order:
-        sort_order = 'asc'
+        sort_order = current_user.preferences['sort'].value['order']
 
     if not hasattr(Move, sort):
         flash("illegal sort field: %s" % sort, 'error')
         sort = sort_default
+
+    new_sort_value = {'column': sort, 'order': sort_order}
+    if current_user.preferences['sort'].value != new_sort_value:
+        app.logger.debug("updating sort preference to %s" % new_sort_value)
+        current_user.preferences['sort'].value = new_sort_value
+        db.session.commit()
 
     activity_counts = OrderedDict(_current_user_filtered(db.session.query(Move.activity, func.count(Move.id)))
                                   .filter(Move.date_time >= start_date)
