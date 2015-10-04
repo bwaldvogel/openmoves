@@ -33,6 +33,12 @@ function init_date_range_pickers(start_date, end_date, page_name) {
           case "1 month":
               start_date = moment().subtract(1, 'months');
               break;
+          case "2 months":
+              start_date = moment().subtract(2, 'months');
+              break;
+          case "6 months":
+              start_date = moment().subtract(6, 'months');
+              break;
           case "1 year":
               start_date = moment().subtract(1, 'years');
               break;
@@ -58,6 +64,12 @@ function init_date_range_dropdown(start_date, end_date) {
     }
     else if(start_date.isSame(moment(end_date).subtract(1, 'months').startOf('day'))) {
         period = "1 month";
+    }
+    else if(start_date.isSame(moment(end_date).subtract(2, 'months').startOf('day'))) {
+        period = "2 months";
+    }
+    else if(start_date.isSame(moment(end_date).subtract(6, 'months').startOf('day'))) {
+        period = "6 months";
     }
     else if(start_date.isSame(moment(end_date).subtract(1, 'years').startOf('day'))) {
         period = "1 year";
