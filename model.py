@@ -57,7 +57,7 @@ class Move(db.Model):
     id = db.Column(db.Integer, name="id", primary_key=True)
 
     user_id = db.Column(db.Integer, db.ForeignKey(User.id), name="user_id", nullable=False)
-    user = db.relationship(User, backref=db.backref('entries', lazy='dynamic'))
+    user = db.relationship(User, backref=db.backref('moves', lazy='dynamic'))
 
     device_id = db.Column(db.Integer, db.ForeignKey(Device.id), name="device_id", nullable=False)
     device = db.relationship(Device, backref=db.backref('devices', lazy='dynamic'))
