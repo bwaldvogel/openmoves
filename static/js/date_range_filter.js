@@ -81,5 +81,26 @@ function init_date_range_dropdown(start_date, end_date) {
 }
 
 function reload_page_with_date(start_date, end_date, page_name) {
-    window.location.href = flask_util.url_for(page_name, {start_date: start_date.format('YYYY-MM-DD'), end_date: end_date.format('YYYY-MM-DD')});
+    var newLocation = window.location.href;
+    newLocation = updateUrlParameter(newLocation, 'start_date', start_date.format('YYYY-MM-DD'));
+    newLocation = updateUrlParameter(newLocation, 'end_date', end_date.format('YYYY-MM-DD'));
+    window.location.href = newLocation;
+}
+
+// https://gist.github.com/niyazpk/f8ac616f181f6042d1e0
+// Add / Update a key-value pair in the URL query parameters
+function updateUrlParameter(uri, key, value) {
+    // remove the hash part before operating on the uri
+    var i = uri.indexOf('#');
+    var hash = i === -1 ? ''  : uri.substr(i);
+         uri = i === -1 ? uri : uri.substr(0, i);
+
+    var re = new RegExp("([?&])" + key + "=.*?(&|$)", "i");
+    var separator = uri.indexOf('?') !== -1 ? "&" : "?";
+    if (uri.match(re)) {
+        uri = uri.replace(re, '$1' + key + "=" + value + '$2');
+    } else {
+        uri = uri + separator + key + "=" + value;
+    }
+    return uri + hash;  // finally append the hash as well
 }
