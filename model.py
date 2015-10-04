@@ -3,6 +3,7 @@
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.types import TypeDecorator
+from sqlalchemy.orm.collections import attribute_mapped_collection
 import json
 
 db = SQLAlchemy()
@@ -27,17 +28,19 @@ class JsonEncodedDict(TypeDecorator):
 
 class Device(db.Model):
     __tablename__ = 'device'
-    id = db.Column(db.Integer, name="id", primary_key=True)
-    name = db.Column(db.String, name="name", nullable=True)
-    serial_number = db.Column(db.String, name="serial_number", unique=True, nullable=False)
+    id = db.Column(db.Integer, name='id', primary_key=True)
+    name = db.Column(db.String, name='name', nullable=True)
+    serial_number = db.Column(db.String, name='serial_number', unique=True, nullable=False)
 
 
 class User(db.Model):
     __tablename__ = 'user'
-    id = db.Column(db.Integer, name="id", primary_key=True)
-    username = db.Column(db.String, name="username", unique=True, nullable=False)
-    password = db.Column(db.String, name="password", nullable=False)
-    active = db.Column(db.Boolean, name="active", nullable=False)
+    id = db.Column(db.Integer, name='id', primary_key=True)
+    username = db.Column(db.String, name='username', unique=True, nullable=False)
+    password = db.Column(db.String, name='password', nullable=False)
+    active = db.Column(db.Boolean, name='active', nullable=False)
+
+    preferences = db.relationship('UserPreference', collection_class=attribute_mapped_collection('key'), cascade="all, delete-orphan")
 
     def is_authenticated(self):
         return True
@@ -52,77 +55,91 @@ class User(db.Model):
         return self.username
 
 
+class UserPreference(db.Model):
+    __tablename__ = 'user_preference'
+    id = db.Column(db.Integer, name='id', primary_key=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), name='user_id', nullable=False)
+
+    key = db.Column(db.String, name='key', nullable=False)
+    value = db.Column(JsonEncodedDict(65536), name='value', nullable=True)
+
+    def __init__(self, key, value):
+        self.key = key
+        self.value = value
+
+
 class Move(db.Model):
     __tablename__ = 'move'
-    id = db.Column(db.Integer, name="id", primary_key=True)
+    id = db.Column(db.Integer, name='id', primary_key=True)
 
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id), name="user_id", nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id), name='user_id', nullable=False)
     user = db.relationship(User, backref=db.backref('moves', lazy='dynamic'))
 
-    device_id = db.Column(db.Integer, db.ForeignKey(Device.id), name="device_id", nullable=False)
+    device_id = db.Column(db.Integer, db.ForeignKey(Device.id), name='device_id', nullable=False)
     device = db.relationship(Device, backref=db.backref('devices', lazy='dynamic'))
 
-    date_time = db.Column(db.DateTime, name="date_time", nullable=False)
-    duration = db.Column(db.Interval, name="duration")
-    distance = db.Column(db.Integer, name="distance")
-    activity = db.Column(db.String, name="activity")
-    activity_type = db.Column(db.Integer, name="activity_type")
-    log_item_count = db.Column(db.Integer, name="log_item_count")
-    stroke_count = db.Column(db.Integer, name="stroke_count")
+    date_time = db.Column(db.DateTime, name='date_time', nullable=False)
+    duration = db.Column(db.Interval, name='duration')
+    distance = db.Column(db.Integer, name='distance')
+    activity = db.Column(db.String, name='activity')
+    activity_type = db.Column(db.Integer, name='activity_type')
+    log_item_count = db.Column(db.Integer, name='log_item_count')
+    stroke_count = db.Column(db.Integer, name='stroke_count')
 
-    ascent = db.Column(db.Integer, name="ascent", nullable=True)
-    descent = db.Column(db.Integer, name="descent", nullable=True)
-    ascent_time = db.Column(db.Interval, name="ascent_time")
-    descent_time = db.Column(db.Interval, name="descent_time")
+    ascent = db.Column(db.Integer, name='ascent', nullable=True)
+    descent = db.Column(db.Integer, name='descent', nullable=True)
+    ascent_time = db.Column(db.Interval, name='ascent_time')
+    descent_time = db.Column(db.Interval, name='descent_time')
 
-    recovery_time = db.Column(db.Interval, name="recovery_time")
+    recovery_time = db.Column(db.Interval, name='recovery_time')
 
-    speed_avg = db.Column(db.Float, name="speed_avg")
-    speed_max = db.Column(db.Float, name="speed_max")
-    speed_max_time = db.Column(db.Interval, name="speed_max_time")
+    speed_avg = db.Column(db.Float, name='speed_avg')
+    speed_max = db.Column(db.Float, name='speed_max')
+    speed_max_time = db.Column(db.Interval, name='speed_max_time')
 
-    hr_avg = db.Column(db.Float, name="hr_avg")
-    hr_min = db.Column(db.Float, name="hr_min")
-    hr_max = db.Column(db.Float, name="hr_max")
-    hr_min_time = db.Column(db.Interval, name="hr_min_time")
-    hr_max_time = db.Column(db.Interval, name="hr_max_time")
+    hr_avg = db.Column(db.Float, name='hr_avg')
+    hr_min = db.Column(db.Float, name='hr_min')
+    hr_max = db.Column(db.Float, name='hr_max')
+    hr_min_time = db.Column(db.Interval, name='hr_min_time')
+    hr_max_time = db.Column(db.Interval, name='hr_max_time')
 
-    peak_training_effect = db.Column(db.Float, name="peak_training_effect")
-    energy = db.Column(db.Float, name="energy")
+    peak_training_effect = db.Column(db.Float, name='peak_training_effect')
+    energy = db.Column(db.Float, name='energy')
 
-    cadence_avg = db.Column(db.Float, name="cadence_avg")
-    cadence_max = db.Column(db.Float, name="cadence_max")
-    cadence_max_time = db.Column(db.Interval, name="cadence_max_time")
+    cadence_avg = db.Column(db.Float, name='cadence_avg')
+    cadence_max = db.Column(db.Float, name='cadence_max')
+    cadence_max_time = db.Column(db.Interval, name='cadence_max_time')
 
-    altitude_min = db.Column(db.Integer, name="altitude_min")
-    altitude_max = db.Column(db.Integer, name="altitude_max")
-    altitude_min_time = db.Column(db.Interval, name="altitude_min_time")
-    altitude_max_time = db.Column(db.Interval, name="altitude_max_time")
+    altitude_min = db.Column(db.Integer, name='altitude_min')
+    altitude_max = db.Column(db.Integer, name='altitude_max')
+    altitude_min_time = db.Column(db.Interval, name='altitude_min_time')
+    altitude_max_time = db.Column(db.Interval, name='altitude_max_time')
 
-    temperature_min = db.Column(db.Float, name="temperature_min")
-    temperature_max = db.Column(db.Float, name="temperature_max")
-    temperature_min_time = db.Column(db.Float, name="temperature_min_time")
-    temperature_max_time = db.Column(db.Float, name="temperature_max_time")
+    temperature_min = db.Column(db.Float, name='temperature_min')
+    temperature_max = db.Column(db.Float, name='temperature_max')
+    temperature_min_time = db.Column(db.Float, name='temperature_min_time')
+    temperature_max_time = db.Column(db.Float, name='temperature_max_time')
 
-    temperature_avg = db.Column(db.Float, name="temperature_avg")
+    temperature_avg = db.Column(db.Float, name='temperature_avg')
 
-    time_to_first_fix = db.Column(db.Integer, name="time_to_first_fix")
+    time_to_first_fix = db.Column(db.Integer, name='time_to_first_fix')
 
-    battery_charge_at_start = db.Column(db.Float, name="battery_charge_at_start")
-    battery_charge = db.Column(db.Float, name="battery_charge")
+    battery_charge_at_start = db.Column(db.Float, name='battery_charge_at_start')
+    battery_charge = db.Column(db.Float, name='battery_charge')
 
-    distance_before_calibration_change = db.Column(db.Integer, name="distance_before_calibration_change")
+    distance_before_calibration_change = db.Column(db.Integer, name='distance_before_calibration_change')
 
-    pool_length = db.Column(db.Integer, name="pool_length")
+    pool_length = db.Column(db.Integer, name='pool_length')
 
-    device_info_sw = db.Column(db.String, name="device_info_sw")
-    device_info_hw = db.Column(db.String, name="device_info_hw")
-    device_info_bsl = db.Column(db.String, name="device_info_bsl")
-    device_info_sw_build_date_time = db.Column(db.DateTime, name="device_info_sw_build_date_time")
+    device_info_sw = db.Column(db.String, name='device_info_sw')
+    device_info_hw = db.Column(db.String, name='device_info_hw')
+    device_info_bsl = db.Column(db.String, name='device_info_bsl')
+    device_info_sw_build_date_time = db.Column(db.DateTime, name='device_info_sw_build_date_time')
 
-    source = db.Column(db.String, name="source")
-    import_date_time = db.Column(db.DateTime, name="import_date_time", nullable=False)
-    import_module = db.Column(db.String, name="import_module", nullable=False)
+    source = db.Column(db.String, name='source')
+    import_date_time = db.Column(db.DateTime, name='import_date_time', nullable=False)
+    import_module = db.Column(db.String, name='import_module', nullable=False)
 
     location_address = db.Column('location_address', db.String, nullable=True)
     location_raw = db.Column('location_raw', JsonEncodedDict(4096), nullable=True)
@@ -133,9 +150,9 @@ class Move(db.Model):
 
 class Sample(db.Model):
     __tablename__ = 'sample'
-    id = db.Column(db.Integer, name="id", primary_key=True)
+    id = db.Column(db.Integer, name='id', primary_key=True)
 
-    move_id = db.Column(db.Integer, db.ForeignKey(Move.id), name="move_id", nullable=False)
+    move_id = db.Column(db.Integer, db.ForeignKey(Move.id), name='move_id', nullable=False)
     move = db.relationship(Move, backref=db.backref('samples', lazy='dynamic'))
 
     sample_type = db.Column(db.String, name='sample_type')
@@ -180,11 +197,11 @@ class Sample(db.Model):
 
 class MoveEdit(db.Model):
     __tablename__ = 'move_edit'
-    id = db.Column(db.Integer, name="id", primary_key=True)
+    id = db.Column(db.Integer, name='id', primary_key=True)
 
-    date_time = db.Column(db.DateTime, name="date_time", nullable=False)
+    date_time = db.Column(db.DateTime, name='date_time', nullable=False)
 
-    move_id = db.Column(db.Integer, db.ForeignKey(Move.id), name="move_id", nullable=False)
+    move_id = db.Column(db.Integer, db.ForeignKey(Move.id), name='move_id', nullable=False)
     move = db.relationship(Move, backref=db.backref('edits', lazy='dynamic'))
 
     old_value = db.Column(JsonEncodedDict(4096), name='old_value')
@@ -193,4 +210,4 @@ class MoveEdit(db.Model):
 
 class AlembicVersion(db.Model):
     __tablename__ = 'alembic_version'
-    version_num = db.Column(db.String, name="version_num", primary_key=True)
+    version_num = db.Column(db.String, name='version_num', primary_key=True)
