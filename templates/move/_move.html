@@ -116,6 +116,11 @@
     </table>
     {% endif %}
 
+    {% if gps_samples %}
+    <h2>Map</h2>
+    <div id="map" class="map thumbnail" tabindex="0"></div>
+    {% endif %}
+
     {% if pauses %}
     <h2>Pauses</h2>
     <table class="table table-condensed">
@@ -168,6 +173,19 @@
     {% endif %}
     {% endblock %}
 
+    {% block chart_blocks %}
+    {{chart.chart_block('temperature')}}
+    {{chart.chart_block('altitude')}}
+    {{chart.chart_block('hr')}}
+        {% block speed_chart_blocks %}
+        {{chart.chart_block('speed')}}
+        {{chart.chart_block('speed_equidistant')}}
+        {% endblock %}
+    {% endblock %}
+
+    {% block additional_information %}
+    {% endblock %}
+
     {% block events %}
     <h2>Events</h2>
     <table class="table table-condensed">
@@ -191,24 +209,6 @@
         {%- endfor -%}
     </tbody>
     </table>
-    {% endblock %}
-
-    {% if gps_samples %}
-    <h2>Map</h2>
-    <div id="map" class="map thumbnail" tabindex="0"></div>
-    {% endif %}
-
-    {% block chart_blocks %}
-    {{chart.chart_block('temperature')}}
-    {{chart.chart_block('altitude')}}
-    {{chart.chart_block('hr')}}
-        {% block speed_chart_blocks %}
-        {{chart.chart_block('speed')}}
-        {{chart.chart_block('speed_equidistant')}}
-        {% endblock %}
-    {% endblock %}
-
-    {% block additional_information %}
     {% endblock %}
 </div>
 {% endblock %}
