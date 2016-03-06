@@ -359,7 +359,7 @@ openStreetMapLayer.setVisible(true);
 hillshadingOverlay.setVisible(true);
 {%- endif %}
 
-/* Load Bing maps if an API key is configured */
+{# Load Bing maps if an API key is configured #}
 {% if BING_MAPS_API_KEY -%}
 map_layers.splice(0, 0,
     new ol.layer.Tile({title: 'Bing Road', type: 'base', visible: false,
