@@ -10,7 +10,7 @@ lxml==3.5.0
 python-dateutil==2.5.0
 xkcdpass==1.4.4
 pytest==2.9.0
-gpxpy==1.0.0
+gpxpy==1.1.1
 html5lib==0.9999999
 Flask-Script==2.0.5
 Flask-Migrate==1.8.0
