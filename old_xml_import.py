@@ -49,10 +49,10 @@ def old_xml_import(xmlfile, user, request_form):
         else:
             move.user = user
             move.device = device
+            postprocess_move(move)
             db.session.add(move)
 
             for sample in parse_samples(tree.Samples.iterchildren(), move):
                 db.session.add(sample)
-            postprocess_move(move)
             db.session.commit()
             return move

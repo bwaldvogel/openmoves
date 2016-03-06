@@ -185,16 +185,10 @@ class TestOpenMoves(object):
         assert u"<title>OpenMoves – Moves</title>" in response_data
         assert u'No moves in selected date range' in response_data
 
-    def test_move_not_logged_in(self, tmpdir):
-        self._assert_requires_login('/moves/1')
-
     def test_move_not_found(self, tmpdir):
         self._login()
         response = self.client.get('/moves/1')
         self._validate_response(response, code=404, check_content=False)
-
-    def test_delete_move_not_logged_in(self, tmpdir):
-        self._assert_requires_login('/moves/1/delete')
 
     def test_delete_move_not_found(self, tmpdir):
         self._login()
@@ -214,9 +208,6 @@ class TestOpenMoves(object):
         self._login()
         response = self.client.get('/moves/1/export')
         self._validate_response(response, code=404, check_content=False)
-
-    def test_export_move_not_logged_in(self, tmpdir):
-        self._assert_requires_login('/moves/1/export')
 
     def test_import_move(self, tmpdir):
         self._login()
@@ -251,6 +242,16 @@ class TestOpenMoves(object):
         with app.test_request_context():
             move = Move.query.one()
             assert move.recovery_time is None
+            assert not move.public
+
+    def test_move_not_logged_in(self, tmpdir):
+        self._assert_requires_login('/moves/1')
+
+    def test_delete_move_not_logged_in(self, tmpdir):
+        self._assert_requires_login('/moves/1/delete')
+
+    def test_export_move_not_logged_in(self, tmpdir):
+        self._assert_requires_login('/moves/1/export')
 
     def test_import_move_upload_multiple(self, tmpdir):
         self._login()
@@ -274,6 +275,38 @@ class TestOpenMoves(object):
 
             move = Move.query.filter(Move.activity == 'Cycling').one()
             assert move.distance == 21277
+
+    def test_edit_move_toggle_public_success(self, tmpdir):
+        self._login()
+
+        data = {'name': 'public', 'pk': 2}
+        response = self.client.post('/moves/2', data=data)
+        response_data = self._validate_response(response, check_content=False)
+        assert response_data == 'OK'
+
+        with app.test_request_context():
+            move = Move.query.filter_by(id=2).one()
+            assert move.public
+
+            move_edit = MoveEdit.query.one()
+            assert move_edit.date_time
+            assert move_edit.move_id == 2
+            assert move_edit.old_value == {'public': False}
+            assert move_edit.new_value == {'public': True}
+
+    def test_move_public_not_logged_in(self, tmpdir):
+        response = self.client.get('/moves/2')
+        response_data = self._validate_response(response, tmpdir)
+        assert u'<title>OpenMoves – Move 2</title>' in response_data
+
+    def test_delete_move_public_not_logged_in(self, tmpdir):
+        self._assert_requires_login('/moves/2/delete')
+
+    def test_export_move_public_not_logged_in(self, tmpdir):
+        response = self.client.get('/moves/2/export', follow_redirects=True)
+        response_data = self._validate_response(response, tmpdir, check_content=False)
+        assert response.headers['Content-Disposition'] == 'attachment; filename=Move_2014-12-31T12_00_32_DE_Stegen_Trekking.gpx'
+        assert u'<gpx ' in response_data
 
     def test_import_move_upload_gpx(self, tmpdir):
         self._login()
@@ -681,7 +714,7 @@ class TestOpenMoves(object):
         assert response_data == 'OK'
 
         with app.test_request_context():
-            move_edit = MoveEdit.query.one()
+            move_edit = MoveEdit.query.all()[-1]
             assert move_edit.date_time
             assert move_edit.move_id == 1
             assert move_edit.old_value == {'activity': 'Pool swimming', 'activity_type': 6}

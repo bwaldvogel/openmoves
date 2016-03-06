@@ -133,6 +133,7 @@
                     {% if show_columns.pool_length -%}
                         <th>{{macros.sortable('pool_length', 'Pool length', 'desc')}}</th>
                     {%- endif %}
+                    <th>{{macros.sortable('public', 'Status', 'desc')}}</th>
                 </tr>
                 {% for move in moves %}
                 <tr>
@@ -171,6 +172,7 @@
                     {% if show_columns.pool_length -%}
                         <td>{% if move.pool_length %}{{move.pool_length}} m{% endif %}</td>
                     {%- endif %}
+                    <td>{{macros.editable_public(move, 'xs')}}</td>
                 </tr>
                 {% endfor %}
             </table>

@@ -350,11 +350,11 @@ def gpx_import(xmlfile, user, request_form):
     else:
         move.user = user
         move.device = device
+        postprocess_move(move)
         db.session.add(move)
 
         for sample in all_samples:
             db.session.add(sample)
 
-        postprocess_move(move)
         db.session.commit()
         return move

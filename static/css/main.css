@@ -142,3 +142,7 @@ h1 .editable-input select {
 tr.highlight > td {
 	background-color: #dff0d8;
 }
+
+.editable-public {
+    float: right;
+}

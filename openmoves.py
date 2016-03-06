@@ -482,18 +482,19 @@ def delete_moves(ids):
 
 
 @app.route('/moves/<int:id>/export')
-@login_required
 def export_move(id):
-    move = _current_user_filtered(Move.query).filter_by(id=id).first_or_404()
+    move = Move.query.filter_by(id=id).first_or_404()
+
+    if not move.public and move.user != current_user:
+        return app.login_manager.unauthorized()
 
     if "format" in request.args:
         format = request.args.get("format").lower()
     else:
         format = "gpx"  # default
 
-    format_handlers = {}
-    format_handlers['gpx'] = gpx_export.gpx_export
-    format_handlers['csv'] = csv_export.csv_export
+    format_handlers = {'gpx': gpx_export.gpx_export,
+                       'csv': csv_export.csv_export}
     if format not in format_handlers:
         flash("Export format %s not supported" % format, 'error')
         return redirect(url_for('move', id=id))
@@ -547,6 +548,18 @@ def edit_move(id):
         move.activity = value
 
         db.session.commit()
+    elif name == 'public':
+        move_edit = MoveEdit()
+        move_edit.date_time = datetime.now()
+        move_edit.move = move
+        move_edit.old_value = {'public': move.public}
+        move_edit.new_value = {'public': not move.public}
+
+        db.session.add(move_edit)
+
+        move.public = not move.public
+
+        db.session.commit()
     else:
         raise ValueError("illegal name: %s" % name)
 
@@ -562,9 +575,11 @@ def activity_types():
 
 
 @app.route('/moves/<int:id>', methods=['GET'])
-@login_required
 def move(id):
-    move = _current_user_filtered(Move.query).filter_by(id=id).first_or_404()
+    move = Move.query.filter_by(id=id).first_or_404()
+
+    if not move.public and move.user != current_user:
+        return app.login_manager.unauthorized()
 
     samples = move.samples.order_by('time asc').all()
     events = [sample for sample in samples if sample.events]

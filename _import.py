@@ -61,6 +61,10 @@ def parse_samples(samples, move):
 
 
 def postprocess_move(move):
+
+    if move.public is None:
+        move.public = False
+
     gps_samples = [sample for sample in move.samples if sample.sample_type and sample.sample_type.startswith('gps-')]
 
     if gps_samples:
