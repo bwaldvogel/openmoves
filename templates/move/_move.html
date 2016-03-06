@@ -328,21 +328,21 @@ var openTopoMapLayer = new ol.layer.Tile({title: 'OpenTopoMap',
                                           type: 'base',
                                           visible: false,
                                           source: new ol.source.XYZ({
-                                          url: '//{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
+                                          url: 'http://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
                                           })
                                         });
 
 var hillshadingOverlay = new ol.layer.Tile({title: 'Hillshading',
                                             visible: false,
                                             source: new ol.source.XYZ({
-                                                url: '//{a-c}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png'
+                                                url: 'http://{a-c}.tiles.wmflabs.org/hillshading/{z}/{x}/{y}.png'
                                             })
                                           });
 
 var openSkiMapOverlay = new ol.layer.Tile({title: 'OpenSkiMap',
                                            visible: false,
                                            source: new ol.source.XYZ({
-                                               url: '//tiles.skimap.org/openskimap/{z}/{x}/{y}.png'
+                                               url: 'http://tiles.skimap.org/openskimap/{z}/{x}/{y}.png'
                                            })
                                          });
 
