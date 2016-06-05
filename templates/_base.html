@@ -90,8 +90,8 @@ $(document).ready(function(){
 
 {% block content %}
 {% if not current_user.is_authenticated %}
-<a href="http://github.com/bwaldvogel/openmoves"><img style="position: fixed; top: 0; right: 0; border: 0; z-index: 2000;"
-    src="http://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub" /></a>
+<a href="//github.com/bwaldvogel/openmoves"><img style="position: fixed; top: 0; right: 0; border: 0; z-index: 2000;"
+    src="//s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" alt="Fork me on GitHub" /></a>
 {% endif %}
 
 {% with messages = get_flashed_messages(with_categories=true) %}
