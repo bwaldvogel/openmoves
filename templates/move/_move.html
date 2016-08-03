@@ -286,10 +286,8 @@ var geoJsonObject = {
         "type": "LineString",
         "coordinates": [
           {%- for sample in gps_samples -%}
-          ol.proj.transform([
-              {{sample.longitude | degree}},
-              {{sample.latitude | degree}}
-            ], 'EPSG:4326', 'EPSG:3857'),
+          [{{sample.longitude | degree}}, {{sample.latitude | degree}}]
+          {%- if not loop.last %},{% endif -%}
           {% endfor %}
         ]
       }
@@ -298,7 +296,7 @@ var geoJsonObject = {
 }
 
 var vectorSource = new ol.source.Vector({
-  features: (new ol.format.GeoJSON()).readFeatures(geoJsonObject)
+  features: (new ol.format.GeoJSON()).readFeatures(geoJsonObject, {dataProjection: 'EPSG:4326', featureProjection: 'EPSG:3857'})
 });
 
 var vectorLayer = new ol.layer.Vector({
