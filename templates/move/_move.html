@@ -263,11 +263,11 @@ var styles = {
   })],
   'Circle': [new ol.style.Style({
     stroke: new ol.style.Stroke({
-      color: 'red',
+      color: 'rgba(255,0,0,0.5)',
       width: 2
     }),
     fill: new ol.style.Fill({
-      color: 'rgba(255,0,0,0.2)'
+      color: 'rgba(255,0,0,0.1)'
     })
   })]
 };
@@ -299,9 +299,27 @@ var vectorSource = new ol.source.Vector({
   features: new ol.format.GeoJSON().readFeatures(geoJsonObject, {dataProjection: 'EPSG:4326', featureProjection: 'EPSG:3857'})
 });
 
+var gpsEhpeSource = new ol.source.Vector({});
+
+{%- for sample in gps_samples -%}
+gpsEhpeSource.addFeature(new ol.Feature(
+  new ol.geom.Circle(
+    ol.proj.transform([{{sample.longitude | degree}}, {{sample.latitude | degree}}], 'EPSG:4326', 'EPSG:3857'),
+    {{ sample.ehpe }})
+  )
+);
+{% endfor %}
+
 var vectorLayer = new ol.layer.Vector({
   title: 'Move',
   source: vectorSource,
+  style: styleFunction
+});
+
+var gpsEhpeLayer = new ol.layer.Vector({
+  title: 'GPS EHPE',
+  visible: false,
+  source: gpsEhpeSource,
   style: styleFunction
 });
 
@@ -369,7 +387,7 @@ var map = new ol.Map({
   target: 'map',
   layers: [
     new ol.layer.Group({title: 'Base maps', layers: map_layers }),
-    new ol.layer.Group({title: 'Overlay', layers: [openSkiMapOverlay, hillshadingOverlay, vectorLayer]})
+    new ol.layer.Group({title: 'Overlay', layers: [openSkiMapOverlay, gpsEhpeLayer, hillshadingOverlay, vectorLayer]})
   ],
   view: view,
   controls: ol.control.defaults().extend([
