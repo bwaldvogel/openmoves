@@ -613,28 +613,12 @@ def move(id):
     model['gps_samples'] = gps_samples
 
     if gps_samples:
-        if not move.gps_center_max_distance:
+        if not move.location_address:
             postprocess_move(move)
-            flash(u"got %d GPS samples but no center. recalculated" % len(gps_samples), u'warning')
+            flash(u"got %d GPS samples but no location. recalculated" % len(gps_samples), u'warning')
             db.session.commit()
 
-        gps_center_max_distance = move.gps_center_max_distance
-
-        # empirically determined values
-        if gps_center_max_distance < 2000:
-            map_zoom_level = 14
-        elif gps_center_max_distance < 4000:
-            map_zoom_level = 13
-        elif gps_center_max_distance < 7500:
-            map_zoom_level = 12
-        elif gps_center_max_distance < 10000:
-            map_zoom_level = 11
-        else:
-            map_zoom_level = 10
-
         calculate_distances(model, move.samples)
-
-        model['map_zoom_level'] = map_zoom_level
 
     if 'swimming' in move.activity:
         swimming_events = [sample for sample in filtered_events if 'swimming' in sample.events]
