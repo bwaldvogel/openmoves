@@ -4,6 +4,7 @@ from flask import flash
 from filters import radian_to_degree, format_distance, format_speed, format_altitude, format_temparature, format_hr, \
     format_energyconsumption, format_date_time
 from functools import partial
+from model import Sample
 
 
 csv_export_unit = False
@@ -20,7 +21,7 @@ def addValue(row_array, value, formatter=None):
 
 
 def csv_export(move):
-    samples = move.samples.order_by('time asc')
+    samples = move.samples.order_by(Sample.time.asc())
 
     if samples.count() == 0:
         flash("No samples found for CSV export", 'error')

@@ -20,7 +20,7 @@ def gpx_export(move):
     gpx_track.segments.append(gpx_segment)
 
     # Create points:
-    gps_samples = move.samples.filter(Sample.sample_type.like('gps-%')).order_by('time asc')
+    gps_samples = move.samples.filter(Sample.sample_type.like('gps-%')).order_by(Sample.time.asc())
 
     if gps_samples.count() == 0:
         flash("No GPS samples found for GPX export", 'error')

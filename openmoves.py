@@ -581,7 +581,7 @@ def move(id):
     if not move.public and move.user != current_user:
         return app.login_manager.unauthorized()
 
-    samples = move.samples.order_by('time asc').all()
+    samples = move.samples.order_by(Sample.time.asc()).all()
     events = [sample for sample in samples if sample.events]
 
     filtered_events = []
