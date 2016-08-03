@@ -376,6 +376,7 @@ var map = new ol.Map({
   view: view,
   controls: ol.control.defaults().extend([
     new ol.control.FullScreen({label: resize_full_glyphicon, labelActive: resize_small_glyphicon}),
+    new ol.control.ScaleLine({ units: 'metric' }),
     new ol.control.OverviewMap()
   ])
 });

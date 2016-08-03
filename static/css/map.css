@@ -22,3 +22,8 @@
 .layer-switcher button:focus, .layer-switcher button:hover {
     background-color: rgba(0, 60, 136, 0.7);
 }
+
+div.ol-scale-line {
+    left: 40px;
+    bottom: 9px;
+}
