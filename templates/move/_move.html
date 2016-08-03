@@ -119,6 +119,7 @@
     {% if gps_samples %}
     <h2>Map</h2>
     <div id="map" class="map thumbnail" tabindex="0"></div>
+	<button id="zoombest">Reset Zoom</button>
     {% endif %}
 
     {% if pauses %}
@@ -364,16 +365,15 @@ map_layers.splice(0, 0,
     )
 {% endif %}
 
+var view = new ol.View({ });
+
 var map = new ol.Map({
   target: 'map',
   layers: [
     new ol.layer.Group({title: 'Base maps', layers: map_layers }),
     new ol.layer.Group({title: 'Overlay', layers: [openSkiMapOverlay, hillshadingOverlay, vectorLayer]})
   ],
-  view: new ol.View({
-      center: ol.proj.transform([{{move.gps_center_longitude | degree}}, {{move.gps_center_latitude | degree}}], 'EPSG:4326', 'EPSG:3857'),
-    zoom: {{map_zoom_level}}
-  }),
+  view: view,
   controls: ol.control.defaults().extend([
     new ol.control.FullScreen({label: resize_full_glyphicon, labelActive: resize_small_glyphicon}),
     new ol.control.OverviewMap()
@@ -385,6 +385,17 @@ var layerSwitcher = new ol.control.LayerSwitcher({
   buttonLabel: '<span class="glyphicon glyphicon-menu-hamburger"/>'
 });
 map.addControl(layerSwitcher);
+
+function resetZoom() {
+	var feature = vectorSource.getFeatures()[0];
+	var polygon = (feature.getGeometry());
+	var size = /** @type {ol.Size} */ (map.getSize());
+	view.fit(polygon, size, {padding: [20, 20, 20, 20], constrainResolution: false});
+}
+
+$('#zoombest').click(resetZoom);
+
+$().ready(resetZoom);
 
 {% endif %}
 });
