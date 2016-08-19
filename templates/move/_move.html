@@ -302,12 +302,14 @@ var vectorSource = new ol.source.Vector({
 var gpsEhpeSource = new ol.source.Vector({});
 
 {%- for sample in gps_samples -%}
+{% if sample.ehpe %}
 gpsEhpeSource.addFeature(new ol.Feature(
   new ol.geom.Circle(
     ol.proj.transform([{{sample.longitude | degree}}, {{sample.latitude | degree}}], 'EPSG:4326', 'EPSG:3857'),
     {{ sample.ehpe }})
   )
 );
+{% endif %}
 {% endfor %}
 
 var vectorLayer = new ol.layer.Vector({
