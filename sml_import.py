@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 
-from flask import flash
-from model import db
-from model import Move, Device
-from lxml import objectify
 import os
+from flask import flash
+from lxml import objectify
+
 from _import import add_children, set_attr, normalize_tag, normalize_move, parse_samples, postprocess_move
+from model import Move, Device
+from model import db
 
 
 def parse_move(tree):

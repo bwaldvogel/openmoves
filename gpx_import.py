@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 
-import os
-import dateutil.parser
-from flask import flash
-from model import db, Device, Move, Sample
-from lxml import objectify
-from filters import degree_to_radian, radian_to_degree
 from datetime import datetime, timedelta
-from _import import postprocess_move
-from geopy.distance import vincenty
+
+import dateutil.parser
 import numpy as np
+import os
+from flask import flash
+from geopy.distance import vincenty
+from lxml import objectify
+
+from _import import postprocess_move
+from filters import degree_to_radian, radian_to_degree
+from model import db, Device, Move, Sample
 
 # Import options
 GPX_IMPORT_OPTION_PAUSE_DETECTION = 'gpx_option_pause_detection'
@@ -246,9 +248,9 @@ def derive_move_infos_from_samples(move, samples):
         move.altitude_max = np.max(altitudes)
 
         # Total ascent / descent
-        move.ascent = 0;
+        move.ascent = 0
         move.ascent_time = timedelta(0)
-        move.descent = 0;
+        move.descent = 0
         move.descent_time = timedelta(0)
         previous_sample = None
 
@@ -304,6 +306,7 @@ def get_gpx_import_options(request_form):
                 return None
     return import_options
 
+
 def gpx_import(xmlfile, user, request_form):
     # Get users options
     import_options = get_gpx_import_options(request_form)
@@ -323,6 +326,7 @@ def gpx_import(xmlfile, user, request_form):
             break
     else:
         flash("Unsupported GPX format version: %s" % tree.tag)
+        return
 
     device = parse_device(tree)
     persistent_device = Device.query.filter_by(serial_number=device.serial_number).scalar()

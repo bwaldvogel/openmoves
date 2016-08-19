@@ -1,8 +1,10 @@
 # vim: set fileencoding=utf-8 :
 
-import filters
 from datetime import timedelta
+
 import pytest
+
+import filters
 
 
 class TestFilters(object):

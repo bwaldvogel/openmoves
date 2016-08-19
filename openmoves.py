@@ -1,36 +1,39 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 
+import itertools
+import math
+import operator
+from collections import OrderedDict
+from datetime import timedelta, datetime
+
+import dateutil.parser
+import os
+import pytz
+import re
 from flask import Flask, render_template, flash, redirect, request, url_for, session, Response, json
+from flask.helpers import make_response
+from flask_bcrypt import Bcrypt
 from flask_bootstrap import Bootstrap
 from flask_login import login_user, current_user, login_required, logout_user
-from model import db, Move, Sample, MoveEdit, User, UserPreference, AlembicVersion
-from datetime import timedelta, datetime
-from sqlalchemy.sql import func
-from sqlalchemy import distinct, literal
-import os
-import re
-from flask_bcrypt import Bcrypt
-import imports
-import gpx_export
-import csv_export
-import dateutil.parser
-from flask.helpers import make_response
-from flask_script import Manager, Server
 from flask_migrate import Migrate, MigrateCommand
+from flask_script import Manager, Server
+from flask_util_js import FlaskUtilJs
+from geopy.distance import vincenty
+from jinja2.exceptions import TemplateNotFound
+from monthdelta import monthdelta
+from sqlalchemy import distinct, literal
+from sqlalchemy.sql import func
+
+import csv_export
+import gpx_export
+import imports
+from _import import postprocess_move
 from commands import AddUser, ImportMove, DeleteMove, ListMoves
 from filters import register_filters, register_globals, radian_to_degree, get_city
 from login import login_manager, load_user, LoginForm
-import itertools
-from collections import OrderedDict
-from flask_util_js import FlaskUtilJs
-from _import import postprocess_move
-from geopy.distance import vincenty
-import math
-import operator
-import pytz
-from monthdelta import monthdelta
-from jinja2.exceptions import TemplateNotFound
+from model import db, Move, Sample, MoveEdit, UserPreference, AlembicVersion
+
 try:
     from urllib.parse import quote_plus
 except ImportError:

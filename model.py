@@ -1,10 +1,11 @@
 # vim: set fileencoding=utf-8 :
 # written by Benedikt Waldvogel
 
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy.types import TypeDecorator
-from sqlalchemy.orm.collections import attribute_mapped_collection
 import json
+
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm.collections import attribute_mapped_collection
+from sqlalchemy.types import TypeDecorator
 
 db = SQLAlchemy()
 

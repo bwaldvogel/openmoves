@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 
-from flask_script import Command, Option
 import xkcdpass.xkcd_password as xp
-from model import db, User, Move, Sample
+from flask_script import Command, Option
+
 from imports import move_import
+from model import db, User, Move, Sample
 
 
 class AddUser(Command):
     """ Adds an user to the database """
 
     def __init__(self, app_context, app_bcrypt):
+        super(AddUser, self).__init__()
         self.app_context = app_context
         self.app_bcrypt = app_bcrypt
 
@@ -43,6 +45,7 @@ class ImportMove(Command):
     """ Imports a move to the database """
 
     def __init__(self, app_context):
+        super(ImportMove, self).__init__()
         self.app_context = app_context
 
     def get_options(self):
@@ -63,6 +66,7 @@ class DeleteMove(Command):
     """ Deletes a move from the database """
 
     def __init__(self, app_context):
+        super(DeleteMove, self).__init__()
         self.app_context = app_context
 
     def get_options(self):
@@ -82,6 +86,7 @@ class ListMoves(Command):
     """ Lists all moves in the database """
 
     def __init__(self, app_context):
+        super(ListMoves, self).__init__()
         self.app_context = app_context
 
     def get_options(self):

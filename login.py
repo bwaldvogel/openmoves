@@ -3,14 +3,15 @@
 
 from flask_login import LoginManager
 from flask_wtf import Form
+from wtforms import StringField, PasswordField
+
 from model import User
-from wtforms import TextField, PasswordField
 
 login_manager = LoginManager()
 
 
 class LoginForm(Form):
-    username = TextField()
+    username = StringField()
     password = PasswordField()
 
 

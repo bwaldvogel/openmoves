@@ -1,10 +1,13 @@
 # vim: set fileencoding=utf-8 :
-import sqlalchemy
-import re
+
 from datetime import timedelta, datetime
-from model import Sample
-from filters import radian_to_degree
+
+import re
+import sqlalchemy
 from geopy.geocoders import Nominatim
+
+from filters import radian_to_degree
+from model import Sample
 
 
 def parse_samples(samples, move):

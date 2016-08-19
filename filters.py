@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 
-from datetime import timedelta
-from flask import url_for, request
 import math
 import time
+from datetime import timedelta
+
+from flask import url_for, request
 
 
 def format_date_time(time):

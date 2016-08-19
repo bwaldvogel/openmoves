@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
-from flask import flash
+
 import gpxpy.gpx
+from flask import flash
+
 from filters import radian_to_degree
 from model import Sample
 

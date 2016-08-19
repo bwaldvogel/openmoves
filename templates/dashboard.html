@@ -28,11 +28,11 @@
             {{chart.chart_dashboard('Distance', total_distance_by_activity, formatter = 'distance_formatter', valuefactor = 1/1000)}}
 
             var duration_formatter = function duration_formatter() {
-              var hour = Math.floor(this.y / 3600);
-              var min = Math.floor((this.y % 3600) / 60);
-              var sec = (this.y % 3600) % 60;
-              return s.sprintf("%02d:%02d:%05.2f", hour, min, sec);
-            }
+                var hour = Math.floor(this.y / 3600);
+                var min = Math.floor((this.y % 3600) / 60);
+                var sec = (this.y % 3600) % 60;
+                return s.sprintf("%02d:%02d:%05.2f", hour, min, sec);
+            };
             {{chart.chart_dashboard_duration('Duration', total_duration_by_activity, formatter = 'duration_formatter')}}
 
             var speed_formatter = function speed_formatter() { return s.sprintf("%.1f km/h", this.y); }

@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
+
+from functools import partial
+
 from flask import flash
+
 from filters import radian_to_degree, format_distance, format_speed, format_altitude, format_temparature, format_hr, \
     format_energyconsumption, format_date_time
-from functools import partial
 from model import Sample
-
 
 csv_export_unit = False
 
 
-def addValue(row_array, value, formatter=None):
+def add_value(row_array, value, formatter=None):
     if not value:
         row_array.append("")
     else:
@@ -49,21 +51,21 @@ def csv_export(move):
     for sample in samples:
         row = []
 
-        addValue(row, move.date_time + sample.time, formatter=format_date_time)
-        addValue(row, sample.time)
-        addValue(row, sample.latitude, formatter=radian_to_degree)
-        addValue(row, sample.longitude, formatter=radian_to_degree)
-        addValue(row, sample.altitude, formatter=partial(format_altitude, unit=csv_export_unit))
+        add_value(row, move.date_time + sample.time, formatter=format_date_time)
+        add_value(row, sample.time)
+        add_value(row, sample.latitude, formatter=radian_to_degree)
+        add_value(row, sample.longitude, formatter=radian_to_degree)
+        add_value(row, sample.altitude, formatter=partial(format_altitude, unit=csv_export_unit))
 
-        addValue(row, sample.distance, formatter=partial(format_distance, unit=csv_export_unit))
-        addValue(row, sample.speed, formatter=partial(format_speed, unit=csv_export_unit))
-        addValue(row, sample.temperature, formatter=partial(format_temparature, unit=csv_export_unit))
-        addValue(row, sample.hr, formatter=partial(format_hr, unit=csv_export_unit))
-        addValue(row, sample.energy_consumption, formatter=partial(format_energyconsumption, unit=csv_export_unit))
+        add_value(row, sample.distance, formatter=partial(format_distance, unit=csv_export_unit))
+        add_value(row, sample.speed, formatter=partial(format_speed, unit=csv_export_unit))
+        add_value(row, sample.temperature, formatter=partial(format_temparature, unit=csv_export_unit))
+        add_value(row, sample.hr, formatter=partial(format_hr, unit=csv_export_unit))
+        add_value(row, sample.energy_consumption, formatter=partial(format_energyconsumption, unit=csv_export_unit))
 
-        addValue(row, sample.gps_hdop)
-        addValue(row, sample.vertical_speed, formatter=partial(format_speed, unit=csv_export_unit))
-        addValue(row, sample.number_of_satellites)
+        add_value(row, sample.gps_hdop)
+        add_value(row, sample.vertical_speed, formatter=partial(format_speed, unit=csv_export_unit))
+        add_value(row, sample.number_of_satellites)
 
         rows.append(";".join(row))
 

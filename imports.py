@@ -1,14 +1,15 @@
 #!/usr/bin/env python
 # vim: set fileencoding=utf-8 :
 
-from flask import flash
+import gzip
 
+from flask import flash
+from sqlalchemy.sql import func
+
+from gpx_import import gpx_import
+from model import db, Sample
 from old_xml_import import old_xml_import
 from sml_import import sml_import
-from gpx_import import gpx_import
-import gzip
-from model import db, Sample
-from sqlalchemy.sql import func
 
 
 def move_import(xmlfile, filename, user, request_form):
@@ -24,23 +25,24 @@ def move_import(xmlfile, filename, user, request_form):
     }
 
     if extension not in import_functions:
-        flash("unknown fileformat: '%s'" % xmlfile.filename, 'error')
-    else:
-        import_function = import_functions[extension]
-        move = import_function(xmlfile, user, request_form)
-        if move:
-            move.temperature_avg, = db.session.query(func.avg(Sample.temperature)).filter(Sample.move == move, Sample.temperature > 0).one()
+        flash("unknown fileformat: '%s'" % xmlfile.name, 'error')
+        return
 
-            stroke_count = 0
-            for events, in db.session.query(Sample.events).filter(Sample.move == move, Sample.events != None):
-                if 'swimming' in events and events['swimming']['type'] == 'Stroke':
-                    stroke_count += 1
+    import_function = import_functions[extension]
+    move = import_function(xmlfile, user, request_form)
+    if move:
+        move.temperature_avg, = db.session.query(func.avg(Sample.temperature)).filter(Sample.move == move, Sample.temperature > 0).one()
 
-            if 'swimming' in move.activity:
-                assert stroke_count > 0
+        stroke_count = 0
+        for events, in db.session.query(Sample.events).filter(Sample.move == move, Sample.events != None):
+            if 'swimming' in events and events['swimming']['type'] == 'Stroke':
+                stroke_count += 1
 
-            if stroke_count > 0:
-                move.stroke_count = stroke_count
+        if 'swimming' in move.activity:
+            assert stroke_count > 0
 
-            db.session.commit()
-            return move
+        if stroke_count > 0:
+            move.stroke_count = stroke_count
+
+        db.session.commit()
+        return move

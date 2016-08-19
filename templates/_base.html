@@ -1,5 +1,5 @@
-{% import '_macros.html' as macros with context %}
 {% extends "bootstrap/base.html" %}
+{% import '_macros.html' as macros with context %}
 
 {% block title -%}
 OpenMoves{% if active_page and active_page != 'index' %} – {{active_page|capitalize}}{% endif %}
@@ -39,13 +39,13 @@ OpenMoves{% if active_page and active_page != 'index' %} – {{active_page|capit
             <ul class="nav navbar-nav navbar-right">
                 {% if current_user.is_authenticated %}
                 <li class="dropdown">
-<a class="dropdown-toggle" aria-expanded="false" role="button" data-toggle="dropdown" href="#">
-    {{current_user.username}}
-<span class="caret"></span>
-</a>
-                <ul class="dropdown-menu" role="menu">
-                <li><a href="{{url_for('logout')}}">logout</a></li>
-                </ul>
+                    <a class="dropdown-toggle" aria-expanded="false" role="button" data-toggle="dropdown" href="#">
+                        {{ current_user.username }}
+                        <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li><a href="{{ url_for('logout') }}">logout</a></li>
+                    </ul>
                 </li>
                 {% else %}
                 <li><a href="{{url_for('login')}}">login</a></li>
@@ -75,12 +75,14 @@ $(document).ready(function(){
         $(this).siblings('span').editable('toggle');
     });
 
-    $('div.editable-activity').mouseover(function(e) {
+    var editableActivity = $('div.editable-activity');
+
+    editableActivity.mouseover(function(e) {
         if (!$(this).children('span').hasClass('editable-open')) {
             $(this).children('button').addClass('visible');
         }
     });
-    $('div.editable-activity').mouseout(function(e) {
+    editableActivity.mouseout(function(e) {
         $(this).children('button').removeClass('visible');
     });
 });

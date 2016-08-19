@@ -1,17 +1,18 @@
 # vim: set fileencoding=utf-8 :
 
+from datetime import timedelta, datetime
+
+import html5lib
+import os
+import pytest
+import re
+from flask import json
+
 import openmoves
 from commands import AddUser
-from model import db, User, Move, MoveEdit
-from flask import json
-import pytest
-import html5lib
-import re
-import os
-from datetime import timedelta, datetime
 from gpx_import import GPX_IMPORT_OPTION_PAUSE_DETECTION, GPX_IMPORT_OPTION_PAUSE_DETECTION_THRESHOLD, GPX_DEVICE_NAME, \
     GPX_ACTIVITY_TYPE, GPX_DEVICE_SERIAL, GPX_SAMPLE_TYPE, GPX_TRK, GPX_IMPORT_PAUSE_TYPE_PAUSE_DETECTION
-
+from model import db, User, Move, MoveEdit
 
 app = None
 
@@ -29,7 +30,7 @@ class TestOpenMoves(object):
         self.app = app
         self.client = app.test_client()
 
-    def _login(self, username='test_user', password='test password'):
+    def _login(self, username=u'test_user', password=u'test password'):
         data = {'username': username, 'password': password, 'timezone': 'Europe/Berlin'}
         return self.client.post('/login', data=data, follow_redirects=True)
 
@@ -42,15 +43,15 @@ class TestOpenMoves(object):
         if response.data:
             response_data = response.data.decode('utf-8')
 
-        if check_content:
-            if response.mimetype == 'text/html':
-                self._validate_html5(response_data)
-            elif response.mimetype == 'application/json':
-                return json.loads(response_data)
-            else:
-                raise ValueError("illegal mimetype: '%s'" % response.mimetype)
+            if check_content:
+                if response.mimetype == 'text/html':
+                    self._validate_html5(response_data)
+                elif response.mimetype == 'application/json':
+                    return json.loads(response_data)
+                else:
+                    raise ValueError("illegal mimetype: '%s'" % response.mimetype)
 
-        return response_data
+            return response_data
 
     def _validate_html5(self, response_data):
         parser = html5lib.HTMLParser(strict=True)
@@ -151,7 +152,7 @@ class TestOpenMoves(object):
 
     def test_login_logout_other_user(self, tmpdir):
 
-        username = 'other_user'
+        username = u'other_user'
         password = u'Paßswörd→✓≈'
 
         with app.test_request_context():
@@ -683,8 +684,8 @@ class TestOpenMoves(object):
         assert u'<th>Total Duration</th><td>02:20:23.30</td>' in response_data
 
     def test_edit_move_different_user(self, tmpdir):
-        username = 'some different user'
-        password = 'some other password'
+        username = u'some different user'
+        password = u'some other password'
         with app.test_request_context():
             user = User(username=username, active=True)
             user.password = openmoves.app_bcrypt.generate_password_hash(password, 10)
