@@ -312,7 +312,7 @@ def dashboard():
 
         if move.activity not in total_descent_by_activity:
             total_descent_by_activity[move.activity] = 0
-        if move.ascent:
+        if move.descent:
             total_descent_by_activity[move.activity] += move.descent
 
     # Clean activities without distance or duration
