@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/bwaldvogel/openmoves.png?branch=master)](https://travis-ci.org/bwaldvogel/openmoves)
-[![Coverage Status](https://coveralls.io/repos/bwaldvogel/openmoves/badge.svg?branch=master&service=github)](https://coveralls.io/github/bwaldvogel/openmoves?branch=master)
+[![MIT License](https://img.shields.io/github/license/bwaldvogel/openmoves.svg)](https://opensource.org/licenses/MIT)
 
 # OpenMoves #
 An open source alternative to Movescount.
