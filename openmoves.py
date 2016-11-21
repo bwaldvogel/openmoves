@@ -256,8 +256,10 @@ def move_import():
                     move_id = all_moves[start_date]
                 else:
                     for date_time in all_moves.keys():
-                        delta = abs(date_time - start_date)
-                        if delta <= timedelta(seconds=30):
+                        start_date_delta = abs(date_time - start_date)
+                        start_date_local_delta = abs(date_time - activity.start_date_local.replace(tzinfo=pytz.UTC))
+                        max_delta = timedelta(seconds=30)
+                        if start_date_delta <= max_delta or start_date_local_delta <= max_delta:
                             move_id = all_moves[date_time]
                             break
 
