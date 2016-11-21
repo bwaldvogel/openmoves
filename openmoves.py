@@ -3,14 +3,15 @@
 
 import itertools
 import math
-import operator
-from collections import OrderedDict
 from datetime import timedelta, datetime
 
 import dateutil.parser
+import operator
 import os
 import pytz
 import re
+import stravalib.client
+from collections import OrderedDict
 from flask import Flask, render_template, flash, redirect, request, url_for, session, Response, json
 from flask.helpers import make_response
 from flask_bcrypt import Bcrypt
@@ -28,6 +29,7 @@ from sqlalchemy.sql import func
 import csv_export
 import gpx_export
 import imports
+import strava_import
 from _import import postprocess_move
 from commands import AddUser, ImportMove, DeleteMove, ListMoves
 from filters import register_filters, register_globals, radian_to_degree, get_city
@@ -219,20 +221,60 @@ def move_import():
         filename = xmlfile.filename
         if filename:
             app.logger.info("importing '%s'" % filename)
-            move = imports.move_import(xmlfile, filename, current_user, request.form)
-            if move:
-                imported_moves.append(move)
+            move_id = imports.move_import(xmlfile, filename, current_user, request.form)
+            if move_id:
+                imported_moves.append(move_id)
 
     if imported_moves:
         if len(imported_moves) == 1:
-            move = imported_moves[0]
-            flash("imported '%s': move %d" % (xmlfile.filename, move.id))
-            return redirect(url_for('move', id=move.id))
+            move_id = imported_moves[0]
+            flash("imported '%s': move %d" % (xmlfile.filename, move_id.id))
+            return redirect(url_for('move', id=move_id.id))
         else:
             flash("imported %d moves" % len(imported_moves))
             return redirect(url_for('moves'))
     else:
-        return render_template('import.html')
+        model = {}
+        if 'strava' in current_user.preferences:
+            strava_access_token = current_user.preferences['strava'].value['access_token']
+            client = stravalib.client.Client(access_token=strava_access_token)
+
+            all_moves = {}
+            for id, date_time in db.session.query(Sample.move_id, func.min(Sample.utc)) \
+                    .join(Move) \
+                    .filter(Sample.utc != None) \
+                    .filter(Move.user == current_user) \
+                    .group_by(Sample.move_id):
+                utc = date_time.replace(tzinfo=pytz.UTC)
+                all_moves[utc] = id
+
+            strava_activities = []
+            for activity in client.get_activities():
+                move_id = None
+                start_date = activity.start_date
+                if start_date in all_moves:
+                    move_id = all_moves[start_date]
+                else:
+                    for date_time in all_moves.keys():
+                        delta = abs(date_time - start_date)
+                        if delta <= timedelta(seconds=30):
+                            move_id = all_moves[date_time]
+                            break
+
+                if not move_id:
+                    strava_activities.append(activity)
+
+            model['strava_activities'] = strava_activities
+
+        elif 'STRAVA_CLIENT_ID' in app.config:
+            client = stravalib.client.Client()
+            client_id_ = app.config['STRAVA_CLIENT_ID']
+            strava_authorize_url = client.authorization_url(client_id=client_id_,
+                                                            redirect_uri=url_for('strava_authorized',_external=True),
+                                                            scope='view_private')
+            model['strava_authorize_url'] = strava_authorize_url
+
+        return render_template('import.html', **model)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -660,6 +702,27 @@ def move(id):
 @login_required
 def tests():
     return render_template('tests.html')
+
+
+@app.route('/strava/authorized', methods=['GET'])
+@login_required
+def strava_authorized():
+    code = request.args.get('code') # or whatever your framework does
+    client = stravalib.client.Client()
+    access_token = client.exchange_code_for_token(client_id=app.config['STRAVA_CLIENT_ID'], client_secret=app.config['STRAVA_CLIENT_SECRET'], code=code)
+    current_user.preferences['strava'] = UserPreference('strava', {'access_token': access_token})
+    db.session.commit()
+    flash("Access to Strava API granted")
+    return redirect(url_for('move_import'))
+
+
+@app.route('/import/strava/<int:activity_id>', methods=['GET'])
+@login_required
+def import_strava(activity_id):
+    move = strava_import.strava_import(current_user, activity_id)
+    data = {'move_id': move.id}
+    return Response(json.dumps(data), mimetype='application/json')
+
 
 if __name__ == '__main__':
     manager.run()

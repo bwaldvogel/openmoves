@@ -210,18 +210,19 @@ def insert_pause(samples, insert_pause_idx, move, pause_type):
                                     }}
     samples.insert(insert_pause_idx + 1, pause_sample)
 
+
 def is_start_pause_sample(sample):
     return sample.events and "pause" in sample.events and sample.events["pause"]["state"].lower() == "true"
 
-def parse_move(tree):
+
+def create_move():
     move = Move()
     move.activity = GPX_ACTIVITY_TYPE
     move.import_date_time = datetime.now()
-
     return move
 
 
-def parse_device(tree):
+def create_device():
     device = Device()
     device.name = GPX_DEVICE_NAME
     device.serial_number = GPX_DEVICE_SERIAL
@@ -252,7 +253,8 @@ def derive_move_infos_from_samples(move, samples):
         move.ascent_time = timedelta(0)
         move.descent = 0
         move.descent_time = timedelta(0)
-        previous_sample = None
+
+    previous_sample = None
 
     # Accumulate values from samples
     for sample in samples:
@@ -328,7 +330,7 @@ def gpx_import(xmlfile, user, request_form):
         flash("Unsupported GPX format version: %s" % tree.tag)
         return
 
-    device = parse_device(tree)
+    device = create_device()
     persistent_device = Device.query.filter_by(serial_number=device.serial_number).scalar()
     if persistent_device:
         if not persistent_device.name:
@@ -340,7 +342,7 @@ def gpx_import(xmlfile, user, request_form):
     else:
         db.session.add(device)
 
-    move = parse_move(tree)
+    move = create_move()
     move.source = os.path.abspath(filename)
     move.import_module = __name__
 

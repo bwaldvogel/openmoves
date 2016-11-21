@@ -103,7 +103,15 @@ def radian_to_degree(value):
 
 
 def degree_to_radian(value):
+    if value is None:
+        return None
     return math.radians(value)
+
+
+def celcius_to_kelvin(value):
+    if value is None:
+        return None
+    return value + 273.15
 
 
 def unix_epoch(date):

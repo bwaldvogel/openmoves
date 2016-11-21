@@ -57,18 +57,77 @@
 
     <h3>Supported import formats and options</h3>
     <form action="{{url_for('move_import')}}" method="POST" enctype="multipart/form-data">
-        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
-          <div class="panel panel-default">
-              <div class="panel-heading">
+        <div class="panel-group" role="tablist" aria-multiselectable="true">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h4 class="panel-title">Strava</h4>
+                </div>
+                <div class="panel-body">
+                    {% if strava_activities %}
+                        <table class="table">
+                        <tr>
+                            <th>Type</th>
+                            <th>Time</th>
+                            <th>Name</th>
+                            <th></th>
+                        </tr>
+                        {% for activity in strava_activities %}
+                            <tr id="import_{{ activity.id }}">
+                                <td>{{ activity.type }}</td>
+                                <td>{{ activity.start_date_local }}</td>
+                                <td>{{ activity.name }}</td>
+                                <td><button
+                                        type="button"
+                                        class="btn btn-primary btn-xs"
+                                        onclick="
+                                                var btn=$('#import_{{ activity.id }} button');
+                                                btn.prop('disabled', true);
+                                                $('tr#import_{{ activity.id }}').toggleClass('highlight', true);
+
+                                                $.ajax({
+                                                    url: '{{url_for('import_strava', activity_id=activity.id)}}',
+                                                    type: 'GET',
+                                                    success: function(response) {
+                                                        var btn=$('#import_{{ activity.id }} button');
+                                                        $('tr#import_{{ activity.id }}').toggleClass('highlight highlight-success');
+                                                        move_url = flask_util.url_for('move', {id: response.move_id});
+                                                        btn.prop('disabled', false);
+                                                        btn.toggleClass('btn-primary btn-success');
+                                                        btn.text('move ' + response.move_id);
+                                                        btn.replaceWith('<a href=&quot;' + move_url + '&quot;>move ' + response.move_id + '</a>');
+                                                    },
+                                                    error: function(response) {
+                                                        console.log(response);
+                                                        var btn=$('#import_{{ activity.id }} button');
+                                                        $('tr#import_{{ activity.id }}').toggleClass('highlight highlight-error');
+                                                        btn.text('failed');
+                                                        btn.toggleClass('btn-primary btn-danger');
+                                                    }
+                                                });
+
+                                                btn.text('importing…')
+
+                                                ">import</button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </table>
+                    {% else %}
+                        <a href="{{ strava_authorize_url }}">Request Access Token</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="panel panel-default">
+               <div class="panel-heading">
                   <h4 class="panel-title">
                       Suunto Ambit Moveslink v1.2+
                   </h4>
-              </div>
-              <div class="panel-body">
+               </div>
+               <div class="panel-body">
                   Please find <code>*.sml</code> files in your <code>%AppData%/Suunto/Moveslink2</code> directory.
-              </div>
-          </div>
-          <div class="panel panel-default">
+               </div>
+        </div>
+        <div class="panel panel-default">
               <div class="panel-heading">
                   <h4 class="panel-title">
                       Suunto Ambit Moveslink v1.1
@@ -85,7 +144,7 @@
                   </h4>
               </div>
               <div class="panel-body">
-                  <p>GPX format v1.1 with serveral extensions supported. File format extension <code>*.gpx</code>. Pauses will be introduced for every new track and track segment.</p>
+                  <p>GPX format v1.1 with several extensions supported. File format extension <code>*.gpx</code>. Pauses will be introduced for every new track and track segment.</p>
                   <strong>Pause detection</strong>
                   <div class="row">
                       <div class="col-md-1" data-toggle="pause_detection_tooltip" data-placement="bottom" title="If enabled, pauses will be inserted in case the time difference between two track points is greater than the configured threshold value.">

@@ -140,7 +140,15 @@ h1 .editable-input select {
 }
 
 tr.highlight > td {
-	background-color: #dff0d8;
+    background-color: #d8e4f0;
+}
+
+tr.highlight-success > td {
+    background-color: #dff0d8;
+}
+
+tr.highlight-error > td {
+    background-color: #f0e0d8;
 }
 
 .editable-public {

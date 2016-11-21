@@ -19,3 +19,4 @@ geopy==1.11.0
 numpy==1.11.2
 pytz==2016.7
 MonthDelta==0.9.1
+stravalib==0.6.3
