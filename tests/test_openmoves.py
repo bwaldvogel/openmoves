@@ -273,9 +273,11 @@ class TestOpenMoves(object):
         with app.test_request_context():
             move = Move.query.filter(Move.activity == 'Trekking').one()
             assert move.ascent_time == timedelta(seconds=1181)
+            assert 'Deutschland' in move.location_address
 
             move = Move.query.filter(Move.activity == 'Cycling').one()
             assert move.distance == 21277
+            assert 'Deutschland' in move.location_address
 
     def test_edit_move_toggle_public_success(self, tmpdir):
         self._login()
@@ -330,6 +332,7 @@ class TestOpenMoves(object):
 
         with app.test_request_context():
             move = Move.query.filter(Move.activity == GPX_ACTIVITY_TYPE).one()
+            assert 'Deutschland' in move.location_address
             assert move.device.name == GPX_DEVICE_NAME
             assert move.device.serial_number == GPX_DEVICE_SERIAL
             assert move.activity == GPX_ACTIVITY_TYPE
