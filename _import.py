@@ -44,8 +44,8 @@ def postprocess_move(move):
         longitude = first_sample.longitude
 
         if latitude and longitude:
-            geolocator = Nominatim()
-            location = geolocator.reverse("%f, %f" % (radian_to_degree(latitude), radian_to_degree(longitude)), timeout=60)
+            geo_locator = Nominatim()
+            location = geo_locator.reverse("%f, %f" % (radian_to_degree(latitude), radian_to_degree(longitude)), timeout=60)
             move.location_address = location.address
             move.location_raw = location.raw
 

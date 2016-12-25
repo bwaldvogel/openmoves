@@ -329,10 +329,11 @@ def dashboard():
                                               .filter(Move.date_time < end_date + timedelta(days=1)) \
                                               .all()
 
-    model = {}
-    model['start_date'] = start_date
-    model['end_date'] = end_date
-    model['nr_of_moves'] = len(moves)
+    model = {
+        'start_date': start_date,
+        'end_date': end_date,
+        'nr_of_moves': len(moves)
+    }
 
     total_distance_by_activity = {}
     total_duration_by_activity = {}
@@ -361,16 +362,19 @@ def dashboard():
 
     # Clean activities without distance or duration
     for activity in list(total_distance_by_activity.keys()):
-        if(total_distance_by_activity[activity] == 0):
+        if total_distance_by_activity[activity] == 0:
             del total_distance_by_activity[activity]
+
     for activity in list(total_duration_by_activity.keys()):
-        if(total_duration_by_activity[activity] == timedelta(0)):
+        if total_duration_by_activity[activity] == timedelta(0):
             del total_duration_by_activity[activity]
+
     for activity in list(total_ascent_by_activity.keys()):
-        if(total_ascent_by_activity[activity] == 0):
+        if total_ascent_by_activity[activity] == 0:
             del total_ascent_by_activity[activity]
+
     for activity in list(total_descent_by_activity.keys()):
-        if(total_descent_by_activity[activity] == 0):
+        if total_descent_by_activity[activity] == 0:
             del total_descent_by_activity[activity]
 
     # Calculate average speeds
@@ -648,13 +652,14 @@ def move(id):
         else:
             filtered_events.append(sample)
 
-    model = {}
-    model['BING_MAPS_API_KEY'] = app.config['BING_MAPS_API_KEY'] if 'BING_MAPS_API_KEY' in app.config else None
-    model['move'] = move
-    model['samples'] = samples
-    model['events'] = filtered_events
-    model['pauses'] = pauses
-    model['laps'] = laps
+    model = {
+        'BING_MAPS_API_KEY': app.config['BING_MAPS_API_KEY'] if 'BING_MAPS_API_KEY' in app.config else None,
+        'move': move,
+        'samples': samples,
+        'events': filtered_events,
+        'pauses': pauses,
+        'laps': laps
+    }
 
     gps_samples = [sample for sample in samples if sample.sample_type and sample.sample_type.startswith('gps-')]
     model['gps_samples'] = gps_samples
