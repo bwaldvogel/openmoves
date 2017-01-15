@@ -62,54 +62,58 @@
                 </div>
                 <div class="panel-body">
                     {% if has_strava %}
-                        <table class="table">
-                        <tr>
-                            <th>Type</th>
-                            <th>Time</th>
-                            <th>Name</th>
-                            <th></th>
-                        </tr>
-                        {% for activity in strava_activities %}
-                            <tr id="import_{{ activity.id }}">
-                                <td>{{ activity.type }}</td>
-                                <td>{{ activity.start_date_local }}</td>
-                                <td><a href="https://www.strava.com/activities/{{ activity.id }}">{{ activity.name }}</a></td>
-                                <td><button
-                                        type="button"
-                                        class="btn btn-primary btn-xs"
-                                        onclick="
-                                                var btn=$('#import_{{ activity.id }} button');
-                                                btn.prop('disabled', true);
-                                                $('tr#import_{{ activity.id }}').toggleClass('highlight', true);
-
-                                                $.ajax({
-                                                    url: '{{url_for('import_strava', activity_id=activity.id)}}',
-                                                    type: 'GET',
-                                                    success: function(response) {
-                                                        var btn=$('#import_{{ activity.id }} button');
-                                                        $('tr#import_{{ activity.id }}').toggleClass('highlight highlight-success');
-                                                        move_url = flask_util.url_for('move', {id: response.move_id});
-                                                        btn.prop('disabled', false);
-                                                        btn.toggleClass('btn-primary btn-success');
-                                                        btn.text('move ' + response.move_id);
-                                                        btn.replaceWith('<a href=&quot;' + move_url + '&quot;>move ' + response.move_id + '</a>');
-                                                    },
-                                                    error: function(response) {
-                                                        console.log(response);
-                                                        var btn=$('#import_{{ activity.id }} button');
-                                                        $('tr#import_{{ activity.id }}').toggleClass('highlight highlight-error');
-                                                        btn.text('failed');
-                                                        btn.toggleClass('btn-primary btn-danger');
-                                                    }
-                                                });
-
-                                                btn.text('importing…')
-
-                                                ">import</button>
-                                </td>
+                        {% if strava_activities %}
+                            <table class="table">
+                            <tr>
+                                <th>Type</th>
+                                <th>Time</th>
+                                <th>Name</th>
+                                <th></th>
                             </tr>
-                        {% endfor %}
-                        </table>
+                            {% for activity in strava_activities %}
+                                <tr id="import_{{ activity.id }}">
+                                    <td>{{ activity.type }}</td>
+                                    <td>{{ activity.start_date_local }}</td>
+                                    <td><a href="https://www.strava.com/activities/{{ activity.id }}">{{ activity.name }}</a></td>
+                                    <td><button
+                                            type="button"
+                                            class="btn btn-primary btn-xs"
+                                            onclick="
+                                                    var btn=$('#import_{{ activity.id }} button');
+                                                    btn.prop('disabled', true);
+                                                    $('tr#import_{{ activity.id }}').toggleClass('highlight', true);
+
+                                                    $.ajax({
+                                                        url: '{{url_for('import_strava', activity_id=activity.id)}}',
+                                                        type: 'GET',
+                                                        success: function(response) {
+                                                            var btn=$('#import_{{ activity.id }} button');
+                                                            $('tr#import_{{ activity.id }}').toggleClass('highlight highlight-success');
+                                                            move_url = flask_util.url_for('move', {id: response.move_id});
+                                                            btn.prop('disabled', false);
+                                                            btn.toggleClass('btn-primary btn-success');
+                                                            btn.text('move ' + response.move_id);
+                                                            btn.replaceWith('<a href=&quot;' + move_url + '&quot;>move ' + response.move_id + '</a>');
+                                                        },
+                                                        error: function(response) {
+                                                            console.log(response);
+                                                            var btn=$('#import_{{ activity.id }} button');
+                                                            $('tr#import_{{ activity.id }}').toggleClass('highlight highlight-error');
+                                                            btn.text('failed');
+                                                            btn.toggleClass('btn-primary btn-danger');
+                                                        }
+                                                    });
+
+                                                    btn.text('importing…')
+
+                                                    ">import</button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </table>
+                        {% else %}
+                            <p>Nothing to import.</p>
+                        {% endif %}
                     {% else %}
                         <a href="{{ strava_authorize_url }}">Request Access Token</a>
                     {% endif %}
