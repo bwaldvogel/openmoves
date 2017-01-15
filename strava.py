@@ -63,6 +63,7 @@ def strava_import(current_user, activity_id):
     move.distance = float(activity.distance)
     move.import_date_time = datetime.now()
     move.import_module = __name__
+    move.strava_activity_id = activity_id
     move.public = False
     move.source = "Strava activity id=%d; external_id='%s'" % (activity_id, activity.external_id)
 
