@@ -275,10 +275,8 @@ def move_import():
                         potential_moves = []
                         for date_time in moves_by_date_time.keys():
                             start_date_delta = abs(date_time - start_date)
-
-                            for delta_hours in range(1, 3):
-                                if timedelta(hours=delta_hours, minutes=-10) <= start_date_delta <= timedelta(hours=delta_hours, minutes=10):
-                                    potential_moves.append(moves_by_date_time[date_time])
+                            if timedelta(hours=-2, minutes=-30) <= start_date_delta <= timedelta(hours=2, minutes=30):
+                                potential_moves.append(moves_by_date_time[date_time])
 
                         if len(potential_moves) == 1:
                             move_id = potential_moves[0]
