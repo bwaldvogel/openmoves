@@ -246,7 +246,8 @@ def move_import():
                 moves_by_date_time[utc] = id
 
             moves_by_strava_activity_id = {}
-            for id, strava_activity_id in db.session.query(Move.id, Move.strava_activity_id):
+            for id, strava_activity_id in db.session.query(Move.id, Move.strava_activity_id) \
+                    .filter(Move.strava_activity_id != None):
                 moves_by_strava_activity_id[strava_activity_id] = id
 
             strava_activities = []
@@ -280,13 +281,13 @@ def move_import():
 
                         if len(potential_moves) == 1:
                             move_id = potential_moves[0]
-                            move = Move.query.filter_by(id=move_id).one()
-                            move.strava_activity_id = activity.id
-                            app.logger.info("associating strava activity %d to move %d" % (activity.id, move.id))
-                            db.session.commit()
+                        elif len(potential_moves) > 1:
+                            app.logger.info("too many candidates found: %d" % len(potential_moves))
 
                 if not move_id:
                     strava_activities.append(activity)
+                elif activity.id not in moves_by_strava_activity_id:
+                    associate_strava_activity_to_move(activity, move_id)
 
             model['strava_activities'] = strava_activities
 
@@ -299,6 +300,13 @@ def move_import():
             model['strava_authorize_url'] = strava_authorize_url
 
         return render_template('import.html', **model)
+
+
+def associate_strava_activity_to_move(activity, move_id):
+    move = Move.query.filter_by(id=move_id).one()
+    move.strava_activity_id = activity.id
+    app.logger.info("associating strava activity %d to move %d" % (activity.id, move.id))
+    db.session.commit()
 
 
 @app.route('/login', methods=['GET', 'POST'])
