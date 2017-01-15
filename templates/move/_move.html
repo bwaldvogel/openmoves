@@ -22,7 +22,7 @@
 
     {% if move.strava_activity_id %}
         <h2>
-            {% if strava_name %}{{ strava_name }}{% endif %}
+            {% if strava_activity_name %}{{ strava_activity_name }}{% endif %}
             <a href="https://www.strava.com/activities/{{ move.strava_activity_id }}">
                 <img style="float:right; height: 16px;" alt="Strava activity {{ move.strava_activity_id }}" src="{{url_for('.static', filename='img/strava-logo.png')}}" />
             </a>
