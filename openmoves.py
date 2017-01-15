@@ -29,7 +29,7 @@ from sqlalchemy.sql import func
 import csv_export
 import gpx_export
 import imports
-import strava_import
+import strava
 from _import import postprocess_move
 from commands import AddUser, ImportMove, DeleteMove, ListMoves
 from filters import register_filters, register_globals, radian_to_degree, get_city
@@ -726,7 +726,7 @@ def strava_authorized():
 @app.route('/import/strava/<int:activity_id>', methods=['GET'])
 @login_required
 def import_strava(activity_id):
-    move = strava_import.strava_import(current_user, activity_id)
+    move = strava.strava_import(current_user, activity_id)
     data = {'move_id': move.id}
     return Response(json.dumps(data), mimetype='application/json')
 

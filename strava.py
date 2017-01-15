@@ -25,8 +25,7 @@ def map_type(type):
 
 
 def strava_import(current_user, activity_id):
-    strava_access_token = current_user.get_strava_access_token()
-    client = stravalib.client.Client(access_token=strava_access_token)
+    client = get_strava_client(current_user)
     activity = client.get_activity(activity_id=activity_id)
     stream_types = ['time', 'distance', 'latlng', 'temp', 'heartrate', 'velocity_smooth', 'altitude']
     streams = client.get_activity_streams(activity_id, types=stream_types)
@@ -124,6 +123,12 @@ def strava_import(current_user, activity_id):
     db.session.add(move)
     db.session.commit()
     return move
+
+
+def get_strava_client(current_user):
+    strava_access_token = current_user.get_strava_access_token()
+    client = stravalib.client.Client(access_token=strava_access_token)
+    return client
 
 
 def derive_move_infos_from_samples(move, samples):
