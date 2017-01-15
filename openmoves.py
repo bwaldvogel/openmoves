@@ -275,7 +275,7 @@ def move_import():
                             start_date_delta = abs(date_time - start_date)
 
                             for delta_hours in range(1, 3):
-                                if start_date_delta >= timedelta(hours=delta_hours, seconds=-2) and start_date_delta <= timedelta(hours=delta_hours, seconds=2):
+                                if timedelta(hours=delta_hours, seconds=-2) <= start_date_delta <= timedelta(hours=delta_hours, seconds=2):
                                     potential_moves.append(moves_by_date_time[date_time])
 
                         if len(potential_moves) == 1:
