@@ -690,6 +690,11 @@ def move(id):
         if move.stroke_count:
             assert len(model['swimming_strokes']) == move.stroke_count
 
+    if current_user.has_strava() and move.strava_activity_id is not None:
+        client = strava.get_strava_client(current_user)
+        strava_activity = client.get_activity(activity_id=move.strava_activity_id)
+        model['strava_name'] = strava_activity.name
+
     # eg. 'Pool swimming' → 'pool_swimming'
     activity_name = move.activity.lower().replace(' ', '_')
     try:

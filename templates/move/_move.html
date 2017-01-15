@@ -20,6 +20,16 @@
 
     <h1>{{macros.editable_activity(move)}}</h1>
 
+    {% if move.strava_activity_id %}
+        <a style="float: right" href="https://www.strava.com/activities/{{ move.strava_activity_id }}">
+            <img style="height: 16px;" alt="Strava activity {{ move.strava_activity_id }}" src="{{url_for('.static', filename='img/strava-logo.png')}}" />
+        </a>
+    {% endif %}
+
+    {% if strava_name %}
+        <h2>{{ strava_name }}</h2>
+    {% endif %}
+
     {% block subheader -%}{%- endblock %}
 
     {% if move.location_address -%}
