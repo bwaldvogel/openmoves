@@ -21,13 +21,12 @@
     <h1>{{macros.editable_activity(move)}}</h1>
 
     {% if move.strava_activity_id %}
-        <a style="float: right" href="https://www.strava.com/activities/{{ move.strava_activity_id }}">
-            <img style="height: 16px;" alt="Strava activity {{ move.strava_activity_id }}" src="{{url_for('.static', filename='img/strava-logo.png')}}" />
-        </a>
-    {% endif %}
-
-    {% if strava_name %}
-        <h2>{{ strava_name }}</h2>
+        <h2>
+            {% if strava_name %}{{ strava_name }}{% endif %}
+            <a href="https://www.strava.com/activities/{{ move.strava_activity_id }}">
+                <img style="float:right; height: 16px;" alt="Strava activity {{ move.strava_activity_id }}" src="{{url_for('.static', filename='img/strava-logo.png')}}" />
+            </a>
+        </h2>
     {% endif %}
 
     {% block subheader -%}{%- endblock %}
