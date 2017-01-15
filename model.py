@@ -52,6 +52,13 @@ class User(db.Model):
     def is_anonymous(self):
         return False
 
+    def has_strava(self):
+        return 'strava' in self.preferences
+
+    def get_strava_access_token(self):
+        assert self.has_strava()
+        return self.preferences['strava'].value['access_token']
+
     def get_id(self):
         return self.username
 

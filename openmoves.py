@@ -235,8 +235,8 @@ def move_import():
             return redirect(url_for('moves'))
     else:
         model = {}
-        if 'strava' in current_user.preferences:
-            strava_access_token = current_user.preferences['strava'].value['access_token']
+        if current_user.has_strava():
+            strava_access_token = current_user.get_strava_access_token()
             client = stravalib.client.Client(access_token=strava_access_token)
 
             all_moves = {}

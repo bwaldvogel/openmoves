@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 
 import numpy as np
-import pytz
 import stravalib
 from sqlalchemy.sql import func
 
@@ -26,7 +25,7 @@ def map_type(type):
 
 
 def strava_import(current_user, activity_id):
-    strava_access_token = current_user.preferences['strava'].value['access_token']
+    strava_access_token = current_user.get_strava_access_token()
     client = stravalib.client.Client(access_token=strava_access_token)
     activity = client.get_activity(activity_id=activity_id)
     stream_types = ['time', 'distance', 'latlng', 'temp', 'heartrate', 'velocity_smooth', 'altitude']
