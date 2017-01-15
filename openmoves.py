@@ -247,6 +247,7 @@ def move_import():
 
             moves_by_strava_activity_id = {}
             for id, strava_activity_id in db.session.query(Move.id, Move.strava_activity_id) \
+                    .filter(Move.user == current_user) \
                     .filter(Move.strava_activity_id != None):
                 moves_by_strava_activity_id[strava_activity_id] = id
 
