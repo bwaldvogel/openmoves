@@ -234,7 +234,7 @@ def move_import():
             flash("imported %d moves" % len(imported_moves))
             return redirect(url_for('moves'))
     else:
-        model = {}
+        model = {'has_strava': current_user.has_strava()}
         if current_user.has_strava():
             moves_by_date_time = {}
             for id, date_time in db.session.query(Sample.move_id, func.min(Sample.utc)) \
