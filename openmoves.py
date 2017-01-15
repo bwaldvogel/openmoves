@@ -236,32 +236,54 @@ def move_import():
     else:
         model = {}
         if current_user.has_strava():
-            strava_access_token = current_user.get_strava_access_token()
-            client = stravalib.client.Client(access_token=strava_access_token)
-
-            all_moves = {}
+            moves_by_date_time = {}
             for id, date_time in db.session.query(Sample.move_id, func.min(Sample.utc)) \
                     .join(Move) \
                     .filter(Sample.utc != None) \
                     .filter(Move.user == current_user) \
                     .group_by(Sample.move_id):
                 utc = date_time.replace(tzinfo=pytz.UTC)
-                all_moves[utc] = id
+                moves_by_date_time[utc] = id
+
+            moves_by_strava_activity_id = {}
+            for id, strava_activity_id in db.session.query(Move.id, Move.strava_activity_id):
+                moves_by_strava_activity_id[strava_activity_id] = id
 
             strava_activities = []
+            client = strava.get_strava_client(current_user)
+
             for activity in client.get_activities():
                 move_id = None
                 start_date = activity.start_date
-                if start_date in all_moves:
-                    move_id = all_moves[start_date]
+                if activity.id in moves_by_strava_activity_id:
+                    move_id = moves_by_strava_activity_id[activity.id]
+                elif start_date in moves_by_date_time:
+                    move_id = moves_by_date_time[start_date]
                 else:
-                    for date_time in all_moves.keys():
+                    for date_time in moves_by_date_time.keys():
                         start_date_delta = abs(date_time - start_date)
                         start_date_local_delta = abs(date_time - activity.start_date_local.replace(tzinfo=pytz.UTC))
                         max_delta = timedelta(seconds=30)
+
                         if start_date_delta <= max_delta or start_date_local_delta <= max_delta:
-                            move_id = all_moves[date_time]
+                            move_id = moves_by_date_time[date_time]
                             break
+
+                    if not move_id:
+                        potential_moves = []
+                        for date_time in moves_by_date_time.keys():
+                            start_date_delta = abs(date_time - start_date)
+
+                            for delta_hours in range(1, 3):
+                                if start_date_delta >= timedelta(hours=delta_hours, seconds=-2) and start_date_delta <= timedelta(hours=delta_hours, seconds=2):
+                                    potential_moves.append(moves_by_date_time[date_time])
+
+                        if len(potential_moves) == 1:
+                            move_id = potential_moves[0]
+                            move = Move.query.filter_by(id=move_id).one()
+                            move.strava_activity_id = activity.id
+                            app.logger.info("associating strava activity %d to move %d" % (activity.id, move.id))
+                            db.session.commit()
 
                 if not move_id:
                     strava_activities.append(activity)
