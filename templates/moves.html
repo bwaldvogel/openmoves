@@ -97,6 +97,7 @@
         <div class="col-sm-9">
             {% if total_moves_count > 0 %}
             <table class="table table-striped moves">
+            <thead>
                 <tr>
                     <th></th>
                     <th>{{macros.sortable('date_time', 'Time', 'desc')}}</th>
@@ -135,6 +136,8 @@
                     {%- endif %}
                     <th>{{macros.sortable('public', 'Status', 'desc')}}</th>
                 </tr>
+            </thead>
+            <tbody>
                 {% for move in moves %}
                 <tr>
                     <td><input type="checkbox" class="move-checkbox" id="move-checkbox-{{move.id}}" value="{{move.id}}" /></td>
@@ -175,6 +178,7 @@
                     <td>{{macros.editable_public(move, 'xs')}}</td>
                 </tr>
                 {% endfor %}
+            </tbody>
             </table>
             {% else %}
             <div class="well">No moves in selected date range.</div>
