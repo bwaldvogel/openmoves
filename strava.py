@@ -1,12 +1,15 @@
 from datetime import datetime, timedelta
 
 import numpy as np
+import pytz
 import stravalib
 from sqlalchemy.sql import func
 
 import gpx_import
 from filters import degree_to_radian, celcius_to_kelvin
 from model import User, Device, Move, Sample, db
+
+MAX_DATE_TIME_OFFSET = timedelta(hours=2, minutes=30)
 
 SAMPLE_TYPE = 'gps-base'
 
@@ -187,3 +190,65 @@ def heart_rate(hr):
     if hr is None:
         return None
     return float(hr) / 60.0
+
+
+def associate_activities(user, before=None, after=None):
+    assert user.has_strava()
+    moves_by_date_time = {}
+    for id, date_time in db.session.query(Sample.move_id, func.min(Sample.utc)) \
+            .join(Move) \
+            .filter(Sample.utc != None) \
+            .filter(Move.user == user) \
+            .group_by(Sample.move_id):
+        utc = date_time.replace(tzinfo=pytz.UTC)
+        moves_by_date_time[utc] = id
+    moves_by_strava_activity_id = {}
+    for id, strava_activity_id in db.session.query(Move.id, Move.strava_activity_id) \
+            .filter(Move.user == user) \
+            .filter(Move.strava_activity_id != None):
+        moves_by_strava_activity_id[strava_activity_id] = id
+    new_strava_activities = []
+    associated_strava_activities = []
+    known_strava_activities = []
+    client = get_strava_client(user)
+    for activity in client.get_activities(before=before, after=after):
+        move_id = None
+        start_date = activity.start_date
+        if activity.id in moves_by_strava_activity_id:
+            move_id = moves_by_strava_activity_id[activity.id]
+        elif start_date in moves_by_date_time:
+            move_id = moves_by_date_time[start_date]
+        else:
+            for date_time in moves_by_date_time.keys():
+                start_date_delta = abs(date_time - start_date)
+                start_date_local_delta = abs(date_time - activity.start_date_local.replace(tzinfo=pytz.UTC))
+                max_delta = timedelta(seconds=30)
+
+                if start_date_delta <= max_delta or start_date_local_delta <= max_delta:
+                    move_id = moves_by_date_time[date_time]
+                    break
+
+            if not move_id:
+                potential_moves = []
+                for date_time in moves_by_date_time.keys():
+                    start_date_delta = abs(date_time - start_date)
+                    if -MAX_DATE_TIME_OFFSET <= start_date_delta <= MAX_DATE_TIME_OFFSET:
+                        potential_moves.append(moves_by_date_time[date_time])
+
+                if len(potential_moves) == 1:
+                    move_id = potential_moves[0]
+                elif len(potential_moves) > 1:
+                    # too many candidates found
+                    pass
+
+        if not move_id:
+            new_strava_activities.append(activity)
+        elif activity.id in moves_by_strava_activity_id:
+            known_strava_activities.append(activity)
+        else:
+            move = Move.query.filter_by(id=move_id).one()
+            move.strava_activity_id = activity.id
+            db.session.commit()
+            associated_strava_activities.append((activity, move))
+
+    return associated_strava_activities, known_strava_activities, new_strava_activities

@@ -225,6 +225,18 @@ def move_import():
             if move_id:
                 imported_moves.append(move_id)
 
+    if imported_moves and current_user.has_strava():
+        after = min(imported_moves, key=lambda move: move.date_time).date_time - strava.MAX_DATE_TIME_OFFSET
+        before = max(imported_moves, key=lambda move: move.date_time).date_time + strava.MAX_DATE_TIME_OFFSET
+        app.logger.debug("trying to find Strava activities in (%s, %s)" % (before, after))
+        associated_activities, known_activities, new_activities = strava.associate_activities(current_user, before=before, after=after)
+        if len(associated_activities) == 1:
+            flash(u"associated with Strava activity %d" % associated_activities[0][0].id)
+        elif len(associated_activities) > 1:
+            flash(u"associated %d Strava activities" % len(associated_activities))
+        else:
+            flash(u'found no Strava activities to associate with' u'warning')
+
     if imported_moves:
         if len(imported_moves) == 1:
             move_id = imported_moves[0]
@@ -236,76 +248,21 @@ def move_import():
     else:
         model = {'has_strava': current_user.has_strava()}
         if current_user.has_strava():
-            moves_by_date_time = {}
-            for id, date_time in db.session.query(Sample.move_id, func.min(Sample.utc)) \
-                    .join(Move) \
-                    .filter(Sample.utc != None) \
-                    .filter(Move.user == current_user) \
-                    .group_by(Sample.move_id):
-                utc = date_time.replace(tzinfo=pytz.UTC)
-                moves_by_date_time[utc] = id
+            associated_activities, known_activities, new_activities = strava.associate_activities(current_user)
 
-            moves_by_strava_activity_id = {}
-            for id, strava_activity_id in db.session.query(Move.id, Move.strava_activity_id) \
-                    .filter(Move.user == current_user) \
-                    .filter(Move.strava_activity_id != None):
-                moves_by_strava_activity_id[strava_activity_id] = id
-
-            strava_activities = []
-            client = strava.get_strava_client(current_user)
-
-            for activity in client.get_activities():
-                move_id = None
-                start_date = activity.start_date
-                if activity.id in moves_by_strava_activity_id:
-                    move_id = moves_by_strava_activity_id[activity.id]
-                elif start_date in moves_by_date_time:
-                    move_id = moves_by_date_time[start_date]
-                else:
-                    for date_time in moves_by_date_time.keys():
-                        start_date_delta = abs(date_time - start_date)
-                        start_date_local_delta = abs(date_time - activity.start_date_local.replace(tzinfo=pytz.UTC))
-                        max_delta = timedelta(seconds=30)
-
-                        if start_date_delta <= max_delta or start_date_local_delta <= max_delta:
-                            move_id = moves_by_date_time[date_time]
-                            break
-
-                    if not move_id:
-                        potential_moves = []
-                        for date_time in moves_by_date_time.keys():
-                            start_date_delta = abs(date_time - start_date)
-                            if timedelta(hours=-2, minutes=-30) <= start_date_delta <= timedelta(hours=2, minutes=30):
-                                potential_moves.append(moves_by_date_time[date_time])
-
-                        if len(potential_moves) == 1:
-                            move_id = potential_moves[0]
-                        elif len(potential_moves) > 1:
-                            app.logger.info("too many candidates found: %d" % len(potential_moves))
-
-                if not move_id:
-                    strava_activities.append(activity)
-                elif activity.id not in moves_by_strava_activity_id:
-                    associate_strava_activity_to_move(activity, move_id)
-
-            model['strava_activities'] = strava_activities
+            model['new_strava_activities'] = new_activities
+            model['associated_strava_activities'] = associated_activities
+            model['known_strava_activities'] = known_activities
 
         elif 'STRAVA_CLIENT_ID' in app.config:
             client = stravalib.client.Client()
             client_id_ = app.config['STRAVA_CLIENT_ID']
             strava_authorize_url = client.authorization_url(client_id=client_id_,
-                                                            redirect_uri=url_for('strava_authorized',_external=True),
+                                                            redirect_uri=url_for('strava_authorized', _external=True),
                                                             scope='view_private')
             model['strava_authorize_url'] = strava_authorize_url
 
         return render_template('import.html', **model)
-
-
-def associate_strava_activity_to_move(activity, move_id):
-    move = Move.query.filter_by(id=move_id).one()
-    move.strava_activity_id = activity.id
-    app.logger.info("associating strava activity %d to move %d" % (activity.id, move.id))
-    db.session.commit()
 
 
 @app.route('/login', methods=['GET', 'POST'])

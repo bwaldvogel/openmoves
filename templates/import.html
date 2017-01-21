@@ -58,19 +58,70 @@
         <div class="panel-group" role="tablist" aria-multiselectable="true">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h4 class="panel-title">Strava</h4>
+                    <h4 class="panel-title">Strava
+                        {% if has_strava %}
+                            ({{ (new_strava_activities + associated_strava_activities + known_strava_activities) | length }} activities)
+                        {% endif %}
+                    </h4>
                 </div>
                 <div class="panel-body">
                     {% if has_strava %}
-                        {% if strava_activities %}
+                        {% if associated_strava_activities %}
                             <table class="table">
+                            <caption><h4>{{ associated_strava_activities|length }} associated activities</h4></caption>
+                            <thead>
+                            <tr>
+                                <th>OpenMoves</th>
+                                <th>Strava</th>
+                                <th>Date</th>
+                                <th>Duration</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for activity, move in associated_strava_activities %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('move', id=move.id) }}">{{ move.activity }}</a>
+                                    </td>
+                                    <td>
+                                        <a href="https://www.strava.com/activities/{{ activity.id }}">{{ activity.name }}</a>
+                                    </td>
+                                    <td>
+                                        {% if (activity.start_date_local - move.date_time) | abs | duration > '00:00:10.00' %}
+                                            Openmoves: {{ move.date_time | date_time }}<br/>
+                                            Strava: {{ activity.start_date_local | date_time }}
+                                            (Δ {{ (activity.start_date_local - move.date_time) | abs | duration }})
+                                        {% else %}
+                                            {{ move.date_time | date_time }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if (activity.elapsed_time - move.duration) | abs | duration > '00:01:00.00' %}
+                                            Openmoves: {{ move.duration | duration }}<br/>
+                                            Strava: {{ activity.elapsed_time | duration }}
+                                            (Δ {{ (activity.elapsed_time - move.duration) | abs | duration }})
+                                        {% else %}
+                                            {{ move.duration | duration }}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                            </table>
+                        {% endif %}
+                        {% if new_strava_activities %}
+                            <table class="table">
+                            <caption><h4>{{ new_strava_activities|length }} new activities</h4></caption>
+                            <thead>
                             <tr>
                                 <th>Type</th>
                                 <th>Time</th>
                                 <th>Name</th>
                                 <th></th>
                             </tr>
-                            {% for activity in strava_activities %}
+                            </thead>
+                            <tbody>
+                            {% for activity in new_strava_activities %}
                                 <tr id="import_{{ activity.id }}">
                                     <td>{{ activity.type }}</td>
                                     <td>{{ activity.start_date_local }}</td>
@@ -110,6 +161,7 @@
                                     </td>
                                 </tr>
                             {% endfor %}
+                            </tbody>
                             </table>
                         {% else %}
                             <p>Nothing to import.</p>
