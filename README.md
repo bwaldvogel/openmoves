@@ -29,9 +29,16 @@ An open source alternative to Movescount.
 
 ## Configuration
 
-Options and parameters of `openmoves.cfg`:
-* __BING_MAPS_API_KEY__ Bing maps API key. If not configured the Bing maps layers are disabled. Get your own key at https://www.bingmapsportal.com
+Configurations and parameters of `openmoves.cfg`
+
+Required:
 * __SQLALCHEMY_DATABASE_URI__ Database URL to be used
+
+Optional:
+* __BING_MAPS_API_KEY__ Bing maps API key. If not configured the Bing maps layers are disabled. Get your own key at https://www.bingmapsportal.com
+* __STRAVA_CLIENT_ID__ The client ID of the [Strava application][strava-application] (example: `12345`)
+* __STRAVA_CLIENT_SECRET__ The client secret of the [Strava application][strava-application] (example: `'ea01c8e942fd68a98d47ad96adb936a564089e2e'`)
+
 
 ## Running ##
 ```
@@ -97,3 +104,4 @@ Create an initial user:
 [pytest]: https://pytest.org/
 [pytest-tmpdir]: https://pytest.org/latest/tmpdir.html
 [qunit]: https://qunitjs.com/
+[strava-application]: https://www.strava.com/settings/api
