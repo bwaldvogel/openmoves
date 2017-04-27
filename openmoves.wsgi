@@ -1,9 +1,6 @@
 import sys
 sys.path.insert(0, '.')
 
-activate_this = 'virtualenv/bin/activate_this.py'
-execfile(activate_this, dict(__file__=activate_this))
-
 import openmoves
 application = openmoves.init(configfile='openmoves.cfg')
 
