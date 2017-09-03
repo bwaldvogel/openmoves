@@ -235,7 +235,7 @@ def move_import():
         elif len(associated_activities) > 1:
             flash(u"associated %d Strava activities" % len(associated_activities))
         else:
-            flash(u'found no Strava activities to associate with' u'warning')
+            flash(u'found no Strava activities to associate with', 'warning')
 
     if imported_moves:
         if len(imported_moves) == 1:
