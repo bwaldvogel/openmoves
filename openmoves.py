@@ -158,8 +158,8 @@ def init(configfile):
         SESSION_VERSION = 1
         app.config['SECRET_KEY'] = "%s-%d" % (app.config['SECRET_KEY'], SESSION_VERSION)
 
-        assert 'SQLALCHEMY_TRACK_MODIFICATIONS' not in app.config
-        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    assert 'SQLALCHEMY_TRACK_MODIFICATIONS' not in app.config
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     db.init_app(app)
 
