@@ -74,6 +74,30 @@ Hints or pull requests how to automate the qunit tests are welcome.
 
 We ship the [`openmoves.wsgi`][openmoves.wsgi] script to deploy OpenMoves in a Apache HTTP server with [`mod_wsgi`][modwsgi].
 
+Example configuration
+```
+<VirtualHost 127.0.0.1:80>
+    ServerAlias your.domain
+    ServerName your.domain
+
+    DocumentRoot /var/www/openmoves
+
+    AddDefaultCharset utf-8
+
+    WSGIDaemonProcess openmoves user=openmoves group=openmoves processes=1 threads=5 python-home=/var/www/openmoves/virtualenv python-path=/var/www/openmoves lang='en_US.UTF-8' locale='en_US.UTF-8'
+    WSGIScriptAlias   / /var/www/openmoves/openmoves.wsgi
+
+    <Directory /var/www/openmoves>
+        WSGIProcessGroup openmoves
+        WSGIApplicationGroup %{GLOBAL}
+        Order deny,allow
+        Allow from all
+    </Directory>
+
+    ServerAdmin mail@your.domain
+</VirtualHost>
+```
+
 ### PostgreSQL ###
 
 While OpenMoves uses an on-disk SQLite database by default, we recommend to
