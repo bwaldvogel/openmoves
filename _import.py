@@ -44,10 +44,26 @@ def postprocess_move(move):
         longitude = first_sample.longitude
 
         if latitude and longitude:
-            geo_locator = Nominatim()
+            geo_locator = Nominatim(user_agent='openmoves.net')
+            _nominatim_hack(geo_locator)
             location = geo_locator.reverse("%f, %f" % (radian_to_degree(latitude), radian_to_degree(longitude)), timeout=60)
             move.location_address = location.address
             move.location_raw = location.raw
+
+
+def _nominatim_hack(geocoder):
+    """HACK to geopy bugs #262 and #185"""
+    requester = geocoder.urlopen
+
+    def requester_hack(req, **kwargs):
+        try:
+            from urllib.request import Request
+        except ImportError:
+            from urllib2 import Request
+        req = Request(url=req, headers=geocoder.headers)
+        return requester(req, **kwargs)
+
+    geocoder.urlopen = requester_hack
 
 
 def normalize_move(move):
