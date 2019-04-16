@@ -20,7 +20,7 @@ from flask_login import login_user, current_user, login_required, logout_user
 from flask_migrate import Migrate, MigrateCommand
 from flask_script import Manager, Server
 from flask_util_js import FlaskUtilJs
-from geopy.distance import vincenty
+from geopy.distance import distance
 from jinja2.exceptions import TemplateNotFound
 from monthdelta import monthdelta
 from sqlalchemy import distinct, literal
@@ -115,7 +115,7 @@ def calculate_distances(model, samples):
             current_altitude_sample = sample
         if sample.latitude:
             if previous_gps_sample:
-                distance_horizontal = vincenty(_sample_to_point(previous_gps_sample), _sample_to_point(sample)).meters
+                distance_horizontal = distance(_sample_to_point(previous_gps_sample), _sample_to_point(sample)).meters
                 if previous_altitude_sample:
                     if current_altitude_sample != previous_altitude_sample and distance_horizontal > 0:
                         total_distance_horizontal += distance_horizontal

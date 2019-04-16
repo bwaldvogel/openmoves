@@ -7,7 +7,7 @@ import dateutil.parser
 import numpy as np
 import os
 from flask import flash
-from geopy.distance import vincenty
+from geopy.distance import distance
 from lxml import objectify
 
 from _import import postprocess_move
@@ -117,7 +117,7 @@ def parse_samples(tree, move, gpx_namespace, import_options):
                     sample.time = segment_samples[-1].time + time_delta
 
                     # Accumulate distance to previous sample
-                    distance_delta = vincenty((radian_to_degree(sample.latitude), radian_to_degree(sample.longitude)),
+                    distance_delta = distance((radian_to_degree(sample.latitude), radian_to_degree(sample.longitude)),
                                               (radian_to_degree(segment_samples[-1].latitude), radian_to_degree(segment_samples[-1].longitude))).meters
 
                     sample.distance = segment_samples[-1].distance + distance_delta
@@ -178,7 +178,7 @@ def insert_pause(samples, insert_pause_idx, move, pause_type):
     start_sample = samples[insert_pause_idx]
 
     pause_duration = start_sample.time - stop_sample.time
-    pause_distance = vincenty((radian_to_degree(stop_sample.latitude), radian_to_degree(stop_sample.longitude)),
+    pause_distance = distance((radian_to_degree(stop_sample.latitude), radian_to_degree(stop_sample.longitude)),
                               (radian_to_degree(start_sample.latitude), radian_to_degree(start_sample.longitude))).meters
 
     # Introduce start of pause sample
