@@ -61,9 +61,12 @@ def strava_import(current_user, activity_id):
     move.public = False
     move.source = "Strava activity id=%d; external_id='%s'" % (activity_id, activity.external_id)
 
-    lengths = set([len(streams[stream].data) for stream in streams])
-    assert len(lengths) == 1
-    length, = lengths
+    if streams:
+        lengths = set([len(streams[stream].data) for stream in streams])
+        assert len(lengths) == 1
+        length, = lengths
+    else:
+        length = 0
 
     move.speed_max = move.speed_avg
 
