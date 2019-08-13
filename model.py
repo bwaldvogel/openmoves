@@ -154,7 +154,7 @@ class Move(db.Model):
     location_address = db.Column('location_address', db.String, nullable=True)
     location_raw = db.Column('location_raw', JsonEncodedDict(4096), nullable=True)
 
-    strava_activity_id = db.Column('strava_activity_id', db.Integer, nullable=True)
+    strava_activity_id = db.Column('strava_activity_id', db.BigInteger, nullable=True)
 
 
 class Sample(db.Model):
