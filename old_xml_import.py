@@ -18,7 +18,7 @@ def parse_move(tree):
 
 
 def old_xml_import(xmlfile, user, request_form):
-    filename = xmlfile.filename
+    filename = xmlfile.name
     data = xmlfile.readlines()
 
     if isinstance(data[0], bytes):

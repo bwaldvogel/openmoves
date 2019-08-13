@@ -33,7 +33,7 @@ def parse_device(tree):
 
 
 def sml_import(xmlfile, user, request_form):
-    filename = xmlfile.filename
+    filename = xmlfile.name
     tree = objectify.parse(xmlfile).getroot()
     move = parse_move(tree)
     move.source = os.path.abspath(filename)
