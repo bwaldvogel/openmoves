@@ -12,3 +12,6 @@ SMTP_SERVER = '127.0.0.1'
 # ADMINS = ['you@example.com']
 # SYSTEM_SENDER_ADDRESS = 'you@example.com'
 # BING_MAPS_API_KEY = 'get your key at https://www.bingmapsportal.com'
+
+# STRAVA_CLIENT_ID = 12345
+# STRAVA_CLIENT_SECRET = '…'
