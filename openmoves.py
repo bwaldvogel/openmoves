@@ -709,7 +709,7 @@ def strava_authorized():
     code = request.args.get('code') # or whatever your framework does
     client = stravalib.client.Client()
     access_token = client.exchange_code_for_token(client_id=app.config['STRAVA_CLIENT_ID'], client_secret=app.config['STRAVA_CLIENT_SECRET'], code=code)
-    current_user.preferences['strava'] = UserPreference('strava', {'access_token': access_token})
+    current_user.preferences['strava'] = UserPreference('strava', access_token)
     db.session.commit()
     flash("Access to Strava API granted")
     return redirect(url_for('move_import'))
