@@ -40,6 +40,26 @@ Optional:
 * __STRAVA_CLIENT_SECRET__ The client secret of the [Strava application][strava-application] (example: `'ea01c8e942fd68a98d47ad96adb936a564089e2e'`)
 
 
+## Setting up with PostgreSQL
+
+Start a Postgres database which stores all data in `./postgres-data/`
+
+```
+$ docker-compose up -d
+```
+
+Adjust the `SQLALCHEMY_DATABASE_URI` in the `openmoves.cfg`
+
+```
+SQLALCHEMY_DATABASE_URI = 'postgresql://openmoves:openmoves@localhost:5432/openmoves'
+```
+
+Initialize the database schema
+
+```
+$ ./openmoves.py db upgrade
+```
+
 ## Running ##
 ```
 # ./openmoves.py runserver

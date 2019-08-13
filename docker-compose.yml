@@ -1,0 +1,19 @@
+version: '2.1'
+
+services:
+  postgres:
+    image: postgres:11.3-alpine
+    container_name: openmoves-postgres
+    environment:
+      - POSTGRES_USER=openmoves
+      - POSTGRES_PASSWORD=openmoves
+      - POSTGRES_DB=openmoves
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    ports:
+      - 127.0.0.1:5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5

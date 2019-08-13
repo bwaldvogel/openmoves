@@ -16,3 +16,5 @@ virtualenv*/
 .cache
 
 .idea/
+
+/postgres-data/
