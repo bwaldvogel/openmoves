@@ -33,17 +33,6 @@ def strava_import(current_user, activity_id):
     stream_types = ['time', 'distance', 'latlng', 'temp', 'heartrate', 'velocity_smooth', 'altitude']
     streams = client.get_activity_streams(activity_id, types=stream_types)
 
-    device_ids = [device_id for device_id, in db.session.query(func.distinct(Move.device_id))
-        .join(User)
-        .join(Device)
-        .filter(Device.name != gpx_import.GPX_DEVICE_NAME)
-        .filter(Move.user == current_user).all()]
-
-    assert len(device_ids) == 1
-    device_id = device_ids[0]
-
-    device = db.session.query(Device).filter_by(id = device_id).one();
-
     activity_string = map_type(activity.type)
 
     result = db.session.query(Move.activity_type).filter(Move.activity == activity_string).first()
@@ -51,6 +40,8 @@ def strava_import(current_user, activity_id):
         activity_type, = result
     else:
         activity_type = None
+
+    device = find_device(current_user)
 
     move = Move()
     move.user = current_user
@@ -127,6 +118,22 @@ def strava_import(current_user, activity_id):
     db.session.add(move)
     db.session.commit()
     return move
+
+
+def find_device(current_user):
+    device_ids = [device_id for device_id, in db.session.query(func.distinct(Move.device_id))
+        .join(User)
+        .join(Device)
+        .filter(Device.name != gpx_import.GPX_DEVICE_NAME)
+        .filter(Move.user == current_user).all()]
+
+    if not device_ids:
+        return None
+
+    assert len(device_ids) == 1
+    device_id = device_ids[0]
+    device = db.session.query(Device).filter_by(id=device_id).one()
+    return device
 
 
 def get_strava_client(current_user):

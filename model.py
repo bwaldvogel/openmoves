@@ -86,7 +86,7 @@ class Move(db.Model):
 
     public = db.Column(db.Boolean, name='public', nullable=False)
 
-    device_id = db.Column(db.Integer, db.ForeignKey(Device.id), name='device_id', nullable=False)
+    device_id = db.Column(db.Integer, db.ForeignKey(Device.id), name='device_id', nullable=True)
     device = db.relationship(Device, backref=db.backref('devices', lazy='dynamic'))
 
     date_time = db.Column(db.DateTime, name='date_time', nullable=False)
