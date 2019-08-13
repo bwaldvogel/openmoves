@@ -12,7 +12,7 @@ An open source alternative to Movescount.
 
 
 ## Requirements ##
- - Python 2.7, 3.4, 3.5 or 3.6
+ - Python 3.5, 3.6 or 3.7
  - [virtualenv][virtualenv]
  - [pip (package manager)][pip]
 
