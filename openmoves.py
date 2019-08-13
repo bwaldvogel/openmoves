@@ -259,7 +259,7 @@ def move_import():
             client_id_ = app.config['STRAVA_CLIENT_ID']
             strava_authorize_url = client.authorization_url(client_id=client_id_,
                                                             redirect_uri=url_for('strava_authorized', _external=True),
-                                                            scope='view_private')
+                                                            scope='activity:read_all')
             model['strava_authorize_url'] = strava_authorize_url
 
         return render_template('import.html', **model)
