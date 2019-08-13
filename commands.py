@@ -34,6 +34,10 @@ class AddUser(Command):
 
             user = User(username=username)
             user.password = self.app_bcrypt.generate_password_hash(password, 10)
+
+            if user.password is not str:
+                user.password = user.password.decode('utf-8')
+
             user.active = True
             db.session.add(user)
             db.session.commit()
