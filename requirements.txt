@@ -16,7 +16,7 @@ Flask-Script==2.0.6
 Flask-Migrate==2.5.2
 flask_util_js==0.2.25
 geopy==1.20.0
-numpy==1.17.0
+numpy==1.16.2
 pytz==2019.2
 MonthDelta==0.9.1
 stravalib==0.10.2

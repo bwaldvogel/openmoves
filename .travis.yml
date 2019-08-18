@@ -1,7 +1,5 @@
 language: python
 cache: pip
-before_script:
-  - pip3 uninstall numpy -y
 python:
   - 3.5
   - 3.6
