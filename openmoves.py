@@ -230,11 +230,11 @@ def move_import():
         app.logger.debug("trying to find Strava activities in (%s, %s)" % (before, after))
         associated_activities, known_activities, new_activities = strava.associate_activities(current_user, before=before, after=after)
         if len(associated_activities) == 1:
-            flash(u"associated with Strava activity %d" % associated_activities[0][0].id)
+            flash("associated with Strava activity %d" % associated_activities[0][0].id)
         elif len(associated_activities) > 1:
-            flash(u"associated %d Strava activities" % len(associated_activities))
+            flash("associated %d Strava activities" % len(associated_activities))
         else:
-            flash(u'found no Strava activities to associate with', 'warning')
+            flash('found no Strava activities to associate with', 'warning')
 
     if imported_moves:
         if len(imported_moves) == 1:
@@ -652,7 +652,7 @@ def move(id):
     if gps_samples:
         if not move.location_address:
             postprocess_move(move)
-            flash(u"got %d GPS samples but no location. recalculated" % len(gps_samples), u'warning')
+            flash("got %d GPS samples but no location. recalculated" % len(gps_samples), 'warning')
             db.session.commit()
 
         calculate_distances(model, move.samples)

@@ -17,7 +17,7 @@ class AddUser(Command):
 
     def get_options(self):
         return [
-            Option('--username', '-u', dest='username', required=True),
+            Option('--username', '-', dest='username', required=True),
             Option('--password', '-p', dest='password', required=False),
         ]
 
@@ -53,7 +53,7 @@ class ImportMove(Command):
 
     def get_options(self):
         return [
-            Option('--username', '-u', dest='username', required=True),
+            Option('--username', '-', dest='username', required=True),
             Option('--filename', '-f', dest='filename', required=True),
         ]
 

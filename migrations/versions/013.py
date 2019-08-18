@@ -12,7 +12,7 @@ def upgrade():
                     sa.Column('move_id', sa.Integer(), nullable=False),
                     sa.Column('old_value', sa.String(), nullable=False),
                     sa.Column('new_value', sa.String(), nullable=False),
-                    sa.ForeignKeyConstraint(['move_id'], [u'move.id'], ),
+                    sa.ForeignKeyConstraint(['move_id'], ['move.id'], ),
                     sa.PrimaryKeyConstraint('id')
                     )
 

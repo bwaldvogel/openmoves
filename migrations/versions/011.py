@@ -93,12 +93,12 @@ def postprocess_moves():
     moves_count = session.query(Move).count()
     for idx, move in enumerate(session.query(Move)):
 
-        print(u"processing move %d/%d" % (idx + 1, moves_count))
+        print("processing move %d/%d" % (idx + 1, moves_count))
 
         gps_samples = [sample for sample in move.samples if sample.sample_type and sample.sample_type.startswith('gps-')]
 
         if len(gps_samples) > 0:
-            print(u"  got %d GPS samples for move %d: %s" % (len(gps_samples), move.id, move.activity))
+            print("  got %d GPS samples for move %d: %s" % (len(gps_samples), move.id, move.activity))
 
             gps_center = calculate_gps_center(gps_samples)
             move.gps_center_latitude = gps_center[0]
@@ -124,4 +124,4 @@ def postprocess_moves():
             move.location_address = location.address
             move.location_raw = json.dumps(location.raw)
         else:
-            print(u"  got no GPS samples for move %d: %s" % (move.id, move.activity))
+            print("  got no GPS samples for move %d: %s" % (move.id, move.activity))

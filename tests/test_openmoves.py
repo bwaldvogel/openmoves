@@ -30,7 +30,7 @@ class TestOpenMoves(object):
         self.app = app
         self.client = app.test_client()
 
-    def _login(self, username=u'test_user', password=u'test password'):
+    def _login(self, username='test_user', password='test password'):
         data = {'username': username, 'password': password, 'timezone': 'Europe/Berlin'}
         return self.client.post('/login', data=data, follow_redirects=True)
 
@@ -107,7 +107,7 @@ class TestOpenMoves(object):
 
         with pytest.raises(AssertionError) as e:
             cmd.run(username='test_user')
-        assert u"user already exists" in str(e.value)
+        assert "user already exists" in str(e.value)
 
         cmd.run(username='test_user2')
         with app.test_request_context():
@@ -117,21 +117,21 @@ class TestOpenMoves(object):
     def test_index(self, tmpdir):
         response = self.client.get('/')
         response_data = response_data = self._validate_response(response, tmpdir)
-        assert u"An open source alternative" in response_data
-        assert u"0 moves already analyzed" in response_data
+        assert "An open source alternative" in response_data
+        assert "0 moves already analyzed" in response_data
 
     def test_login_get(self, tmpdir):
         response = self.client.get('/login')
         response_data = self._validate_response(response, tmpdir)
-        assert u"<title>OpenMoves – Login</title>" in response_data
-        assert u"Please sign in" in response_data
+        assert "<title>OpenMoves – Login</title>" in response_data
+        assert "Please sign in" in response_data
 
     def test_login_invalid(self, tmpdir):
         data = {'username': 'user which does not exist', 'password': 'test password'}
         response = self.client.post('/login', data=data)
         response_data = self._validate_response(response, tmpdir)
-        assert u"no such user" in response_data
-        assert u"Please sign in" in response_data
+        assert "no such user" in response_data
+        assert "Please sign in" in response_data
 
     def test_login_valid(self, tmpdir):
 
@@ -148,12 +148,12 @@ class TestOpenMoves(object):
 
         response = self._login()
         response_data = self._validate_response(response, tmpdir)
-        assert u"<title>OpenMoves – Dashboard</title>" in response_data
+        assert "<title>OpenMoves – Dashboard</title>" in response_data
 
     def test_login_logout_other_user(self, tmpdir):
 
-        username = u'other_user'
-        password = u'Paßswörd→✓≈'
+        username = 'other_user'
+        password = 'Paßswörd→✓≈'
 
         with app.test_request_context():
             user = User(username=username, active=True)
@@ -163,18 +163,18 @@ class TestOpenMoves(object):
 
         response = self._login(username=username, password=password)
         response_data = self._validate_response(response, tmpdir)
-        assert u'<title>OpenMoves – Dashboard</title>' in response_data
+        assert '<title>OpenMoves – Dashboard</title>' in response_data
         assert username in response_data
 
         response = self.client.get('/logout', follow_redirects=True)
         response_data = self._validate_response(response, tmpdir)
-        assert u'<title>OpenMoves</title>' in response_data
+        assert '<title>OpenMoves</title>' in response_data
         assert username not in response_data
 
     def test_custom_404(self, tmpdir):
         response = self.client.get('/page-which-does-not-exist')
         response_data = self._validate_response(response, tmpdir, code=404, check_content=True)
-        assert u"<title>OpenMoves – Not found</title>" in response_data
+        assert "<title>OpenMoves – Not found</title>" in response_data
 
     def test_moves_not_logged_in(self, tmpdir):
         self._assert_requires_login('/moves')
@@ -183,8 +183,8 @@ class TestOpenMoves(object):
         self._login()
         response = self.client.get('/moves')
         response_data = self._validate_response(response, tmpdir)
-        assert u"<title>OpenMoves – Moves</title>" in response_data
-        assert u'No moves in selected date range' in response_data
+        assert "<title>OpenMoves – Moves</title>" in response_data
+        assert 'No moves in selected date range' in response_data
 
     def test_move_not_found(self, tmpdir):
         self._login()
@@ -203,7 +203,7 @@ class TestOpenMoves(object):
         self._login()
         response = self.client.get('/dashboard')
         response_data = self._validate_response(response, tmpdir)
-        assert u'<title>OpenMoves – Dashboard</title>' in response_data
+        assert '<title>OpenMoves – Dashboard</title>' in response_data
 
     def test_export_move_not_found(self, tmpdir):
         self._login()
@@ -214,7 +214,7 @@ class TestOpenMoves(object):
         self._login()
         response = self.client.get('/import')
         response_data = self._validate_response(response, tmpdir)
-        assert u'<title>OpenMoves – Import</title>' in response_data
+        assert '<title>OpenMoves – Import</title>' in response_data
         assert 'Please find' in response_data
         assert '%AppData%/Suunto/Moveslink2' in response_data
 
@@ -229,16 +229,16 @@ class TestOpenMoves(object):
             response = self.client.post('/import', data=data, follow_redirects=True)
 
         response_data = self._validate_response(response, tmpdir)
-        assert u'<title>OpenMoves – Move 1</title>' in response_data
-        assert u"imported &#39;%s&#39;: move 1" % filename in response_data
-        assert u'>Pool swimming</' in response_data
-        assert u'<td>2014-11-09 14:55:13</td>' in response_data
-        assert u'<td>02:07.80 min / 100 m</td>' in response_data
-        assert u'<td>795</td>' in response_data  # strokes
+        assert '<title>OpenMoves – Move 1</title>' in response_data
+        assert "imported &#39;%s&#39;: move 1" % filename in response_data
+        assert '>Pool swimming</' in response_data
+        assert '<td>2014-11-09 14:55:13</td>' in response_data
+        assert '<td>02:07.80 min / 100 m</td>' in response_data
+        assert '<td>795</td>' in response_data  # strokes
         # first pause
-        assert u'<span class="date-time">2014-11-09 15:15:49.991</span>' in response_data
-        assert u'<span class="date-time">2014-11-09 15:26:45.314</span>' in response_data
-        assert u'<td>00:10:55.32</td>' in response_data
+        assert '<span class="date-time">2014-11-09 15:15:49.991</span>' in response_data
+        assert '<span class="date-time">2014-11-09 15:26:45.314</span>' in response_data
+        assert '<td>00:10:55.32</td>' in response_data
 
         with app.test_request_context():
             move = Move.query.one()
@@ -267,8 +267,8 @@ class TestOpenMoves(object):
                 response = self.client.post('/import', data=data, follow_redirects=True)
         response_data = self._validate_response(response, tmpdir)
 
-        assert u'<title>OpenMoves – Moves</title>' in response_data
-        assert u'imported 2 moves' in response_data
+        assert '<title>OpenMoves – Moves</title>' in response_data
+        assert 'imported 2 moves' in response_data
 
         with app.test_request_context():
             move = Move.query.filter(Move.activity == 'Trekking').one()
@@ -300,7 +300,7 @@ class TestOpenMoves(object):
     def test_move_public_not_logged_in(self, tmpdir):
         response = self.client.get('/moves/2')
         response_data = self._validate_response(response, tmpdir)
-        assert u'<title>OpenMoves – Move 2</title>' in response_data
+        assert '<title>OpenMoves – Move 2</title>' in response_data
 
     def test_delete_move_public_not_logged_in(self, tmpdir):
         self._assert_requires_login('/moves/2/delete')
@@ -309,7 +309,7 @@ class TestOpenMoves(object):
         response = self.client.get('/moves/2/export', follow_redirects=True)
         response_data = self._validate_response(response, tmpdir, check_content=False)
         assert response.headers['Content-Disposition'] == 'attachment; filename=Move_2014-12-31T12_00_32_DE_Stegen_Trekking.gpx'
-        assert u'<gpx ' in response_data
+        assert '<gpx ' in response_data
 
     def test_import_move_upload_gpx(self, tmpdir):
         self._login()
@@ -326,8 +326,8 @@ class TestOpenMoves(object):
             count = Move.query.count()
 
         response_data = self._validate_response(response, tmpdir)
-        assert u"<title>OpenMoves – Move %d</title>" % count in response_data
-        assert u'imported' in response_data
+        assert "<title>OpenMoves – Move %d</title>" % count in response_data
+        assert 'imported' in response_data
         assert filename in response_data
 
         with app.test_request_context():
@@ -408,7 +408,7 @@ class TestOpenMoves(object):
         # Finally delete the GPX import for next GPX import test with pause detection
         response_delete = self.client.get('/moves/%d/delete' % count, follow_redirects=True)
         response_delete_data = self._validate_response(response_delete, tmpdir)
-        assert u"move %d deleted" % count in response_delete_data
+        assert "move %d deleted" % count in response_delete_data
 
 
     def test_import_move_upload_gpx_with_pause_detection(self, tmpdir):
@@ -429,8 +429,8 @@ class TestOpenMoves(object):
             count = Move.query.count()
 
         response_data = self._validate_response(response, tmpdir)
-        assert u"<title>OpenMoves – Move %d</title>" % count in response_data
-        assert u'imported' in response_data
+        assert "<title>OpenMoves – Move %d</title>" % count in response_data
+        assert 'imported' in response_data
         assert filename in response_data
 
         with app.test_request_context():
@@ -504,50 +504,50 @@ class TestOpenMoves(object):
         assert count_after == count_before
 
         response_data = self._validate_response(response, tmpdir)
-        assert u'<title>OpenMoves – Import</title>' in response_data
-        assert u'already exists' in response_data
+        assert '<title>OpenMoves – Import</title>' in response_data
+        assert 'already exists' in response_data
 
     def test_moves(self, tmpdir):
         self._login()
         response = self.client.get('/moves?start_date=2014-01-01&end_date=2014-12-31')
         response_data = self._validate_response(response, tmpdir)
 
-        assert u'<title>OpenMoves – Moves</title>' in response_data
-        assert u'<td><a href="/moves/1">2014-11-09 14:55:13</a></td>' in response_data
-        assert u'<td><a href="/moves/2">2014-12-31 12:00:32</a></td>' in response_data
-        assert u'<td><a href="/moves/3">2014-07-23 18:56:14</a></td>' in response_data
+        assert '<title>OpenMoves – Moves</title>' in response_data
+        assert '<td><a href="/moves/1">2014-11-09 14:55:13</a></td>' in response_data
+        assert '<td><a href="/moves/2">2014-12-31 12:00:32</a></td>' in response_data
+        assert '<td><a href="/moves/3">2014-07-23 18:56:14</a></td>' in response_data
 
-        assert u'All moves <span class="badge">3</span>' in response_data
-        assert u'Cycling <span class="badge">1</span>' in response_data
-        assert u'Trekking <span class="badge">1</span>' in response_data
-        assert u'Pool swimming <span class="badge">1</span>' in response_data
+        assert 'All moves <span class="badge">3</span>' in response_data
+        assert 'Cycling <span class="badge">1</span>' in response_data
+        assert 'Trekking <span class="badge">1</span>' in response_data
+        assert 'Pool swimming <span class="badge">1</span>' in response_data
 
-        assert u'>Pool swimming</' in response_data
-        assert u'<td>00:31:25.00</td>' in response_data
-        assert u'<td>1475 m</td>' in response_data
-        assert u'<td><span>2.8 km/h</span></td>' in response_data
-        assert u'<td><span>27.4°C</span></td>' in response_data
-        assert u'<td>795</td>' in response_data
+        assert '>Pool swimming</' in response_data
+        assert '<td>00:31:25.00</td>' in response_data
+        assert '<td>1475 m</td>' in response_data
+        assert '<td><span>2.8 km/h</span></td>' in response_data
+        assert '<td><span>27.4°C</span></td>' in response_data
+        assert '<td>795</td>' in response_data
 
     def test_moves_with_date_range(self, tmpdir):
         self._login()
 
         response = self.client.get('/moves?start_date=2014-11-09&end_date=2014-11-09')
         response_data = self._validate_response(response, tmpdir)
-        assert u'<td><a href="/moves/1">2014-11-09 14:55:13</a></td>' in response_data
-        assert u'All moves <span class="badge">1</span>' in response_data
-        assert u'Pool swimming <span class="badge">1</span>' in response_data
-        assert u'Cycling' not in response_data
-        assert u'Trekking' not in response_data
+        assert '<td><a href="/moves/1">2014-11-09 14:55:13</a></td>' in response_data
+        assert 'All moves <span class="badge">1</span>' in response_data
+        assert 'Pool swimming <span class="badge">1</span>' in response_data
+        assert 'Cycling' not in response_data
+        assert 'Trekking' not in response_data
 
         response = self.client.get('/moves?start_date=2014-07-01&end_date=2014-12-01')
         response_data = self._validate_response(response, tmpdir)
-        assert u'<td><a href="/moves/1">2014-11-09 14:55:13</a></td>' in response_data
-        assert u'<td><a href="/moves/3">2014-07-23 18:56:14</a></td>' in response_data
-        assert u'All moves <span class="badge">2</span>' in response_data
-        assert u'Cycling <span class="badge">1</span>' in response_data
-        assert u'Pool swimming <span class="badge">1</span>' in response_data
-        assert u'Trekking' not in response_data
+        assert '<td><a href="/moves/1">2014-11-09 14:55:13</a></td>' in response_data
+        assert '<td><a href="/moves/3">2014-07-23 18:56:14</a></td>' in response_data
+        assert 'All moves <span class="badge">2</span>' in response_data
+        assert 'Cycling <span class="badge">1</span>' in response_data
+        assert 'Pool swimming <span class="badge">1</span>' in response_data
+        assert 'Trekking' not in response_data
 
     def test_move_pages(self, tmpdir):
         self._login()
@@ -555,8 +555,8 @@ class TestOpenMoves(object):
             for move in Move.query:
                 response = self.client.get("/moves/%d" % move.id)
                 response_data = self._validate_response(response, tmpdir)
-                assert u"<title>OpenMoves – Move %d</title>" % move.id in response_data
-                assert u">%s</" % move.activity in response_data
+                assert "<title>OpenMoves – Move %d</title>" % move.id in response_data
+                assert ">%s</" % move.activity in response_data
 
     def test_csv_export_filename(self, tmpdir):
         self._login()
@@ -582,19 +582,19 @@ class TestOpenMoves(object):
         response = self.client.get('/moves/3/export?format=gpx')
         response_data = self._validate_response(response, tmpdir, check_content=False)
         assert response.headers['Content-Disposition'] == 'attachment; filename=Move_2014-07-23T18_56_14_DE_Rheinbach_Cycling.gpx'
-        assert u'<gpx ' in response_data
-        assert u'lat="50.632' in response_data
-        assert u'lon="6.952' in response_data
+        assert '<gpx ' in response_data
+        assert 'lat="50.632' in response_data
+        assert 'lon="6.952' in response_data
 
     def test_gpx_export_umlaut_in_filename(self, tmpdir):
         with app.test_request_context():
             move = Move.query.filter(Move.id == 3).one()
-            move.location_raw = {'address': {'city_district': u'Galtür', 'country_code': 'at'}}
+            move.location_raw = {'address': {'city_district': 'Galtür', 'country_code': 'at'}}
             db.session.commit()
 
         self._login()
         response = self.client.get('/moves/3/export?format=gpx')
-        assert response.headers['Content-Disposition'] == u'attachment; filename=Move_2014-07-23T18_56_14_AT_Galt%C3%BCr_Cycling.gpx'
+        assert response.headers['Content-Disposition'] == 'attachment; filename=Move_2014-07-23T18_56_14_AT_Galt%C3%BCr_Cycling.gpx'
 
     def test_move_with_heart_rate(self, tmpdir):
         self._login()
@@ -610,15 +610,15 @@ class TestOpenMoves(object):
             count = Move.query.count()
 
         response_data = self._validate_response(response, tmpdir)
-        assert u"<title>OpenMoves – Move %d</title>" % count in response_data
-        assert u'>Kayaking</' in response_data
-        assert u'<th>Avg. Heart Rate</th>' in response_data
-        assert u'<td><span>97 bpm</span></td>' in response_data
+        assert "<title>OpenMoves – Move %d</title>" % count in response_data
+        assert '>Kayaking</' in response_data
+        assert '<th>Avg. Heart Rate</th>' in response_data
+        assert '<td><span>97 bpm</span></td>' in response_data
 
         response = self.client.get('/moves?start_date=2014-01-01&end_date=2020-01-01')
         response_data = self._validate_response(response, tmpdir)
-        assert re.search(u'<th><a href="/moves.+?">Heart Rate</a></th>', response_data)
-        assert u'<td><span>97 bpm</span></td>' in response_data
+        assert re.search('<th><a href="/moves.+?">Heart Rate</a></th>', response_data)
+        assert '<td><span>97 bpm</span></td>' in response_data
 
     def test_import_move_with_relative_performance_level(self, tmpdir):
         self._login()
@@ -634,8 +634,8 @@ class TestOpenMoves(object):
             count = Move.query.count()
 
         response_data = self._validate_response(response, tmpdir)
-        assert u"<title>OpenMoves – Move %d</title>" % count in response_data
-        assert u'>Running</' in response_data
+        assert "<title>OpenMoves – Move %d</title>" % count in response_data
+        assert '>Running</' in response_data
         assert filename in response_data
 
     def test_activity_types_not_logged_in(self, tmpdir):
@@ -661,34 +661,34 @@ class TestOpenMoves(object):
         data = {'name': 'some illegal name', 'pk': 1}
         with pytest.raises(ValueError) as e:
             self.client.post('/moves/1', data=data)
-        assert u"illegal name" in str(e.value)
+        assert "illegal name" in str(e.value)
 
     def test_dashboard_all_moves(self, tmpdir):
         self._login()
         response = self.client.get('/dashboard?start_date=2014-01-01&end_date=2014-12-31')
         response_data = self._validate_response(response, tmpdir)
-        assert u'<title>OpenMoves – Dashboard</title>' in response_data
-        assert u'>#Moves<' in response_data
-        assert u'>4<' in response_data
-        assert u'<th>Total Distance</th><td>33.55 km</td>' in response_data
-        assert u'<th>Total Duration</th><td>03:47:09.60</td>' in response_data
-        assert u'<th>Total Average</th>' in response_data
-        assert u'<th>Total Ascent</th><td>110 m</td>' in response_data
-        assert u'<th>Total Descent</th><td>218 m</td>' in response_data
+        assert '<title>OpenMoves – Dashboard</title>' in response_data
+        assert '>#Moves<' in response_data
+        assert '>4<' in response_data
+        assert '<th>Total Distance</th><td>33.55 km</td>' in response_data
+        assert '<th>Total Duration</th><td>03:47:09.60</td>' in response_data
+        assert '<th>Total Average</th>' in response_data
+        assert '<th>Total Ascent</th><td>110 m</td>' in response_data
+        assert '<th>Total Descent</th><td>218 m</td>' in response_data
 
     def test_dashboard_with_date_range(self, tmpdir):
         self._login()
         response = self.client.get('/dashboard?start_date=2014-08-01&end_date=2014-12-01')
         response_data = self._validate_response(response, tmpdir)
-        assert u'<title>OpenMoves – Dashboard</title>' in response_data
-        assert u'>#Moves<' in response_data
-        assert u'>2<' in response_data
-        assert u'<th>Total Distance</th><td>10.05 km</td>' in response_data
-        assert u'<th>Total Duration</th><td>02:20:23.30</td>' in response_data
+        assert '<title>OpenMoves – Dashboard</title>' in response_data
+        assert '>#Moves<' in response_data
+        assert '>2<' in response_data
+        assert '<th>Total Distance</th><td>10.05 km</td>' in response_data
+        assert '<th>Total Duration</th><td>02:20:23.30</td>' in response_data
 
     def test_edit_move_different_user(self, tmpdir):
-        username = u'some different user'
-        password = u'some other password'
+        username = 'some different user'
+        password = 'some other password'
         with app.test_request_context():
             user = User(username=username, active=True)
             user.password = openmoves.app_bcrypt.generate_password_hash(password, 10)
@@ -707,7 +707,7 @@ class TestOpenMoves(object):
         data = {'name': 'activity', 'pk': 1, 'value': 'illegal activity'}
         with pytest.raises(ValueError) as e:
             self.client.post('/moves/1', data=data)
-        assert u"illegal activity" in str(e.value)
+        assert "illegal activity" in str(e.value)
 
     def test_edit_move_activity_success(self, tmpdir):
         self._login()
@@ -735,11 +735,11 @@ class TestOpenMoves(object):
 
             response = self.client.get('/moves?start_date=2013-01-01&end_date=2020-01-01')
             response_data = self._validate_response(response, tmpdir)
-            assert u'<title>OpenMoves – Moves</title>' in response_data
+            assert '<title>OpenMoves – Moves</title>' in response_data
 
             total_moves = Move.query.count()
             assert total_moves == total_moves_before - len(ids)
-            assert u"All moves <span class=\"badge\">%d</span>" % total_moves in response_data
+            assert "All moves <span class=\"badge\">%d</span>" % total_moves in response_data
 
     def test_delete_moves(self, tmpdir):
         self._login()
@@ -752,14 +752,14 @@ class TestOpenMoves(object):
 
                 response = self.client.get('/moves?start_date=2013-01-01&end_date=2020-01-01')
                 response_data = self._validate_response(response, tmpdir)
-                assert u'<title>OpenMoves – Moves</title>' in response_data
+                assert '<title>OpenMoves – Moves</title>' in response_data
 
                 total_moves = Move.query.count()
                 assert total_moves == total_moves_before - (idx + 1)
                 if total_moves > 0:
-                    assert u"All moves <span class=\"badge\">%d</span>" % total_moves in response_data
+                    assert "All moves <span class=\"badge\">%d</span>" % total_moves in response_data
                 else:
-                    assert u'No moves in selected date range.' in response_data
+                    assert 'No moves in selected date range.' in response_data
 
             total_moves = Move.query.count()
             assert total_moves == 0

@@ -70,8 +70,8 @@ def upgrade():
                     sa.Column('device_info_sw_build_date_time', sa.DateTime(), nullable=True),
                     sa.Column('source', sa.String(), nullable=True),
 
-                    sa.ForeignKeyConstraint(['device_id'], [u'device.id'], ),
-                    sa.ForeignKeyConstraint(['user_id'], [u'user.id'], ),
+                    sa.ForeignKeyConstraint(['device_id'], ['device.id'], ),
+                    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
 
                     sa.PrimaryKeyConstraint('id')
                     )
@@ -108,7 +108,7 @@ def upgrade():
                     sa.Column('satellites', sa.String(), nullable=True),
                     sa.Column('apps_data', sa.String(), nullable=True),
 
-                    sa.ForeignKeyConstraint(['log_entry_id'], [u'logentry.id'], ),
+                    sa.ForeignKeyConstraint(['log_entry_id'], ['logentry.id'], ),
 
                     sa.PrimaryKeyConstraint('id')
                     )
