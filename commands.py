@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# vim: set fileencoding=utf-8 :
 
 import xkcdpass.xkcd_password as xp
 from flask_script import Command, Option

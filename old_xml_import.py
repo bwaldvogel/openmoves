@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# vim: set fileencoding=utf-8 :
 
 import re
 from flask import flash

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# vim: set fileencoding=utf-8 :
 
 from flask_login import LoginManager
 from flask_wtf import FlaskForm
