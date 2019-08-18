@@ -5,5 +5,5 @@ python:
   - 3.6
   - 3.7
 install:
-    - travis_retry pip install --ignore-installed -r requirements.txt
+    - travis_retry pip install -r requirements.txt
 script: py.test
