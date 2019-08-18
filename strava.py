@@ -6,6 +6,7 @@ import stravalib
 from sqlalchemy.sql import func
 
 import gpx_import
+from _import import postprocess_move
 from filters import degree_to_radian, celcius_to_kelvin
 from model import User, Device, Move, Sample, db
 
@@ -119,6 +120,8 @@ def strava_import(current_user, activity_id):
     derive_move_infos_from_samples(move, all_samples)
 
     db.session.add(move)
+    db.session.flush()
+    postprocess_move(move)
     db.session.commit()
     return move
 
