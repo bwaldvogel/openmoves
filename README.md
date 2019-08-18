@@ -8,6 +8,7 @@ An open source alternative to Movescount.
 ## Key features ##
  - Free and open-source software
  - OpenStreetMap integration
+ - Strava import
  - Plots with curve smoothing
 
 
