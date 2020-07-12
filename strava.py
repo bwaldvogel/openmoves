@@ -74,7 +74,11 @@ def strava_import(current_user, activity_id):
     all_samples = []
     for i in range(0, length):
         time = timedelta(seconds=streams['time'].data[i])
-        distance = float(streams['distance'].data[i])
+
+        if 'distance' in streams:
+            distance = float(streams['distance'].data[i])
+        else:
+            distance = None
 
         if 'heartrate' in streams:
             hr = float(streams['heartrate'].data[i])
