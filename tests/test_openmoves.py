@@ -308,7 +308,7 @@ class TestOpenMoves(object):
     def test_export_move_public_not_logged_in(self, tmpdir):
         response = self.client.get('/moves/2/export', follow_redirects=True)
         response_data = self._validate_response(response, tmpdir, check_content=False)
-        assert response.headers['Content-Disposition'] == 'attachment; filename=Move_2014-12-31T12_00_32_DE_Stegen_Trekking.gpx'
+        assert response.headers['Content-Disposition'] == 'attachment; filename=Move_2014-12-31T12_00_32_DE_Stegen+%28Kernort%29_Trekking.gpx'
         assert '<gpx ' in response_data
 
     def test_import_move_upload_gpx(self, tmpdir):
@@ -564,7 +564,7 @@ class TestOpenMoves(object):
         assert response.headers['Content-Disposition'] == 'attachment; filename=Move_2014-11-09T14_55_13_Pool+swimming.csv'
 
         response = self.client.get('/moves/2/export?format=csv')
-        assert response.headers['Content-Disposition'] == 'attachment; filename=Move_2014-12-31T12_00_32_DE_Stegen_Trekking.csv'
+        assert response.headers['Content-Disposition'] == 'attachment; filename=Move_2014-12-31T12_00_32_DE_Stegen+%28Kernort%29_Trekking.csv'
 
     def test_csv_exports(self, tmpdir):
         self._login()
