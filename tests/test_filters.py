@@ -34,7 +34,7 @@ class TestFilters(object):
 
     def test_get_city(self):
         address = {}
-        assert filters.get_city(address) == None
+        assert filters.get_city(address) is None
 
         address['village'] = 'some village'
         assert filters.get_city(address) == 'some village'

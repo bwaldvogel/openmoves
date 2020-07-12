@@ -586,7 +586,7 @@ class TestOpenMoves(object):
         assert 'lat="50.632' in response_data
         assert 'lon="6.952' in response_data
 
-    def test_gpx_export_umlaut_in_filename(self, tmpdir):
+    def test_gpx_export_umlaut_in_filename(self):
         with app.test_request_context():
             move = Move.query.filter(Move.id == 3).one()
             move.location_raw = {'address': {'city_district': 'Galtür', 'country_code': 'at'}}
@@ -638,7 +638,7 @@ class TestOpenMoves(object):
         assert '>Running</' in response_data
         assert filename in response_data
 
-    def test_activity_types_not_logged_in(self, tmpdir):
+    def test_activity_types_not_logged_in(self):
         self._assert_requires_login('/activity_types')
 
     def test_activity_types(self, tmpdir):
@@ -686,7 +686,7 @@ class TestOpenMoves(object):
         assert '<th>Total Distance</th><td>10.05 km</td>' in response_data
         assert '<th>Total Duration</th><td>02:20:23.30</td>' in response_data
 
-    def test_edit_move_different_user(self, tmpdir):
+    def test_edit_move_different_user(self):
         username = 'some different user'
         password = 'some other password'
         with app.test_request_context():
@@ -701,7 +701,7 @@ class TestOpenMoves(object):
         response = self.client.post('/moves/1', data=data)
         assert response.status_code == 404
 
-    def test_edit_move_activity_illegal_value(self, tmpdir):
+    def test_edit_move_activity_illegal_value(self):
         self._login()
 
         data = {'name': 'activity', 'pk': 1, 'value': 'illegal activity'}
@@ -709,7 +709,7 @@ class TestOpenMoves(object):
             self.client.post('/moves/1', data=data)
         assert "illegal activity" in str(e.value)
 
-    def test_edit_move_activity_success(self, tmpdir):
+    def test_edit_move_activity_success(self):
         self._login()
 
         data = {'name': 'activity', 'pk': 1, 'value': 'Trekking'}
