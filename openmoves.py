@@ -646,7 +646,7 @@ def move(id):
         'laps': laps
     }
 
-    gps_samples = [sample for sample in samples if sample.sample_type and sample.sample_type.startswith('gps-')]
+    gps_samples = [sample for sample in samples if sample.sample_type and sample.sample_type.startswith('gps-') and sample.latitude]
     model['gps_samples'] = gps_samples
 
     if gps_samples:
